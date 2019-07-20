@@ -11,3 +11,6 @@ print('<br >'.$password);
 $query='SELECT * FROM users WHERE name=\''.$username.'\' AND pass=\''.$password.'\';';
 print('<br />'.$query);
 ?>
+Git is a distributed version control system.
+Git is free software distributed under the GPL.
+asdasdas
