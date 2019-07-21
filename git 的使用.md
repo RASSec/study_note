@@ -298,3 +298,13 @@ warning: You appear to have cloned an empty repository.
 ```
 
 剩下的推送就简单了。
+
+## git的坑
+
+1. git问题：fatal：HttpRequestException encountered
+
+解决：Github 禁用了TLS v1.0 and v1.1，必须更新Windows的git凭证管理器 
+通过此网址https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/
+
+
+
