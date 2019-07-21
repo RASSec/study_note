@@ -1,6 +1,10 @@
 # git 的使用
 
----
+## 推荐网站
+https://www.liaoxuefeng.com/wiki/896043488029600
+https://git-scm.com/book/zh/v2
+
+## git的简单使用
 
 ### 创建版本库
 
