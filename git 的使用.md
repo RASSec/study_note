@@ -225,7 +225,7 @@ git log --graph --pretty=oneline --abbrev-commit
 
 `git config --global alias.别名 '替换内容'`
 
-配置所在文件 .git/config
+配置所在文件 .git/config 和 *.gitconfig* 
 
 推荐命令别名:
 
