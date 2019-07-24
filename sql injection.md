@@ -1,4 +1,4 @@
-# SQL injection
+# MYSQL injection
 
 ## 语法参考与小技巧
 

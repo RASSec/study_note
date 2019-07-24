@@ -73,6 +73,16 @@ root@dc0050c79503:/#
 - docker rm wizardly_chandrasekhar  
 - 删除容器时，容器必须是**停止**状态
 
+###  与后台容器交互
+docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+- OPTIONS说明：
+
+- -d :分离模式: 在后台运行
+
+- -i :即使没有附加也保持STDIN 打开
+
+- -t :分配一个伪终端
+
 ### 查看帮助
 
 docker --help
