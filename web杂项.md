@@ -11,6 +11,15 @@
  Referer: www.google.com
 
 ## 杂
+
+### 使用别的端口访问
+
+```SHELL
+ curl --local-port 51 http://web.jarvisoj.com:32770/
+```
+
+
+
 ### chr(0)字符截断
 
 ## 文件上传

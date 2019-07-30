@@ -37,6 +37,33 @@ preg_replace漏洞触发有两个前提：
 
 ## 函数绕过
 
+### md5相关
+
+1. md5和弱类型比较的联合利用
+
+   ```php
+   if($_GET['password']!='xxxxxx'&&md5('xxxxxx')==md5($_GET['password']))
+       echo $flag;
+   ```
+
+   (0-9)e开头字符串会被认为是数字
+
+   所以md5加密后为0e开头的字符串都相等
+
+2. ```php
+   "select * from `admin` where password='".md5($pass,true)."'"
+   ```
+md5($var,true)会返回一个原始的二进制数据，某些数据会被当成字符串
+   
+   > raw MD5 hashes are dangerous in SQL statements because they can contain characters with special meaning to MySQL(原始值会包含mysql中的特殊字符，因此很危险）。
+   
+   特殊字符串:
+   
+   >129581926211651571912466741651878684928
+   >ffifdyop
+
+
+
 ### strcmp
 
 - 利用条件：
