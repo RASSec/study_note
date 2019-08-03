@@ -1,5 +1,15 @@
 # web杂项
 
+
+
+## 编码报错
+
+做题时可以试试%80(ascii:128)来试一下是否报错
+
+### django
+
+%80会报错
+
 ## 伪造IP的几种方法
 
  Client-Ip: 127.0.0.1
@@ -63,3 +73,12 @@ burp抓包修改
 
 1. 1.php%00.jpg(url网址中)
 2. 1.php .jpg用burp修改chr(20)为chr(00)
+
+## 框架
+
+### Django 
+
+1. %80编码报错
+2. debug模式打开可以看看有啥东西
+3. xxx.xxx.xxx?xxx=@/opt/api/database.sqlite3(当 **CURLOPT_SAFE_UPLOAD** 为 true 时，PHP 可以通过在参数中注入 **@** 来读取文件。)
+
