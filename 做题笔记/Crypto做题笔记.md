@@ -62,3 +62,82 @@ zip的文件头:504B0304
 
 
 
+### **Easy-one**
+
+
+  做这题的时候我没有事先进行分析，一直以为密钥是CENSORED
+
+看了别人的wp才发现这题的密钥不是CENSORED。
+
+
+
+
+
+msg001.enc是msg001的加密文件,已知过程直接逆向出密钥。
+
+贴上代码
+
+```c
+//获取密钥
+#define false 0
+#define true 1
+int main() {
+	FILE* input  = fopen("msg001", "rb");
+	FILE* output = fopen("msg001.enc", "rb");
+	if (!input || !output) {
+		printf("Error\n");
+		return 0;
+	}
+	int c, p, t = 0;
+	char k[30]="";
+	int i = 0;
+	while ((p = fgetc(input)) != EOF &&(c= fgetc(output))!=EOF  ) {
+		char ch;
+		//(p + (k[i % strlen(k)] ^ t) + i*i) & 0xff;
+		int ok=false;
+		while(1)
+		{
+			for(ch=32;ch<127;ch++)
+			{
+				printf("未加密:%d,测试加密:%d,正确加密:%d,猜测k:%d\n",p,(p + (ch ^ t) + i*i) & 0xff,c,ch);
+				if((p + (ch ^ t) + i*i) == c)
+				{
+					ok=true;
+					break;
+				}
+			}
+			if(ok)
+				break;
+			else c+=256;
+		
+		}
+		
+			
+		k[i]=ch;
+		t = p;
+		i++;
+	}
+	k[i+1]=0;
+	printf("%s",k);
+	return 0;
+}
+
+
+//解密
+int main() {
+
+	FILE* input  = fopen("msg002.enc", "rb");
+	char k[] = "VeryLongKeyYouWillNeverGuess";
+	char c, p, t = 0;
+	int i = 0;
+	while ((p = fgetc(input)) != EOF) {
+		 
+		//(p + (k[i % strlen(k)] ^ t) + i*i) & 0xff;
+		c = (p-i*i-(k[i % strlen(k)] ^ t));
+		t = c;
+		i++;
+		printf("%c",c);
+	}
+	return 0;
+}
+```

