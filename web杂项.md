@@ -74,6 +74,61 @@ burp抓包修改
 1. 1.php%00.jpg(url网址中)
 2. 1.php .jpg用burp修改chr(20)为chr(00)
 
+## 文件读取
+
+- 当前程序的配置文件
+
+  - wp-config.php  （WordPress）
+
+  - .env （Laravel）
+
+- 当前程序的源代码 / 字节码
+
+  - 源码审计，寻找RCE漏洞
+
+- /proc/self
+
+  - /proc/version  当前操作系统内核版本，可帮助判断是否可用DirtyCow等提权，也可以根据发行版推测各种配置的存放位置。
+
+  -  /proc/self/cmdline  读取当前进程的执行命令行，对于PHP以外的题目有效，可以读到生效的配置。 
+
+  - /proc/self/environ  读取当前环境变量，某些情况下无法生效
+
+  - /proc/self/maps 读取当前进程的内存分布信息，可以读到某些so的存放位置，如果有任意写也可以以此为参考写当前进程内存 /proc/self/mem
+- /proc/\d* 读到有权限读的进程的信息
+  - 尤其注意/proc/1/，可分辨其是否是Docker启动，如是，可读到Docker启动参数。
+- /etc/ 或 /usr/local/etc
+  - /etc/passwd 系统用户信息
+  - /etc/shadow （仅root）可读到密码，后可在本地hashcat暴力破解。
+- Nginx、Apache、PHP、MySQL配置等
+  - /var 或 /usr/local/var
+  - /var/log 下的各种日志
+  - /var/run 下……嗯没什么好读的
+  - /dev/zero  可以DoS服务器
+  - /home/xxx/.bash_history 服务器运维人员操作日志
+- 其他协议
+  - SSRF
+    - http / https / ftp (file_get_contents)
+    - \\  (Windows下的UNC路径，访问SMB共享)
+    - gopher:// (Java)
+  - 列目录
+    - netdoc:// (Java)
+
+- PHP:
+
+  - file_get_contents / file / fopen + fread / show_source / readfile 
+
+  - require / include (文件包含)
+
+- Python:
+
+  - open(‘xxxxxxxxxx’).read()
+
+- Nodejs:
+
+  - require('fs').readFile
+
+
 ## 框架
 
 ### Django 
@@ -81,4 +136,38 @@ burp抓包修改
 1. %80编码报错
 2. debug模式打开可以看看有啥东西
 3. xxx.xxx.xxx?xxx=@/opt/api/database.sqlite3(当 **CURLOPT_SAFE_UPLOAD** 为 true 时，PHP 可以通过在参数中注入 **@** 来读取文件。)
+
+## perl
+
+### perl文件包含漏洞
+
+应用条件:perl 5,6
+
+问题代码
+
+```perl
+use strict;
+use warnings;
+use CGI;
+ 
+my $cgi= CGI->new;
+if ( $cgi->upload( 'file' ) )
+{
+my $file= $cgi->param( 'file' );
+while ( <$file> ) { print "$_"; } }
+```
+
+![](http://ww1.sinaimg.cn/large/006pWR9agy1g5s8gm8ve5j30rc0m00wn.jpg)
+
+param()返回name=file的所有参数,但是只有第一个值才能传给$file变量,当$file="ARGV"时,perl会调用open()访问url的参数
+
+可以通过 /bin/bash%20-c%20......来getshell
+
+`/cgi-bin/file.pl?/bin/bash%20-c%20ls| `
+
+
+
+
+
+
 

