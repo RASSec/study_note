@@ -56,6 +56,11 @@ readelf -l target # 查看elf头详细信息
 
 
 
+```assembly
+cmp [ebx+10], 1 // 判断 [ebx+10] 是否为 1
+je no_decrese_health // 如果相等的话，则跳转到 no_decrese_health 标签
+```
+
 
 
 http://www.ruanyifeng.com/blog/2018/01/assembly-language-primer.html

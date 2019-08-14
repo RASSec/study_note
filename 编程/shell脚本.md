@@ -228,6 +228,18 @@ printf  format-string  [arguments...]
 
 ## Shell if else语句
 
+注意: 
+
+- if 和方括号之间要有空格
+
+- $a == $b 之间也要有空格
+
+- 要让字符串为空返回假,非空进行比较用
+
+123;a=\`ls\`;b="~";if [ "${a:3:1}"x == "$b"x ]; then sleep 5 ;fi;
+
+
+
 if 语句通过关系运算符判断表达式的真假来决定执行哪个分支。Shell 有三种 if ... else 语句：
 
 - if ... fi 语句；
@@ -467,7 +479,7 @@ source filename
 注意：被包含脚本不需要有执行权限。
 
 
-  
+
 
 ## [] ,[[]],(())
 
