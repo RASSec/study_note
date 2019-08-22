@@ -1,0 +1,4 @@
+debug.log
+index.php
+session.php
+config.php

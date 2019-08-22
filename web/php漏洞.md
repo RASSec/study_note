@@ -1,6 +1,26 @@
 # php漏洞
 
+
+
+## php弱类型
+
+
+
+### 字符串==true为真
+
+### "0exxxx"会被看做数字
+
+
+
 ## 函数利用
+
+### move_uploaded_file %00截断
+
+1、漏洞影响版本必须在5.4.x<= 5.4.39, 5.5.x<= 5.5.23, 5.6.x <= 5.6.7
+
+2.move_uploaded_file($_FILES['x']['tmp_name'],"/tmp/test.php\x00.jpg")
+
+
 
 ### preg_replace_callback
 
@@ -14,7 +34,13 @@ preg_replace_callback("/.*/e",'eval()','aaaa');
 
 利用条件:php版本=7
 
-### curl_exec 
+### eval利用
+
+#### 被双引号包围
+
+
+
+### curl_exec
 
 #### 利用file://伪协议可以任意文件读取
 
@@ -198,4 +224,24 @@ md5($var,true)会返回一个原始的二进制数据，某些数据会被当成
 
 ### '0xaa'可以被理解为数字(php7之前的版本)
 所以'0xccccccccc'='54975581388'
+
+### PHP解析字符串函数parse_str的特性
+
+PHP将查询字符串(在URL或正文中)转换为$_GET或$_POST中的关联数组。例如:/ ?foo=bar被转换为Array([foo] => "bar")。查询字符串解析过程使用下划线删除或替换参数名称中的某些字符。例如/?%20news[id%00=42被转换为Array([news_id] => 42)。如果IDS / IPS或WAF在news_id参数中有一个用于阻止或记录非数字值的规则，则可以通过滥用此解析过程来绕过它，例如：/news.php?%20news[id%00=42"+AND+1=0–，在PHP中，%20news[id%00中的参数名称的值将存储到$_GET["news_id"]。
+
+PHP需要将所有参数转换为一个有效的变量名，所以当解析查询字符串时，它主要做两件事:
+
+1.删除初始空格；
+
+2.将一些字符转换为下划线(包括空格)。
+
+![](http://ww1.sinaimg.cn/large/006pWR9agy1g5zidv6umyj30rv0kbae4.jpg)
+
+## 程序猿可能做的傻事
+
+### header('Location: ./?failed=1');后面没加exit()
+
+后面的代码还会执行
+
+
 
