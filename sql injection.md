@@ -328,3 +328,24 @@ select * from (SELECT "E10ADC3949BA59ABBE56E057F20F883E" as password) a where IF
 匹配上时产生报错，没匹配上时页面正常。
 
 这里可以用所有会产生错误的函数，而不仅仅局限于那几个会产生报错注入的函数。
+
+### insert into
+
+#### 方法一
+
+`sql=insert into test (col1,col2,...) values (val1,val2,...)`
+
+在只能更改val1和回显val1的情况下
+
+val1=`a'+conv(hex((selselectect '123')),16,10)+'.jpg`或`0+conv(hex((select xxx)))`
+
+这边转为十进制的原因是:mysql将字符串转为数字时将其视为10进制数据
+
+#### 方法二
+
+猜测结构,注入两列
+
+`sql=insert into xxx (xx,xx,xx) values ('xx',uuid,uuid)`
+
+payload=`hello',1660,1660),(2,1660,1660)#.jpg`
+
