@@ -6,7 +6,7 @@ https://redis.io/commands
 
 
 
- ### 1. 关于字符串的命令
+### 1. 关于字符串的命令
 
    - set  key value
      创建键值对

