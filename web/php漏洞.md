@@ -125,6 +125,64 @@ preg_replace漏洞触发有两个前提：
    //这两种没有匹配上，所以返回值是第三个参数，不能执行命令
    ```
 
+## 一些函数特性
+
+### sprintf() 格式化字符串漏洞
+
+>An optional padding specifier that says what character will be used for padding the results to the right string size. This may be a space character or a 0 (zero character). The default is to pad with spaces. An alternate padding character can be specified by prefixing it with a single quote (‘). See the examples below.
+
+```php
+<?php
+$s = 'monkey';
+$t = 'many monkeys';
+
+printf("[%s]\n",      $s); // standard string output
+printf("[%10s]\n",    $s); // right-justification with spaces
+printf("[%-10s]\n",   $s); // left-justification with spaces
+printf("[%010s]\n",   $s); // zero-padding works on strings too
+printf("[%'#10s]\n",  $s); // use the custom padding character '#'
+printf("[%10.10s]\n", $t); // left-justification but with a cutoff of 10 characters
+?>
+
+```
+
+同时我们关注另一个特性，如果我们想用另外的顺序映射对应格式化点和参数我们可以使用以下的方法：
+
+```php
+<?php
+    $location='this';
+	$num=666
+$format = 'The %1$s contains %1$d monkeys.
+           That\'s a nice %2$s full of %2$d monkeys.';
+echo sprintf($format, $num, $location);
+?>
+    /*
+    The 666 contains 666 monkeys.
+           That's a nice this full of 0 monkeys.    
+    */
+    
+```
+
+并且如果`%`后面跟了其他符号，会被直接无视。
+
+如果我们能在格式化字符串中拼接`%‘ or 1=1#`，进入服务器后addslashes结果变成`%\' or 1=1#`，再拼接入待格式化的sql语句：
+
+```sql
+SELECT username, password FROM users where username='%\' or 1=1#'
+```
+
+
+
+因为`%\`不是任何一种输出类型，格式化后得到：
+
+```sql
+SELECT username, password FROM users where username='' or 1=1#'
+```
+
+成功逃逸
+但是可能会出现php报错：`PHP Warning: sprintf(): Too few arguments`
+可以使用这样的payload:`%1$'`不会引起相关报错
+
 ## 函数绕过
 
 ### 字符串==字符串
@@ -218,9 +276,19 @@ md5($var,true)会返回一个原始的二进制数据，某些数据会被当成
 2. md5():遇到数组返回null
 3. eregi()/ereg()遇到数组返回null
 
+## 一些有用的php语句
+
+get_defined_functions()
+
+scandir,file_get_contents('/proc/...')
+
+
+
 ## 文件包含漏洞
 
 ### php伪协议
+
+**php://filter/read=convert.base64-encode/resource=**
 
 ### 配合文件上传的漏洞
 

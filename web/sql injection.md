@@ -349,3 +349,35 @@ val1=`a'+conv(hex((selselectect '123')),16,10)+'.jpg`或`0+conv(hex((select xxx)
 
 payload=`hello',1660,1660),(2,1660,1660)#.jpg`
 
+### 利用php语言特性
+
+#### php中利用格式化字符串漏洞绕过addslashes注入
+
+[https://code.felinae98.cn/ctf/web/php%E4%B8%AD%E5%88%A9%E7%94%A8%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E7%BB%95%E8%BF%87addslashes%E8%BF%9B%E8%A1%8C%E6%B3%A8%E5%85%A5/](https://code.felinae98.cn/ctf/web/php中利用格式化字符串漏洞绕过addslashes进行注入/)
+
+```php
+$username = addslashes($_POST['username']);
+$password = addslashes($_POST['password']);
+$format = "SELECT * FROM user WHERE username='$username' and password=''%s';";
+$sql = sprintf($format, $password);
+```
+
+可以使用这样的payload:`%1$'`不会引起相关报错
+
+## mysql设置
+
+### 语句日志
+
+General_log
+
+```mysql
+show variables like 'general_log';  -- 查看日志是否开启
+set global general_log=on; -- 开启日志功能
+show variables like 'general_log_file';  -- 看看日志文件保存位置
+set global general_log_file='tmp/general.lg'; -- 设置日志文件保存位置
+show variables like 'log_output';  -- 看看日志输出类型  table或file
+set global log_output='table'; -- 设置输出类型为 table
+set global log_output='file';   -- 设置输出类型为file
+
+```
+
