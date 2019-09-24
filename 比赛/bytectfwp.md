@@ -196,6 +196,65 @@ emmmm..到这里就不会做了.到头了.
 
 vardump(antsystem('/readfile'));
 
+
+
+### ezcms
+
+哈希扩展攻击拿到admin权限
+
+代码审计发现
+
+在config.php下
+
+```php
+class File{
+	public $filename;
+    public $filepath;
+    public $checker;
+    function __construct($filename, $filepath)
+    {
+        $this->filepath = $filepath;
+        $this->filename = $filename;
+    }
+    function __destruct()
+    {
+        if (isset($this->checker)){
+            $this->checker->upload_file();
+        }
+    }
+    public function view_detail(){
+
+        if (preg_match('/^(phar|compress|compose.zlib|zip|rar|file|ftp|zlib|data|glob|ssh|expect)/i', $this->filepath)){
+            die("nonono~");
+        }
+        $mine = mime_content_type($this->filepath);
+        $store_path = $this->open($this->filename, $this->filepath);
+        $res['mine'] = $mine;
+        $res['store_path'] = $store_path;
+        return $res;
+
+    }
+}
+```
+
+过滤phar并且明明没有给`$checker`赋值的点,在销毁的时候却会调用它,明显是一个为了出题而写的地方猜测phar反序列化利用,而mime_content_type()恰好又是反序列化的利用点
+
+最后在view.php处找到调用view_detail的地方
+
+由于题目不限制.php文件的上传,但是题目会写一个非法.htaccess
+
+所以我们可以可以试着删除它
+
+构造pop链:
+
+`FILE::view_detail(mime_content_type)->FILE::__destruct(upload_file())->Profile::__call(open())->ZipArchive::open(file,ZipArchive::OVERWRITE)`
+
+phar文件生成后就是要考虑如何绕过`(^phar)`的限制,
+
+我觉得这才是这一题最骚的地方:
+
+`filepath=php://filter/resource=phar://sandbox/a87136ce5a8b85871f1d0b6b2add38d2/dd7ec931179c4dcb6a8ffb8b8786d20b.txt`
+
 ## misc
 
 这次最开心的就是做misc的题目

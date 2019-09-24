@@ -229,6 +229,8 @@ array(
 
 ## LD_PRELOAD绕过
 
+
+
 这里我们先来看一下原理，首先什么是LD_PRELOAD？
 
 google给出如下定义
@@ -252,6 +254,10 @@ putenv ( string $setting ) : bool
 >1.制作一个恶意shared libraries
 >2.使用putenv设置LD_PRELOAD为恶意文件路径
 >3.使用某个php函数，触发specific shared library
+
+### 利用函数
+
+`putenv,errorlog,mail`
 
 ### 如何制作shared libraries
 

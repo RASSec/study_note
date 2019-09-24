@@ -6,6 +6,8 @@
 
 [https://www.k0rz3n.com/2018/05/04/Python%20%E6%B2%99%E7%9B%92%E9%80%83%E9%80%B8%E5%A4%87%E5%BF%98/](https://www.k0rz3n.com/2018/05/04/Python 沙盒逃逸备忘/)
 
+[https://www.kingkk.com/2018/06/Flask-Jinja2-SSTI-python-%E6%B2%99%E7%AE%B1%E9%80%83%E9%80%B8/](https://www.kingkk.com/2018/06/Flask-Jinja2-SSTI-python-沙箱逃逸/)
+
 ## 关键函数
 
 ### getattr

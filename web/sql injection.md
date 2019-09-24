@@ -381,3 +381,9 @@ set global log_output='file';   -- 设置输出类型为file
 
 ```
 
+## HSQL
+
+HQL:hibernate query language 即hibernate提供的面向对象的查询语言
+
+https://segmentfault.com/a/1190000013568216
+

