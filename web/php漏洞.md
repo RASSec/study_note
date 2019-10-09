@@ -127,6 +127,12 @@ preg_replace漏洞触发有两个前提：
 
 ## 一些函数特性
 
+### curl
+
+file:///etc/passwd有时候不行
+
+通常是file://localhost/etc/passwd
+
 ### unserialize和serialize对string的解析差异
 
 http://www.vuln.cn/8102

@@ -312,6 +312,16 @@ RUN buildDeps='gcc libc6-dev make wget' \
 - 指令中的路径是相对路径，相对于上下文路径
 - 一步一步来不要想着可以一下写出来
 
+## docker compose
+
+```shell
+docker-compose up -d 启动容器，如果镜像不存在则先下载镜像，如果容器没创建则创建容器，如果容器没启动则启动
+docker-compose down 停止并移除容器
+docker-compose restart 重启服务
+```
+
+
+
 
 
 ### 踩过的坑

