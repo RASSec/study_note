@@ -17,3 +17,21 @@ proxies = {
 r=requests.get("http://icanhazip.com", proxies=proxies)
 print r.text
 ```
+
+## numpy
+
+### 解多元一次方程
+
+> x+y=10
+> x+z=20
+> y+z=24
+
+```python
+import numpy as np
+#导入指定成员
+from scipy.linalg import solve 
+a = np.array([[1, 1,0], [1,0,1], [0,1, 1]])
+b = np.array([10, 20, 24])
+x = solve(a, b)
+print(x)
+```

