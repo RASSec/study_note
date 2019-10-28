@@ -226,7 +226,7 @@ class IndexController extends Controller
     public function upload()
     {
         $uploadFile = $_FILES['file'] ;
-        
+        $_FILES['file']['name']
         if (strstr(strtolower($uploadFile['name']), ".php") ) {
             return false;
         }

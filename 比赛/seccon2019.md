@@ -313,5 +313,450 @@ flag!!!!:
 
 
 
-`SECCON{Yeah_Sqli_Success_You_Win_Yeah}`:就给半个???????
+`SECCON{Yeah_Sqli_Success_You_Win_Yeah}`:
+
+
+
+### SPA
+
+
+
+Last day my colleague taught me the concept of the Single-Page Application, which seems to be the good point to kickstart my web application development. Well, now it turned out to be MARVELOUS!
+
+Steal the cookie.
+
+
+
+```html
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>SECCON Flag Archives</title>
+		<link rel="stylesheet" href="https://unpkg.com/bulmaswatch/nuclear/bulmaswatch.min.css">
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			.container {
+				padding: .75rem;
+			}
+			.contest-title {
+				margin-top: 1rem;
+			}
+			.contest-list > .title {
+				font-size: 12vmin;
+			}
+			.title.padded {
+				margin-top: 3rem;
+			}
+			.contest {
+				display: block;
+				padding: 0.5rem;
+			}
+			.contest-name {
+				margin-bottom: 0 !important;
+			}
+			.flag {
+				font-family: monospace;
+				font-size: 1.6rem;
+				word-break: break-all;
+			}
+			.flag-shaken {
+				animation: shake 0.3s linear infinite;
+				display: inline-block;
+				color: #444;
+			}
+			.flag-shaken:nth-child(3n) { animation-delay: -0.05s; }
+			.flag-shaken:nth-child(3n+1) { animation-delay: -0.15s; }
+			@keyframes shake {
+				0% { transform: translate(0px, 0px) rotateZ(0deg) }
+				10% { transform: translate(4px, 4px) rotateZ(4deg) }
+				20% { transform: translate(0px, 4px) rotateZ(0deg) }
+				30% { transform: translate(4px, 0px) rotateZ(-4deg) }
+				40% { transform: translate(0px, 0px) rotateZ(0deg) }
+				50% { transform: translate(4px, 4px) rotateZ(4deg) }
+				60% { transform: translate(0px, 0px) rotateZ(0deg) }
+				70% { transform: translate(4px, 0px) rotateZ(-4deg) }
+				80% { transform: translate(0px, 4px) rotateZ(0deg) }
+				90% { transform: translate(4px, 4px) rotateZ(-4deg) }
+				100% { transform: translate(0px, 0px) rotateZ(0deg) }
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+				<div class="navbar-brand">
+					<a class="navbar-item" @click="goHome()">SECCON Flag Archives</a>
+					<a
+						role="button"
+						class="navbar-burger burger"
+						aria-label="menu"
+						aria-expanded="false"
+						@click="isActive = !isActive"
+					>
+						<span aria-hidden="true"></span>
+						<span aria-hidden="true"></span>
+						<span aria-hidden="true"></span>
+					</a>
+				</div>
+				<div class="navbar-menu" :class="{'is-active': isActive}">
+					<div class="navbar-start">
+						<a class="navbar-item" @click="goHome()">
+							Home
+						</a>
+						<a v-for="contest in contests" :key="contest.id" class="navbar-item" @click="goContest(contest.id)">
+							{{contest.name}}
+						</a>
+					</div>
+				</div>
+			</nav>
+			<div v-if="route === 'home'" class="container">
+				<div class="contest-list">
+					<h1 class="title padded has-text-success has-text-centered">SECCON Flag Archives</h1>
+					<h2 class="subtitle has-text-centered has-text-grey-light">Complete list of the golden flags that appeared in the past SECCON CTFs</h2>
+					<div class="columns">
+						<div v-for="contest in contests" :key="contest.id" class="column">
+							<a @click="goContest(contest.id)" class="contest has-background-success has-text-centered">
+								<div class="title has-text-light contest-name is-size-3">{{contest.name}}</div>
+								<div class="title has-text-light is-size-6">{{contest.count}} flags</div>
+							</a>
+						</div>
+					</div>
+					<div class="has-text-centered">
+						<a @click="goReport()" class="subtitle has-text-success">
+							Report Admin
+						</a>
+					</div>
+				</div>
+			</div>
+			<div v-else-if="route === 'report'" class="container has-text-centered">
+				<h1 class="title padded has-text-success is-size-1">Report Admin</h1>
+				<h2 class="subtitle has-text-grey-light">
+					If you found any glitches on this website, fill in the following form to report them.<br>
+					The URL will be reviewed and the administrator will check it.
+				</h2>
+				<form action="/query" target="_blank" method="POST">
+					<label class="label">URL</label>
+					<div class="field has-addons">
+						<div class="control is-expanded">
+							<input class="input" type="url" name="url" placeholder="http://spa.chal.seccon.jp:18364/*****">
+						</div>
+						<div class="control">
+							<button class="button is-link" type="submit">Submit</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div v-else-if="route === 'contest'" class="container">
+				<progress v-if="isLoading" class="progress is-small is-primary" max="100"></progress>
+				<p class="title contest-title has-text-centered is-size-1">{{name}}</p>
+				<p class="subtitle has-text-centered is-size-3">{{start}} - {{end}}</p>
+				<div class="columns is-centered">
+					<div
+						v-for="(link, title) in contest.links"
+						class="column is-narrow has-text-centered"
+					>
+						<a
+							class="button"
+							:href="link"
+							target="_blank"
+						>
+							{{title}}
+						</a>
+					</div>
+				</div>
+				<p class="subtitle is-size-5 has-text-centered">{{flagCount}}</p>
+				<div class="columns is-multiline">
+					<div v-for="{genre, name, point, flag} in flags" :key="name" class="column is-half is-info">
+						<div class="card">
+							<div class="card-content">
+								<div class="content">
+									<p class="title">
+										{{name}}
+										<span v-if="point !== null">
+											<span v-if="point <= 100" class="tag is-light">
+												{{point}}pts
+											</span>
+											<span v-else-if="point <= 200" class="tag is-success">
+												{{point}}pts
+											</span>
+											<span v-else-if="point <= 300" class="tag is-link">
+												{{point}}pts
+											</span>
+											<span v-else-if="point <= 400" class="tag is-warning">
+												{{point}}pts
+											</span>
+											<span v-else class="tag is-danger">
+												{{point}}pts
+											</span>
+										</span>
+									</p>
+									<p class="flag">
+										<span v-if="flag === null">
+											<span v-for="i in 10" :key="i" class="flag-shaken">?</span>
+										</span>
+										<span v-else>
+											{{flag}}
+										</span>
+									</p>
+									<p class="has-text-right is-size-5" :style="{color: getGenreColor(genre)}">
+										{{genre}}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10"></script>
+		<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+		<script>
+			const genreColors = new Map([
+				['crypto', '#689F38'],
+				['forensic', '#FF8F00'],
+				['forensics', '#FF8F00'],
+				['pwn', '#D32F2F'],
+				['media', '#9C27B0'],
+				['reversing', '#42A5F5'],
+				['web', '#558B2F'],
+				['binary', '#F57F17'],
+				['programming', '#5D4037'],
+				['exploit', '#1565C0'],
+				['excercise', '#558B2F'],
+				['stegano', '#424242'],
+				['unknown', '#777777'],
+			]);
+
+			const getGenreColor = (genre) => {
+				const normalized = genre.split('/')[0].toLowerCase();
+
+				if (genreColors.has(normalized)) {
+					return genreColors.get(normalized);
+				}
+
+				return '#777';
+			};
+
+			new Vue({
+				el: '#app',
+				data() {
+					return {
+						isLoading: true,
+						isActive: false,
+						route: 'home',
+						contest: {},
+						contests: [],
+						contestId: null,
+					};
+				},
+				computed: {
+					flagCount() {
+						if (this.contest.flags === undefined) {
+							return 'No flags';
+						}
+						if (this.contest.flags.length === 1) {
+							return '1 flag';
+						}
+						return `${this.contest.flags.length} flags`;
+					},
+					name() {
+						return this.contest.name || location.hash.slice(1);
+					},
+					flags() {
+						return this.contest.flags;
+					},
+					start() {
+						if (this.contest.date === undefined) {
+							return '---';
+						}
+						return new Date(this.contest.date.start).toLocaleString();
+					},
+					end() {
+						if (this.contest.date === undefined) {
+							return '---';
+						}
+						return new Date(this.contest.date.end).toLocaleString();
+					},
+				},
+				async mounted() {
+					addEventListener('hashchange', this.onHashChange);
+
+					await this.onHashChange();
+					await this.fetchContests();
+
+					this.isLoading = false;
+				},
+				methods: {
+					async fetchContest(contestId) {
+						this.contest = await $.getJSON(`/${contestId}.json`)
+					},
+					async fetchContests() {
+						this.contests = await $.getJSON('/contests.json')
+					},
+					async onHashChange() {
+						const contestId = location.hash.slice(1);
+						if (contestId) {
+							if (contestId === 'report') {
+								this.goReport();
+							} else {
+								await this.goContest(contestId);
+							}
+						} else {
+							this.goHome();
+						}
+					},
+					async goContest(contestId) {
+						location.hash = `#${contestId}`
+						this.route = 'contest';
+						this.contestId = contestId;
+						this.isLoading = true;
+						this.isActive = false;
+
+						await this.fetchContest(contestId);
+
+						this.isLoading = false;
+					},
+					goHome() {
+						location.hash = '';
+						this.route = 'home';
+						this.contestId = null;
+						this.contest = {};
+						this.isActive = false;
+					},
+					goReport() {
+						location.hash = '#report';
+						this.route = 'report';
+						this.contestId = null;
+						this.contest = {};
+						this.isActive = false;
+					},
+					getGenreColor(genre) {
+						return getGenreColor(genre);
+					},
+					getDateString(date) {
+						const d = new Date(date.seconds * 1000);
+						return d.toISOString().split('T')[0];
+					},
+					getDateStringJa(date) {
+						const d = new Date(date.seconds * 1000);
+						return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+					},
+				},
+				head() {
+					return {
+						title: `${this.contestId} - SECCON Flags Archive`,
+					};
+				},
+			});
+		</script>
+	</body>
+</html>
+```
+
+
+
+题目提示xss+vue应用
+
+![image.png](http://ww1.sinaimg.cn/large/006pWR9agy1g8639b6cz4j31fu0h9dj2.jpg)
+
+
+
+试着去溜了一圈,发现请求页面都是在#号后面
+
+试着修改#后后面的值发现可以控制界面
+
+
+
+![image.png](http://ww1.sinaimg.cn/large/006pWR9agy1g863bj01ubj317a0idabc.jpg)
+
+
+
+试着看一下能不能直接xss,果然没这么简单
+
+
+
+网页是用vue动态生成的，能动态控制界面的是这个函数
+
+```html
+name() {
+						return this.contest.name || location.hash.slice(1);
+					},
+```
+
+用burp抓包发下,他会请求json文件来动态生成页面
+
+```vue
+methods: {
+					async fetchContest(contestId) {
+						this.contest = await $.getJSON(`/${contestId}.json`)
+					},
+					async fetchContests() {
+						this.contests = await $.getJSON('/contests.json')
+					},
+					async onHashChange() {
+						const contestId = location.hash.slice(1);
+						if (contestId) {
+							if (contestId === 'report') {
+								this.goReport();
+							} else {
+								await this.goContest(contestId);
+							}
+						} else {
+							this.goHome();
+						}
+					}
+
+
+.............
+location.hash = `#${contestId}`
+
+```
+
+
+
+居然请求文件可控,那么我们试着请求外站
+
+利用beeceptor来回应请求
+
+![image.png](http://ww1.sinaimg.cn/large/006pWR9agy1g863qhprfxj315u0jfmz0.jpg)
+
+
+
+![1571661495657](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\1571661495657.png)
+
+
+
+成功
+
+
+
+但是这还不够,无法执行js代码
+
+
+
+开始面向google做题,最后在stackoverflow上找到了关于`$.getJSON()`/////////其实是看wp//////////////
+
+[Is getJSON() safe to call on untrusted URL?](https://stackoverflow.com/questions/29022794/is-getjson-safe-to-call-on-untrusted-url)
+
+
+
+> Here's a quote from the jQuery docs for `$.getJSON()`:
+>
+> > If the URL includes the string `"callback=?"` (or similar, as defined by the server-side API), the request is treated as JSONP instead.
+>
+> And, "treated as JSONP" means it's going to insert a script tag and request and run a script from the site in the URL - thus opening a cross site scripting vulnerability if you access an untrusted site with JSONP.
+
+构造恶意请求
+
+![image.png](http://ww1.sinaimg.cn/large/006pWR9agy1g863yx9az6j317y0cajsy.jpg)
+
+
+
+
+![image.png](http://ww1.sinaimg.cn/large/006pWR9agy1g863yd1j2zj30qj05xwf1.jpg)
+
+
 

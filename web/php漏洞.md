@@ -1,5 +1,11 @@
 # php漏洞
 
+## 收藏
+
+ https://www.restran.net/2016/09/26/php-security-notes/ 
+
+ [https://hackfun.org/2018/01/09/CTF%E4%B8%AD%E5%B8%B8%E8%A7%81PHP%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/](https://hackfun.org/2018/01/09/CTF中常见PHP特性学习笔记/) 
+
 
 
 ## php弱类型

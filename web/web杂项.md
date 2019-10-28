@@ -137,6 +137,20 @@ burp抓包修改
 2. debug模式打开可以看看有啥东西
 3. xxx.xxx.xxx?xxx=@/opt/api/database.sqlite3(当 **CURLOPT_SAFE_UPLOAD** 为 true 时，PHP 可以通过在参数中注入 **@** 来读取文件。)
 
+
+
+### javascript库---jQuery
+
+#### getJSON()的特性
+
+https://stackoverflow.com/questions/29022794/is-getjson-safe-to-call-on-untrusted-url
+
+> If the URL includes the string `"callback=?"` (or similar, as defined by the server-side API), the request is treated as JSONP instead.
+
+
+
+
+
 ## perl
 
 ### perl文件包含漏洞
@@ -169,5 +183,23 @@ param()返回name=file的所有参数,但是只有第一个值才能传给$file�
 
 
 
+## http走私
 
+在复杂网络环境下，不同的服务器对RFC标准实现的方式不同，程度不同。这样一来，对同一个HTTP请求，不同的服务器可能会产生不同的处理结果，这样就产生了了安全风险。
+
+### cl-cl
+
+### te-te
+
+### te-cl
+
+### cl-te
+
+
+
+## dns rebinding
+
+对多次dns解析中，不同的dns解析结果，来绕过一些特定的限制:如同源策略,限制访问ip为内网地址等
+
+工具:`https://lock.cmpxchg8b.com/rebinder.html`
 

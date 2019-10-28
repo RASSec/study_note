@@ -1,5 +1,9 @@
 # PHP7 和 PHP5 在安全上的区别
 
+## 收藏
+
+ https://xz.aliyun.com/t/6131 
+
 ## 函数修改
 
 ### preg_replace()不再支持/e修饰符
