@@ -1,5 +1,13 @@
 # ssti
 
+
+
+## 一些有用的东东
+
+`__dict__和dir()`获得 模块对象名称空间的变量,函数,类等等
+
+
+
 ## jiaja2
 
 http://docs.jinkan.org/docs/jinja2/templates.html
@@ -30,4 +38,6 @@ http://docs.jinkan.org/docs/jinja2/templates.html
 
   来绕过
 
-- 
+
+
+

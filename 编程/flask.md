@@ -302,6 +302,12 @@ else:
 
 ### 迁移数据库
 
+创建迁移存储库:`flask db init`
+
+生成迁移脚本:`flask db migrate -m "users table" `
+
+迁移数据库:` flask db upgrade `
+
 ```python
 #!flask/bin/python
 import imp
@@ -357,6 +363,22 @@ models.字段名.query.get(xx)
 models.字段名.query.all(xx)
 
 db.session.delete()
+
+
+
+## flask插件初始化
+
+```python
+class Config(object):
+    # ...
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'app.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+app.config.from_object(Config)
+   
+```
+
+
 
 
 
