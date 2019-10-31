@@ -132,9 +132,28 @@ system('unzip -j '.escapeshellarg($zip_name).' *.tmp -d /tmp');
 
 #### 利用linux统配符来匹配文件绕过字符限制
 
+##### 通配符
+
+```shell
+* 0到无穷个任意字符
+? 一个任意字符
+[ ] 一个在括号内的字符，e.g. [abcd]
+[ - ] 在编码顺序内的所有字符
+[^ ] 一个不在括号内的字符
+[! ] 同 ^
+```
+
+
+
+
+
 执行cat命令可以用
 
 `/b?n/c?t .....`
+
+`/bin/c[0-z]t flag`
+
+....自行发挥
 
 
 
@@ -146,13 +165,25 @@ system('unzip -j '.escapeshellarg($zip_name).' *.tmp -d /tmp');
 
 `$IFS$9` 符号 `${IFS}` 符号代替空格
 
+利用重定向符来代替空格
 
+```shell
+cat<>flag
+cat<flag
+```
+
+##### 杂
+
+- ${PS2} 对应字符 ‘>’
+- ${PS4} 对应字符 ‘+’
+- ${IFS} 对应 内部字段分隔符
+- ${9} 对应 空字符串
 
 ### 单词黑名单
 
-#### 利用"",'',和\`\` 来绕过单词黑名单
+#### 利用"",'',和\`\` ,\,$@来绕过单词黑名单
 
-如`l''s,l""s`,l\`\`s
+如`l''s,l""s`,l\`\`s,l\s,l$@s
 
 #### 利用字符串操作如base64,rot等等来绕过单词黑名单
 
@@ -161,8 +192,6 @@ system('unzip -j '.escapeshellarg($zip_name).' *.tmp -d /tmp');
 #### 变量名拼接
 
 `a=ec;b=ho;$a$b hello`
-
-
 
 
 
