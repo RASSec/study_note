@@ -1,5 +1,7 @@
 # 带限制的shell命令执行
 
+这是在linux下的带限制的shell命令执行总结
+
 ## 收藏文章
 
  [https://err0rzz.github.io/2017/11/13/ctf%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E4%B8%8E%E7%BB%95%E8%BF%87/](https://err0rzz.github.io/2017/11/13/ctf命令执行与绕过/) 
