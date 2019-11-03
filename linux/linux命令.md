@@ -212,3 +212,93 @@ ulimit 用于 shell 启动进程所占用的资源，可以用来设置系统的
 从交换文件恢复:
 
 vim -r filename
+
+
+
+## tar
+
+```shell
+tar [-j|-z][cv][-f 建立的档名]  filename<==打包与压缩
+tar [-j|-z][tv][-f 建立的档名] <=查看档名
+tar [-j|-z][xv][-f 建立的档名] <==解压缩
+```
+
+参数和选项
+
+```
+-c :建立打包档案,可配合-v 来查看过程中被打包的档名
+-t :查看打包档案的内容含有哪些档名,重点在查看档名
+-x :解打包或解压缩的功能,可以配合-C 在特定的目录解开。但是,-c,-t,-x不可以同时出现
+-j :通过bzip2的支持进行压缩/解压:文件名最好为:*.tar.bz2
+-z :通过gzip的支持进行压缩/解压缩:此时档名最好为*.tar.gz
+-v :在压缩/解压缩的过程中,将正在处理的文件名显示出来
+-f filename : -f后面要立刻接被处理的档名!建议-f单独写一个选项
+-C 目录 :这个选项用在解压缩,若要在特定的目录解压缩,可以使用这个选项
+-p :保留备份数据的原本权限和属性,常用于备份(-c)重要的配置文件
+-P :保留绝对路径,即允许备份数据中包含根目录存在
+--exclude=FILE :在压缩的过程中不要将FILE打包
+```
+
+
+
+### 常用命令
+
+- 压缩 tar -zcv -f filename.tar.gz 目录或文件
+- 查询 tar -ztv -f filename.tar.gz
+- 解压缩 tar -zxv -f filename -C 欲解压路径
+
+- 解压包下某个特定文/文件夹 tar -zxv -f filename wanted
+  eg. 想要解压a.tar.gz中的file/test 则运行如下命令:`tar -zxv -f a.tar.gz file/test` 
+
+### 常见问题
+
+如果你想用绝对路径解压和压缩的话，那么无论在解压还是压缩都要加个-P
+
+
+
+## mysqldump
+
+```shell
+mysqldump [OPTIONS] database [tables]
+mysqldump [OPTIONS] --databases [OPTIONS] DB1 [DB2 DB3...]
+mysqldump [OPTIONS] --all-databases [OPTIONS]
+```
+
+## mysql
+
+`  mysql --user=user_name --password db_name `
+
+`  mysql db_name < script.sql > output.tab `
+
+
+
+## gzip
+
+`Usage: gzip [OPTION]... [FILE]...`
+
+
+
+解压 gzip -dv xxx.gz
+
+解压到标准输出并不变动原文件
+
+  -c, --stdout      write on standard output, keep original files unchanged
+  -d, --decompress  decompress
+  -f, --force       force overwrite of output file and compress links
+  -h, --help        give this help
+  -k, --keep        keep (don't delete) input files
+  -l, --list        list compressed file contents
+  -L, --license     display software license
+  -n, --no-name     do not save or restore the original name and time stamp
+  -N, --name        save or restore the original name and time stamp
+  -q, --quiet       suppress all warnings
+  -r, --recursive   operate recursively on directories
+  -S, --suffix=SUF  use suffix SUF on compressed files
+  -t, --test        test compressed file integrity
+  -v, --verbose     verbose mode
+  -V, --version     display version number
+  -1, --fast        compress faster
+  -9, --best        compress better
+  --rsyncable       Make rsync-friendly archive
+
+With no FILE, or when FILE is -, read standard input.
