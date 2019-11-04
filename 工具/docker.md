@@ -312,6 +312,28 @@ RUN buildDeps='gcc libc6-dev make wget' \
 - 指令中的路径是相对路径，相对于上下文路径
 - 一步一步来不要想着可以一下写出来
 
+
+
+## docker 网络-端口映射、容器链接、Networking
+
+ https://itbilu.com/linux/docker/Ey5dT-i2G.html 
+
+
+
+### 容器链接(link)
+
+ 容器的连接（link）系统是除了端口映射外，另一种跟容器中应用交互的方式。该系统会在源容器和接收容器之间创建一个隧道，接收容器可以看到源容器指定的信息。Docker的链接是一个可以将具体的容器连接到一起来进行通信的抽像层。 
+
+`docker run -d -P --name web --link db:db training/webapp python app.py`
+
+#### --link参数格式
+
+`--link`参数的格式为`--link name:alias`，其中：`name`表示要连接的容器的名称，而`alias`表示连接后的别名。
+
+通过`--link`参灵敏，Docker 会在两个互联的容器之间创建了一个安全的隧道，且不用映射它们的端口到宿主主机上。在前面我们启动`db`容器的时，并没有使用`-p`和`-P`参数，从而避免了暴露数据库端口到外部网络上，增加了容器的安全性。
+
+
+
 ## docker compose
 
 ```shell
