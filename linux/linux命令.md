@@ -302,3 +302,7 @@ mysqldump [OPTIONS] --all-databases [OPTIONS]
   --rsyncable       Make rsync-friendly archive
 
 With no FILE, or when FILE is -, read standard input.
+
+## ldd
+
+ ldd命令可以查看一个可执行程序依赖的共享库 

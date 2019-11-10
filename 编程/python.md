@@ -67,3 +67,11 @@ print(x)
 
  https://foofish.net/python-decorator.html 
 
+
+
+## python命令行
+
+### 命令行参数读取
+
+`sys.argv[x]`
+

