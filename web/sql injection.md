@@ -505,3 +505,10 @@ $ LANGUAGE plpgsql SECURITY DEFINER;
 SELECT temp_function();
 ```
 
+
+
+## xpath注入
+
+ https://www.anquanke.com/post/id/155328 
+
+ https://skysec.top/2018/07/30/ISITDTU-CTF-Web/#Access-Box 

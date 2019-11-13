@@ -306,3 +306,21 @@ With no FILE, or when FILE is -, read standard input.
 ## ldd
 
  ldd命令可以查看一个可执行程序依赖的共享库 
+
+
+
+## alias
+
+ alias cp='cp -i' 
+
+列出目前所有的别名设置:`alias -p`
+
+### alias永久化
+
+ <1>.若要每次登入就自动生效别名，则把别名加在/etc/profile或~/.bashrc中。然后# source ~/.bashrc
+<2>.若要让每一位用户都生效别名，则把别名加在/etc/bashrc最后面，然后# source /etc/bashrc 
+
+### 删除别名 unalias
+
+unalias 'cat'
+

