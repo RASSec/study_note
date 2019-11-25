@@ -29,6 +29,8 @@ __autoload()
 
 ### phar
 
+ https://blog.zsxsoft.com/post/38?from=timeline&isappinstalled=0 
+
 https://paper.seebug.org/680/
 
 #### 原理
@@ -38,7 +40,7 @@ https://paper.seebug.org/680/
 #### phar文件结构
 
 - a **stub**
-  可以理解为一个标志，格式为`xxx<?php xxx; __HALT_COMPILER();?>`，前面内容不限，但必须以`__HALT_COMPILER();?>`来结尾，否则phar扩展将无法识别这个文件为phar文件。
+  可以理解为一个标志，格式为`xxxxxxxxx; __HALT_COMPILER();?>`，前面内容不限，但必须以`__HALT_COMPILER();?>`来结尾，否则phar扩展将无法识别这个文件为phar文件。
 
 - a **manifest** describing the contents
   phar文件本质上是一种压缩文件，其中每个被压缩文件的权限,属性等信息都放在这部分。这部分还会以**序列化**的形式存储用户自定义的meta-data，这是上述攻击手法最核心的地方。
@@ -55,6 +57,20 @@ https://paper.seebug.org/680/
 ```php
 fileatime|filectime|file_exists|file_get_contents|file_put_contents|file|filegroup|fopen|fileinode|filemtime|fileowner|fileperms|is_dir|is_executable|is_file|is_link|is_readable|is_writable|is_writeable|parse_ini_file|copy|unlink|stat|readfile|md5_file|filesize|mime_content_type
 ```
+
+```
+fileatime / filectime / filemtimestat / fileinode / fileowner / filegroup / filepermsfile / file_get_contents / readfile / fopen / file_exists / is_dir / is_executable / is_file / is_link / is_readable / is_writeable / is_writable / parse_ini_file / unlink / copy / include
+
+exif_thumbnail / exif_imagetype / imageloadfont / imagecreatefrom
+hash_hmac_file / hash_file / hash_update_file / md5_file / sha1_file
+
+get_meta_tagsget_headers
+getimagesize / getimagesizefromstring
+
+finfo_file/finfo_buffer/mime_content_type
+```
+
+
 
 #### phar文件生成demo
 
