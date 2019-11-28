@@ -28,6 +28,12 @@ nc=nc1+c2
 
 
 
+ https://bbs.pediy.com/thread-254252.htm 
+
+
+
+ https://github.com/kur0mi/CTF-RSA 
+
 ### 加密原理
 
 #### 名词
@@ -44,10 +50,30 @@ nc=nc1+c2
 
  **素因子**就是素数因子，也就是质数因子，
 
-比如12=3*4=3*2*2
+比如12=`3*4`=`3*2*2`
 3和2是素因子，4就不是素因子。
 
   **gcd** 是求最大公约数
+
+
+
+#### 一些算法知识
+
+##### 欧几里得算法
+
+> 欧几里德算法又称[辗转相除法](https://baike.baidu.com/item/辗转相除法/4625352)，是指用于计算两个[正整数](https://baike.baidu.com/item/正整数/8461335)a，b的[最大公约数](https://baike.baidu.com/item/最大公约数/869308)。应用领域有数学和计算机两个方面。计算公式gcd(a,b) = gcd(b,a mod b)。 
+
+
+
+##### 费马小定理
+
+
+
+![image.png](https://ws1.sinaimg.cn/large/006pWR9aly1g9cvy3oow6j30rp02odg2.jpg)
+
+
+
+
 
 #### 公钥与私钥的产生
 
@@ -64,9 +90,15 @@ nc=nc1+c2
 
 https://ctf-wiki.github.io/ctf-wiki/crypto/asymmetric/rsa/rsa_theory-zh/#_3
 
+![image.png](https://ws1.sinaimg.cn/large/006pWR9aly1g9cuuirl5nj307h01vmwz.jpg)
+
+
+
 #### 消息解密
 
 https://ctf-wiki.github.io/ctf-wiki/crypto/asymmetric/rsa/rsa_theory-zh/#_4
+
+![image.png](https://ws1.sinaimg.cn/large/006pWR9aly1g9cuuq4zttj308f028web.jpg)
 
 
 
@@ -83,6 +115,36 @@ https://ctf-wiki.github.io/ctf-wiki/crypto/asymmetric/rsa/rsa_theory-zh/#_4
 - p - 1 光滑
 - P+1光滑（2017 SECCON very smooth）
 
+
+
+### 常用函数
+
+#### gmpy2
+
+```python
+
+from gmpy2 import *
+gcd(a,b)# 最大公约数
+invert(e, phin)#求模反元素
+iroot(n, e)#对n开e次方,返回一个元组,第一个元素是结果,第二个元素是是否能被正好开方
+powmod(c, d, N)#c的d次方对N的模
+pow(c,d,N)#c的d次方对N的模
+```
+
+
+
+#### Crypto.Util.number
+
+```python
+from Crypto.Util.number import long_to_bytes,bytes_to_long,getPrime,isPrime
+```
+
+
+
+
+
+
+
 #### 攻击方法
 
 - Yafu
@@ -90,6 +152,10 @@ https://ctf-wiki.github.io/ctf-wiki/crypto/asymmetric/rsa/rsa_theory-zh/#_4
 - 费马分解和Pollard_rho分解
 
 https://www.freebuf.com/articles/others-articles/166049.html
+
+
+
+
 
 
 
@@ -249,7 +315,7 @@ for k in range(1000000) :
 
 
 
-####  [http://factordb.com](http://factordb.com/) 
+####  [http://factordb.com](http://factordb.com/)
 
 
 

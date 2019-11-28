@@ -1253,7 +1253,38 @@ mood=O%3A9%3A%22Exception%22%3A4%3A%7Bs%3A10%3A%22%00%2A%00message%22%3BO%3A7%3A
         
   ```
 
+### pwnhubbbb
 
+```python
+
+from flask import Flask
+from flask import render_template,redirect, session, request, url_for, jsonify
+from datetime import timedelta
+import pickle
+import os
+app = Flask(__name__)
+app.config['SECRET_KEY'] = "ROIS"
+app.config['PERMANENT_SESSION_LIFETIME']=timedelta(days=7)
+def index():
+    session["username"] = "ROI*"
+    return render_template('ROIS.html')
+@app.route('/ROIS')
+def ROIS():
+    if session.get("username") != "ROIS":
+        return render_template('ROIS.html')
+    return "flag"
+if __name__ == "__main__":
+    app.run(debug=True,
+        host="0.0.0.0",
+        port=80
+    )
+```
+
+
+
+知道secret_key,自己伪造一个session就ok了
+
+ROIS{pwnhub_nb}
 
 
 

@@ -91,6 +91,18 @@ finfo_file/finfo_buffer/mime_content_type
 ?>
 ```
 
+
+
+### 绕过对phar文件内容的限制
+
+
+
+`phar://phar.phar.gz/test.txt`
+
+`将phar文件压缩后便可以绕过文件限制`
+
+
+
 ## session的序列化引擎配置错误导致的命令执行
 
 ### 利用条件
