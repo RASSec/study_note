@@ -97,7 +97,7 @@ finfo_file/finfo_buffer/mime_content_type
 
 
 
-`phar://phar.phar.gz/test.txt`
+`phar://phar.phar/test.txt`
 
 `将phar文件压缩后便可以绕过文件限制`
 

