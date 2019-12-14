@@ -311,19 +311,22 @@ warning: You appear to have cloned an empty repository.
 设置 HTTP 代理：
 
 ```
-git config --global http.proxy http://127.0.0.1:8118git config --global https.proxy http://127.0.0.1:8118
+git config --global http.proxy http://127.0.0.1:8118
+git config --global https.proxy http://127.0.0.1:8118
 ```
 
 设置 SOCKS5 代理：
 
 ```
-git config --global http.proxy socks5://127.0.0.1:1080git config --global https.proxy socks5://127.0.0.1:1080
+git config --global http.proxy socks5://127.0.0.1:1080
+git config --global https.proxy socks5://127.0.0.1:1080
 ```
 
 Git 取消代理设置：
 
 ```
-git config --global --unset http.proxygit config --global --unset https.proxy
+git config --global --unset http.proxy
+git config --global --unset https.proxy
 ```
 
 ## git的坑
