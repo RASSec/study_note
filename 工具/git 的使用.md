@@ -303,6 +303,29 @@ warning: You appear to have cloned an empty repository.
 
 剩下的推送就简单了。
 
+## git 设置代理
+
+代理格式 `[protocol://][user[:password]@]proxyhost[:port]`
+参考 https://git-scm.com/docs/git-config
+
+设置 HTTP 代理：
+
+```
+git config --global http.proxy http://127.0.0.1:8118git config --global https.proxy http://127.0.0.1:8118
+```
+
+设置 SOCKS5 代理：
+
+```
+git config --global http.proxy socks5://127.0.0.1:1080git config --global https.proxy socks5://127.0.0.1:1080
+```
+
+Git 取消代理设置：
+
+```
+git config --global --unset http.proxygit config --global --unset https.proxy
+```
+
 ## git的坑
 
 1. git问题：fatal：HttpRequestException encountered

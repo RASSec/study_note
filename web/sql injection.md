@@ -194,18 +194,15 @@ EXECUTE sqla;  //执行预定义SQL语句
 ### 杂
 
 -  or <->||
-
-- and <->&&
-
-- 不要忘记 ^
-
+-  and <->&&
+-  不要忘记 ^
 - =<>    <=>    in/between/like
 
   - SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 IN (1)
-
-  - SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 LIKE "1"
-
+- SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 LIKE "1"
   - SELECT 1 WHERE 1 < 10 ó SELECT 1 WHERE 1 BETWEEN (0, 10)
+-   union select 被过滤 => 用union all select 来绕过
+-  
 
 ## 注入语句备忘 
 

