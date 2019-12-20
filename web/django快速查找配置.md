@@ -54,9 +54,7 @@ def get_dict(obj,way="",depth=0):
 
 
 
-放在`site\templatetags`下的文件里
 
-然后`{% l o a d xxxx.py %}{{request|get_dict}}`就能用了
 
 这个是把所有符合条件的都输出,你可以通过修改递归深度和返回条件来加快,不然要等个几分钟
 
