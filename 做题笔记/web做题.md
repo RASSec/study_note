@@ -757,7 +757,34 @@ $phar->stopBuffering();
 
 拿到网站源码
 
+### online tool
 
+```php
+<?php
+
+if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_X_FORWARDED_FOR'];
+}
+
+if(!isset($_GET['host'])) {
+    highlight_file(__FILE__);
+} else {
+    $host = $_GET['host'];
+    $host = escapeshellarg($host);
+    $host = escapeshellcmd($host);
+    $sandbox = md5("glzjin". $_SERVER['REMOTE_ADDR']);
+    echo 'you are in sandbox '.$sandbox;
+    @mkdir($sandbox);
+    chdir($sandbox);
+    echo system("nmap -T5 -sT -Pn --host-timeout 2 -F ".$host);
+}
+```
+
+escapeshellarg+escapeshellcmd组合导致参数注入
+
+但是这题我的思考方向错了,一直想着找个参数命令执行,但是其实找个参数写文件就ok了
+
+还有一个地方,就是我没有认真分析执行过程,一直以大概来进行思考,导致自己的一些思路也没有实现,像利用参数读取文件,文件是读取成功了,但是写到文件里去了,我要傻逼逼的在等页面回显,如果我认真分析一下这题也能找到对的思路
 
 
 
@@ -1195,6 +1222,40 @@ while True:
     print(result)
 
 ```
+
+
+
+### Unicore shop
+
+ https://github.com/hyperreality/ctf-writeups/tree/master/2019-asis 
+
+后端:tornado
+
+```
+<meta charset="utf-8"><!--Ah,really important,seriously. -->
+
+
+```
+
+
+
+
+
+24:`id = self.get_argument('id')`
+
+25:`price = str(self.get_argument('price'))`
+
+34:`unicodedata.numeric(price)`
+
+我们发现第4个商品要1000+而我们只能输入一个字符
+
+通过报错我们看到`unicodedata.numeric(price)`
+
+这个会把unicode的字符转成数字,如果有这么一个字符他代表1000以上的数字时,我们就可以拿到flag,百度一翻后,我们发现还真有,最后拿到flag
+
+
+
+ https://www.compart.com/en/unicode/search?q=thousand#characters 
 
 
 

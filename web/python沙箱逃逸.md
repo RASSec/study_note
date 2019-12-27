@@ -24,3 +24,5 @@
 
 fun=getattr(os,'system')则fun()=system()
 
+
+

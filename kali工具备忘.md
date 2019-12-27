@@ -216,3 +216,15 @@ quite_mode  设置成安静模式：去掉如下参数前面的注释
 -sA
 
 nmap 10.0.1.161 -sA （发送tcp的ack包进行探测，可以探测主机是否存活）
+
+
+
+## fcrackzip
+
+```shell
+fcrackzip -b -c 'aA1!' -l 1-10 -u crack_this.zip 
+```
+
+```
+fcrackzip -b -c '1' -l 1-10 -u crack_this.zip 
+```

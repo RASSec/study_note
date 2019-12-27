@@ -1,5 +1,15 @@
 # vscode
 
+
+
+## 调试
+
+ https://docs.microsoft.com/zh-cn/visualstudio/debugger/?view=vs-2019 
+
+
+
+
+
 ## 快捷键
 
 返回上个浏览位置:`Alt+←`或鼠标上的后退
@@ -17,6 +27,8 @@ launch.json
 `stopOnEntry`
 
 `justMyCode`:只调试自己的代码，默认true
+
+
 
 
 

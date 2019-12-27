@@ -31,7 +31,7 @@ reander_string(s);
 而在jinja2中{{7*'7'}}=>7777777
 
 
- 
+
 
 ### 利用
 
@@ -64,6 +64,16 @@ reander_string(s);
 ## 一些有用的东东
 
 `__dict__和dir()`获得 模块对象名称空间的变量,函数,类等等
+
+### python 魔术方法文档
+
+ https://pyzh.readthedocs.io/en/latest/python-magic-methods-guide.html#id1 
+
+
+
+
+
+
 
 
 
