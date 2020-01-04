@@ -683,3 +683,141 @@ netstat -ntlp   //查看当前所有tcp端口·
 netstat -ntulp |grep 80   //查看所有80端口使用情况·
 netstat -ntulp | grep 3306   //查看所有3306端口使用情况·
 
+
+
+
+
+## proxychains
+
+
+```
+vim /etc/proxychains.conf
+# socks5 127.0.0.1 1080 最后 ProxyList 处更改
+# 格式：type host port [user pass]
+```
+
+
+
+```shell
+\# 单次代理
+proxychains git clone https://github.com/haad/proxychains.git
+
+\# 代理终端上运行的所有程序
+proxychains zsh 
+```
+
+
+
+## ssh
+
+### 功能
+
+远程连接,端口转发,搭建代理服务器
+
+### 选项介绍
+
+
+
+-n 将 stdio 重定向到 /dev/null，与 -f 配合使用
+ -T 不分配 TTY 只做代理用
+ -q 安静模式，不输出 错误/警告 信息
+ -f 后台连接
+ -N 连接后不取得shell
+ -C 启动压缩，加快速度
+ （如不理解参数可以去掉他们看效果）
+ -L 本地转发
+
+-R 远程转发
+
+ -D socks代理
+-g 监听所有地址，允许其他主机连接。 
+
+-p ssh所在端口,默认22
+
+### 远程登陆
+
+#### 基本命令
+
+```shell
+ssh -p 2222 user@host
+```
+
+
+
+#### 免密登陆
+
+1. 用 ssh-keygen 生成密钥, 在$HOME/.ssh/目录下，会新生成两个文件：id_rsa.pub和id_rsa。前者是你的公钥，后者是你的私钥 
+2. 将公钥传输到远程主机 用`ssh-copy-id user@host`, 或者手动将公钥放到` ~/.ssh/id_rsa.pub `下
+3. 重启服务`/etc/init.d/ssh restart`
+
+如果不行,则修改远程主机的 /etc/ssh/sshd_config 
+
+```shell
+　　RSAAuthentication yes
+　　PubkeyAuthentication yes
+　　AuthorizedKeysFile .ssh/authorized_keys
+```
+
+
+
+
+
+### 代理服务器
+
+
+
+假定我们要让8080端口的数据，都通过SSH传向远程主机，命令就这样写：
+
+`ssh -D 8080 user@host`
+
+SSH会建立一个socket，去监听本地的8080端口。一旦有数据传向那个端口，就自动把它转移到SSH连接上面，发往远程主机。
+
+
+
+### 本地端口转发
+
+
+
+```SHELL
+ssh -C -g -L <local port>:<remote host>:<remote port> <SSH hostname>
+ssh -C -g -L 1234:192.168.99.125:3389 root@192.168.99.199
+```
+
+
+
+ 直接访问**本机**开启监听的1234端口，等于通过**远程主机**192.168.99.199来访问**远程主机**192.168.99.125上的3389端口 
+
+
+
+### 远程端口转发
+
+#### 
+
+```shell
+ssh -R <local port>:<remote host>:<remote port> <SSH hostname
+
+ssh -TN  -R 60001:localhost:8888 ccreater@39.108.164.219
+```
+
+直接访问**远程主机**上开启监听的60001端口就相当于通过**本机**来访问localhost(本机)上的8888端口。
+
+需要修改vps上的/etc/ssh/sshd_config文件，启用 VPS sshd 的 `GatewayPorts` 参数，set to `yes` or `clientspecified`，允许任意请求地址，通过转发的端口访问内网机器。
+
+并对外开放端口
+
+```shell
+sudo ufw allow 8899    # 防火墙打开端口，记得打开阿里云官网的防火墙
+```
+
+### ssh保持在线
+
+ssh会话会在空闲一段时间后自动僵死，但是要注意**进程**和**连接**仍在。虽然客户端也可以设置心跳检测，但在服务端设置更方便。
+ 修改/etc/ssh/sshd_config
+
+
+
+```bash
+ClientAliveInterval 30#意思是每个30秒发送一次心跳请求
+ClientAliveCountMax 6#超过6次心跳失败则自动终止连接
+```
+

