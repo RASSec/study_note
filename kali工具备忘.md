@@ -25,15 +25,27 @@
 
 ## metasploit
 
+
+
+
+
+
+
+
+
 在kali 2.0中启动带数据库支持的MSF方式如下：
 #1 首先启动postgresql数据库：/etc/init.d/postgresql start；或者 service postgresql start；
 #2 初始化MSF数据库（关键步骤！）：msfdb init；
 #3 运行msfconsole：msfconsole；
 #4 在msf中查看数据库连接状态：db_status。
 
+### 收藏
+
+ https://xz.aliyun.com/t/2536#toc-5 
+
 ### msfconsole
 
-#### search
+#### 基本命令
 
 使用search命令搜索模块
 
@@ -41,25 +53,13 @@
 
 `search type:exploit platform:linux`
 
-#### show
-
 show options
 
-### module
+info
 
-#### jtr_linux
 
-#### xxxx_version
 
-查看某服务版本
 
-#### \*portscan\*
-
-端口扫描
-
-#### scanner/smb
-
-系统信息扫描
 
 ### msfvenom
 
@@ -135,6 +135,23 @@ Ctrl+c  结束会话
 
 #### 常用命令
 
+
+
+##### 添加路由设置代理
+
+```shell
+run post/multi/manage/autoroute#in session
+use auxiliary/server/socks4a
+set srvhost 127.0.0.1
+exploit -y
+//设置proxychains
+
+```
+
+
+
+##### 杂
+
 ```bash
 meterpreter > background  放回后台
 meterpreter > exit  关闭会话
@@ -193,6 +210,8 @@ quite_mode  设置成安静模式：去掉如下参数前面的注释
 
 ## nmap
 
+
+
 •ICMP扫描：nmap  -sP 192.168.1.100-254
 
 •尝试检测目标操作系统：-O
@@ -217,7 +236,13 @@ quite_mode  设置成安静模式：去掉如下参数前面的注释
 
 nmap 10.0.1.161 -sA （发送tcp的ack包进行探测，可以探测主机是否存活）
 
+### 常见漏洞扫描
 
+`nmap -script=vuln`
+
+### 与proxychains 配合注意
+
+ 由于proxychains无法代理icmp的数据包 所以必须添加-Pn参数 即不检测主机是否存活 直接进行端口tcp扫描 
 
 ## fcrackzip
 
@@ -228,3 +253,11 @@ fcrackzip -b -c 'aA1!' -l 1-10 -u crack_this.zip
 ```
 fcrackzip -b -c '1' -l 1-10 -u crack_this.zip 
 ```
+
+
+
+
+
+## proxychains
+
+ 由于proxychains无法代理icmp的数据包 所以必须添加-Pn参数 即不检测主机是否存活 直接进行端口tcp扫描 

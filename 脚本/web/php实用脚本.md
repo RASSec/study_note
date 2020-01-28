@@ -31,7 +31,7 @@ var_dump($arr);
 ```php
 
 $arr='';
-foreach($i=0;$i<256;$i++)
+for($i=0;$i<256;$i++)
 {
     if(conditioin)
     {
