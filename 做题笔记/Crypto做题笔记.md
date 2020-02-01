@@ -376,7 +376,7 @@ print long_to_bytes(powmod(c, d, n1))
 
 
 
-###### 
+
 
 ### easylfsr
 
@@ -572,8 +572,6 @@ print(dec(res))
 
 
 
-
-##### 
 
 
 
