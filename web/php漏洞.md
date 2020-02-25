@@ -20,6 +20,18 @@
 
 ## 函数利用
 
+
+
+### preg_replace 利用 backtrack_limit绕过
+
+> But we know that PHP has `pcre.backtrack_limit`, and the value of it is `1000000` by default. 
+>
+>When the regex matching backtrack more than `1000000` times, the `preg_match` will return `false` directly.
+
+当字符串长度超过`pcre.backtrack_limit`时,便会直接return false
+
+
+
 ### move_uploaded_file %00截断
 
 1、漏洞影响版本必须在5.4.x<= 5.4.39, 5.5.x<= 5.5.23, 5.6.x <= 5.6.7

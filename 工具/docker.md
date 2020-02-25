@@ -4,6 +4,45 @@
 ## 推荐网站:
 https://yeasy.gitbooks.io/docker_practice/
 
+
+
+## docker配置
+
+### 配置镜像
+
+#### windows  Toolbox  docker
+
+在docker toolbox的命令行中输入以下命令
+
+```shell
+docker-machine ssh [machine-name]
+#(machine-name一般都是default)
+sudo vi /var/lib/boot2docker/profile
+#在--label provider=virtualbox的下一行添加--registry-mirror https://xxxxxxxx.mirror.aliyuncs.com
+sudo /etc/init.d/docker restart
+
+#输入以下命令来查看是否修改成功
+docker-machine env default
+eval "$(docker-machine env default)"
+docker info
+```
+
+
+
+#### windows images存储位置修改
+
+
+
+```shell
+docker info #查看存储位置
+#Docker Root Dir: /mnt/sda1/var/lib/docker
+#由于是放在虚拟机里,我们只需修改,挂载的位置即可
+```
+
+
+
+
+
 ## Docker的简单操作
 ### 安装
 
