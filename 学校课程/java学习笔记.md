@@ -262,5 +262,15 @@ for(type var1 : arr)
 
 
 
+## java一些api介绍
 
+
+
+### 向量 vector
+
+
+
+### 哈希表类
+
+![image-20200304115622514](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200304115622514.png)
 

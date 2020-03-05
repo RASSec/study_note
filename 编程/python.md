@@ -1,5 +1,19 @@
 # python
 
+
+
+## 自定义输出内容颜色
+
+```
+from termcolor import *
+print(colored("Error: this is an error.","red"))
+print(colored("Warning: this is a warning.","yellow"))
+```
+
+
+
+
+
 ## requests 模块 使用代理
 
 requests使用代理要比urllib简单多了…这里以单次代理为例. 多次的话可以用session一类构建.
@@ -368,6 +382,12 @@ if __name__=='__main__':
 ```
 
  对`Pool`对象调用`join()`方法会等待所有子进程执行完毕，调用`join()`之前必须先调用`close()`，调用`close()`之后就不能继续添加新的`Process`了。 
+
+##### 进程间通信
+
+ 使用进程池创建的进程通信，使用Manager().Queue() 
+
+
 
 #### Queue (进程间通信)
 
