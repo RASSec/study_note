@@ -721,6 +721,10 @@ grep -l linuxtechi /etc/passwd /etc/shadow /etc/fstab /etc/mtab
 
 
 
+### -E  扩展的正则表达式 
+
+
+
 ## netstat
 
  netstat命令各个参数说明如下：
@@ -920,3 +924,160 @@ ClientAliveCountMax 6#超过6次心跳失败则自动终止连接
  locate 命令不会对你实际的整个硬盘进行查找，而是在文件的数据库里查找记录。 
 
  Linux 系统一般每天会更新一次文件数据库。因此，只要你隔 24 小时再用 locate 查找，应该就能找到你刚创建的文件了。 我们可以用 updatedb 命令强制系统立即更新文件数据库
+
+
+
+## sort
+
+对文件内容进行排序并输出
+
+### -n 将每一行视作数字进行排序
+
+```shell
+cat number.txt
+1
+12
+23
+123
+222
+412
+sort number.txt
+1
+12
+123
+222
+23
+412
+sort -n number.txt
+1
+12
+23
+123
+222
+412
+```
+
+### -o 将结果输出到文件
+
+
+
+### -r 逆序排序
+
+reverse
+
+
+
+### -R 随机排序
+
+random
+
+## wc命令:文件的统计
+
+ wc 是 word count 的缩写 
+
+```shell
+cat 1.txt
+John
+Paul
+Luc
+Matthew
+Mark
+jude
+Daniel
+Samuel
+Job
+wc 1.txt 
+ 9  9 50 1.txt
+#第一个9代表行数,第二个9代表单词数,第三个数字代表字符数
+```
+
+### 参数介绍
+
+-l:统计行数
+
+-w:统计单词数
+
+-c:统计字节数
+
+-m:统计字符数
+
+## uniq 删除文件中连续的重复内容
+
+如:
+
+```shell
+cat 1.txt
+1
+1
+2
+1
+uniq 1.txt
+1
+2
+1
+```
+
+### -c 参数：统计重复的行数
+
+### -d 参数：只显示重复行的值
+
+
+
+## cut 剪切文件内容
+
+
+
+- -d 参数：d 是 delimiter 的缩写，是英语“分隔符”的意思。用于指定用什么分隔符（比如逗号、分号、双引号等等）。
+- -f 参数：f 是 field 的缩写，是英语“区域”的意思。表示剪切下用分隔符分隔的哪一块或哪几块区域。
+
+
+
+## w命令 都有谁，在做什么？
+
+
+
+```shell
+w
+ 23:51:17 up 20 days,  8:28,  1 user,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+ccreater pts/0    222.77.243.109   23:12    0.00s  0.46s  0.00s w
+#第一行:第一个表示时间,第二个表示电脑运行时间,load average: 0.00, 0.00, 0.00分别代表1 分钟以内的平均负载,5 分钟以内的平均负载,15 分钟以内的平均负载
+#IDLE代表用户有多久没活跃了（没运行任何命令）。idle 是英语“不活跃的，空闲的”的意思。
+#JCPU：该终端所有相关的进程使用的 CPU（处理器）时间。每当进程结束就停止计时，开始新的进程则会重新计时。
+#PCPU：当前进程使用的 CPU（处理器）时间。当前进程就是在 WHAT 列里显示的程序。
+#WHAT：当下用户正运行的程序
+```
+
+## ps 
+
+ps -ef：列出所有进程
+
+ps -efH：以乔木状列出所有进程
+
+ps -u 用户名：列出此用户运行的进程
+
+ps -aux ：通过 CPU 和内存使用来过滤进程
+
+```
+ps -aux | less
+```
+
+默认的结果集是未排好序的，可以通过 --sort 参数来排序。
+
+根据 CPU 使用率来降序排列：
+
+```
+ps -aux --sort -pcpu | less
+```
+
+根据内存使用率来降序排列：
+
+```
+ps -aux --sort -pmem | less
+```
+
+将 CPU 和 内存 参数合并到一起，并通过管道显示前 10 个结果：
+
+```
+ps -aux --sort -pcpu,+pmem | head
+```

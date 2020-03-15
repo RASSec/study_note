@@ -264,13 +264,349 @@ for(type var1 : arr)
 
 ## java一些api介绍
 
+### scaner
 
+```java
+Scanner reader=new Scanner(System.in);　
+      //next.Byte(),nextDouble(),nextFloat,nextInt(),nextLine(),nextLong(),nextShot()　
+
+```
+
+
+
+
+
+### iterator
+
+ ![image-20200315134726937](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315134726937.png)
+
+![image-20200315162656923](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315162656923.png)
+
+
+
+### java集合框架Collection
+
+![image-20200315160006554](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315160006554.png)
+
+![image-20200315160121149](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315160121149.png)
+
+![image-20200315160138753](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315160138753.png)
+
+
+
+![image-20200315160157828](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315160157828.png)
+
+#### 构造函数
+
+![image-20200315160953130](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315160953130.png)
+
+#### 遍历函数
+
+![image-20200315161035116](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161035116.png)
+
+![image-20200315161045216](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161045216.png)
+
+#### 公有方法
+
+
+
+![image-20200315161150355](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161150355.png)
+
+
+
+![image-20200315161310527](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161310527.png)
+
+
+
+### List
+
+![image-20200315161339271](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161339271.png)
+
+![image-20200315161514320](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161514320.png)
+
+
+
+#### listIterator
+
+![image-20200315161533568](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161533568.png)
+
+![image-20200315161556174](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161556174.png)
+
+#### subList
+
+![image-20200315161645440](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161645440.png)
+
+![image-20200315162757479](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315162757479.png)
+
+#### 子类
+
+![image-20200315161707733](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161707733.png)
+
+##### ArrayList
+
+可变大小的List,是由数组实现
+
+![image-20200315161756283](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315161756283.png)
+
+ArrayList 没有同步化
+
+
+
+##### LinkedList
+
+由双向链表实现
+
+![image-20200315162405378](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315162405378.png)
+
+##### Stack
+
+![image-20200315163532693](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315163532693.png)
+
+![image-20200315163541840](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315163541840.png)
+
+
+
+### Arrays
+
+![image-20200315160351304](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315160351304.png)
+
+![image-20200315162913533](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315162913533.png)
 
 ### 向量 vector
+
+vector是同步的
+
+```java
+Vector<String> obj=new Vector<String>();
+```
+
+
+
+```java
+修改元素:
+public E set(int index,E element)
+public void setElementAt(E obj,int index)
+删除元素:
+public void clear()
+public void removeAllElements()
+public E remove(int index);
+public void removeElementAt(int index);
+访问元素:
+public Iterator<E> iterator();
+
+
+```
+
+
+
+![image-20200315163324032](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315163324032.png)
+
+
 
 
 
 ### 哈希表类
 
 ![image-20200304115622514](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200304115622514.png)
+
+
+
+### queue
+
+#### PriorityQueue
+
+![image-20200309100139702](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309100139702.png)
+
+
+
+### set
+
+![image-20200309100209361](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309100209361.png)
+
+
+
+![image-20200309100217729](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309100217729.png)
+
+
+
+#### HashSet
+
+相较于TreeSet,HashSet更快
+
+#### TreeSet
+
+相较于HashSet,TreeSet可以有序的排列元素,一般来说把元素添加到HashSet再把集合转化为TreeSet进行有序遍历更快
+
+
+
+### Map
+
+
+
+![image-20200309100511725](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309100511725.png)
+
+
+
+![image-20200309100523860](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309100523860.png)
+
+
+
+#### Hashtable
+
+Hashtable在多线程间同步
+
+key和value都不能为空
+
+
+
+#### ProPerties
+
+只能操作字符串,保存字符串的键值对,具有持久性(提供方法写入/读入到文件流)
+
+#### HashMap
+
+HashMap与HashTable相似,但是HashMap允许空值/键,且它在多线程间不同步
+
+
+
+#### TreeMap
+
+能够实现有序排列,与HashMap的关系和HashSet和TreeSet关系相似,二者本来也是由HashMap和TreeMap实现的
+
+
+
+## Collections提供的算法
+
+![image-20200309103024807](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309103024807.png)
+
+### Sort
+
+![image-20200309103044540](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200309103044540.png)
+
+
+
+### Collections.reverseOrder()
+
+提供与类相反的排序顺序的Comparator
+
+对集合进行逆序排序
+
+
+
+### Comparator.compare()和Comparable.compareTo()
+
+前者是一种比较器,后者是类中比较的方法,前者数据与比较方法分离,后者数据与比较方法在一起
+
+### binarySearch
+
+在使用前,要调用sort让数组有序
+
+### Shuffle
+
+打乱数组的顺序
+
+
+
+## 泛型
+
+
+
+### 类型参数的定义格式
+
+
+
+![image-20200315154632585](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315154632585.png)
+
+
+
+### 泛型方法
+
+```java
+public static < E > void printArray(E[] inputArray)
+{
+    for(E element:inputArray)
+        System.out.printf("%s\n",element);
+}
+```
+
+![image-20200315135737917](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315135737917.png)
+
+![image-20200315140109196](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315140109196.png)
+
+
+
+
+
+### 泛型接口
+
+
+
+![image-20200315154506866](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315154506866.png)
+
+
+
+![image-20200315151807957](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315151807957.png)
+
+![image-20200315151930013](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315151930013.png)
+
+![image-20200315152040361](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315152040361.png)
+
+
+
+### 泛型类
+
+
+
+![image-20200315154455864](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315154455864.png)
+
+
+
+![image-20200315152351094](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315152351094.png)
+
+![image-20200315152518836](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315152518836.png)
+
+
+
+### 通配符型实参
+
+![image-20200315153901042](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315153901042.png)
+
+## 枚举
+
+![image-20200315154912022](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315154912022.png)
+
+![image-20200315155211129](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200315155211129.png)
+
+ ```java
+// 定义一个星期的枚举类
+public enum WeekEnum {
+    
+    // 因为已经定义了带参数的构造器，所以在列出枚举值时必须传入对应的参数
+    SUNDAY("星期日"), MONDAY("星期一"), TUESDAY("星期二"), WEDNESDAY("星期三"), 
+    THURSDAY("星期四"), FRIDAY("星期五"), SATURDAY("星期六");
+
+    // 定义一个 private 修饰的实例变量
+    private String date;
+
+    // 定义一个带参数的构造器，枚举类的构造器只能使用 private 修饰
+    private WeekEnum(String date) {
+        this.date = date;
+    }
+    
+    // 定义 get set 方法
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+    
+    // 重写 toString() 方法
+    @Override
+    public String toString(){
+        return date;
+    }
+}
+ ```
 
