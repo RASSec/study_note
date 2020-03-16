@@ -50,3 +50,152 @@ lsb_release -a
 - tmp：英语 temporary 的缩写，表示“临时的”。普通用户和程序存放临时文件的地方；
 - usr：英语 Unix Software Resource 的缩写，表示“Unix 操作系统软件资源”（也是个历史遗留的命名）。这个目录是最庞大的目录之一。有点类似 Windows 中的 C:\Windows 和 C:\Program Files 这两个文件夹的集合。在这里面安装了大部分用户要调用的程序；
 - var：英语 variable 的缩写，表示“动态的，可变的”。通常包含程序的数据，比如一些 log（日志）文件，记录电脑中发生了什么事。
+
+
+
+## 用screen来分屏
+
+```shell
+#启动
+screen
+#screen中的一切功能都需要在按下Ctrl-a之后,才有用,这里严格区分大小写
+? 显示帮助#如这里就需要按下Ctrl-a之后,在按下问好
+
+```
+
+### 常用的组合按键
+
+```
+Ctrl + a，松开，再按 c ：创建一个新的虚拟终端。
+Ctrl + a，松开，再按 w ：显示当前虚拟终端的列表。
+此处的 0$ bash 1-$ bash 2*$ bash 表示此时打开了 3 个虚拟终端，都叫作 bash，编号是 0，1，2。这是因为目前终端的 Shell 是用的 Bash，之后我们第五部分会开始学习 Shell（外壳程序）。
+
+有 *（星号）的那个虚拟终端就是我们目前所在的虚拟终端，也就是第 3 个，编号是 2。
+
+Ctrl + a，松开，再按 A ：重命名当前虚拟终端。修改后的名字，你用 Ctrl + a，松开，再按 w 时就会看到。
+
+Ctrl + a，松开，再按 n ：跳转到下一个虚拟终端。
+
+Ctrl + a，松开，再按 p ：跳转到上一个虚拟终端。
+
+Ctrl + a，松开，再按 Ctrl + a ：跳转到最近刚使用的那个虚拟终端。
+
+Ctrl + a，松开，再按 0 ~ 9 数字键：跳转到第 0 ~ 9 号虚拟终端。
+
+Ctrl + a，松开，再按 "（双引号）：会让你选择跳转到哪个虚拟终端。
+
+Ctrl + a，松开，再按 k ：关闭当前终端。
+```
+
+
+
+### 分隔屏幕
+
+#### 水平切割
+
+```
+Ctrl + a，松开，再按 S ,上下分隔屏幕
+注意是大写的 S（是英语 split 的首字母，表示“分割，分离”）。如果这样操作一次，则当前虚拟终端被横向分割为上下两部分。如下图所示：
+```
+
+#### 竖直切割
+
+
+
+```
+Ctrl + a，松开，再按 | ,上下分隔屏幕
+```
+
+
+
+
+
+#### 关闭切割出来的窗口
+
+```
+只要 Ctrl + a，松开，再按大写的 X
+```
+
+### 终端和screen分离
+
+```
+Ctrl + a，松开，再按 d：分离 screen
+可以看到 [detached from 2249.pts-0.oscar-laptop]
+
+表示我们的 screen 与实际终端分离（detach 是英语“分离，挣脱”的意思）了。
+
+之后如果你要重回 screen 中，可以输入：
+screen -r
+就又回到刚才的 screen 的虚拟终端里了。
+```
+
+
+
+## ssh
+
+### 安装
+
+```
+apt install openssh-client
+apt install openssh-server
+```
+
+
+
+### 免密登陆
+
+```
+ssh-keygen#生成public key (本机运行)
+ssh-copy-id user@host
+```
+
+
+
+编辑 /etc/ssh/sshd_config 
+
+```
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+```
+
+
+
+## rsync 增量备份
+
+### 备份到同一台电脑
+
+```
+rsync -arv Images/ backups/
+```
+
+
+
+以上命令，将 Images 目录下的所有文件备份到 backups 目录下。
+
+-arv 参数分别表示：
+
+- -a：保留文件的所有信息，包括权限、修改日期等等。a 是 archive 的缩写，是“归档”的意思；
+- -r：递归调用，表示子目录的所有文件也都包括。r 是 recursive 的缩写，是“递归的”的意思；
+- -v：冗余模式，输出详细操作信息。v 是 verbose 的缩写，是“冗余的”的意思。
+
+### 删除文件
+
+默认地，rsync 在同步时并不会删除目标目录的文件。例如你的源目录（被同步目录）中删除了一个文件，但是用 rsync 同步时，它并不会删除同步目录中的相同文件。
+
+如果要使 rsync 也同步删除操作。那么可以这么做：
+
+```
+rsync -arv --delete Images/ backups/
+```
+
+加上 --delete 参数就可以了。delete 是英语“删除”的意思。
+
+### 备份到另一台电脑的目录
+
+例如：
+
+```
+rsync -arv --delete Images/ oscar@89.231.45.67:backups/
+```
+
