@@ -57,6 +57,10 @@ echo "install success"
 
 ```
 
+
+
+将Dockerfile放在awvs同级目录下,打开命令行移动到Dockerfile所在文件夹,`docker build -t awvs .`
+
 用Dockerfile创建镜像后,用` docker run --privileged=true -p 443:3443-it -d awvs "/sbin/init" `来创建容器
 
 接着等待一会就可以运行了,在改一下本机的hosts,美滋滋,记得是用https去访问
