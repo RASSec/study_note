@@ -28,7 +28,7 @@
 
 听说vultr销毁服务器,再重新购买会有新的ip,但是我这样弄还是同一个被ban掉的ip,后来小脑瓜一动,我一口气开了10个服务器,这样ip就不一样了,我真tm机智/cy
 
-
+具体怎么选购就百度谷歌吧
 
 ### 国外vps配置
 
@@ -50,6 +50,8 @@
 视频教程: https://www.youtube.com/watch?v=LgZKirXKZms&feature=youtu.be 
 
 ### 中转服务器配置
+
+中转服务器去买共享端口+docker虚拟机的那种,一个月5元左右吧,出口最好联通
 
 xxx.sh
 
@@ -127,7 +129,7 @@ start /b trojan.exe
 
 
 
-通过 https://fast.com/  来测速 稳定10Mbits
+通过 https://fast.com/  来测速 稳定10Mbits(联通),5Mbits(电信平时),500Kbits(电信夜间,丢包率贼高,体验极差),稳定1Mbits(走中转服务器路线,因为我专门拿来中转的服务器还没买,暂时直接用阿里云的服务器来中转,但是阿里云服务器也在电信机房)
 
 利用BEST TRACE来看vps的线路
 
