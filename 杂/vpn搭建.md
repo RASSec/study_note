@@ -58,12 +58,16 @@ xxx.sh
 ```shell
 #!/bin/bash
 if [ ! $# -eq 3 ];then
-	echo -e "Usage : $0 natport trojanserver trojanport"
+    echo -e "Usage : $0 natport trojanserver trojanport"
+    exit
 fi
+natport=$1
+trojanserver=$2
+trojanport=$3
 apt-get install iptables || yum install iptables
 iptables -t nat -A PREROUTING -p tcp --dport $natport  -j DNAT --to-destination "$trojanserver:$trojanport"
 iptables -t nat -A POSTROUTING -d $trojanserver -p tcp --dport $trojanport -j MASQUERADE
-iptables -I FORWARD -d $trojanserver -p tcp --dport  $trojanport -j ACCEPT 
+iptables -I FORWARD -d $trojanserver -p tcp --dport  $trojanport -j ACCEPT
 iptables -I FORWARD -s $trojanserver  -p tcp --sport  $trojanport -j ACCEPT
 service iptables save
 service iptables restart
@@ -129,7 +133,7 @@ start /b trojan.exe
 
 
 
-通过 https://fast.com/  来测速 稳定10Mbits(联通),5Mbits(电信平时),500Kbits(电信夜间,丢包率贼高,体验极差),稳定1Mbits(走中转服务器路线,因为我专门拿来中转的服务器还没买,暂时直接用阿里云的服务器来中转,但是阿里云服务器也在电信机房)
+通过 https://fast.com/  来测速 稳定10Mbits(联通),5Mbits(电信平时),500Kbits(电信夜间,丢包率贼高,体验极差),稳定1Mbits(走中转服务器路线,因为我专门拿来中转的服务器还没买,暂时直接用阿里云的服务器来中转,但是阿里云服务器也在电信机房),去买了个中转的服务器现在夜间电信稳定5Mbits
 
 利用BEST TRACE来看vps的线路
 
