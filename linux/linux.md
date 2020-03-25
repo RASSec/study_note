@@ -131,6 +131,22 @@ screen -r
 
 
 
+### 恢复对话
+
+网络突然中断,screen是不是结束会话的
+
+我们可以用如下命令来恢复
+
+```shell
+screen -x
+screen -ls
+screen -r xxxx
+```
+
+
+
+
+
 ## ssh
 
 ### 安装

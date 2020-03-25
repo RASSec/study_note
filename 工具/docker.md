@@ -39,6 +39,19 @@ docker info #查看存储位置
 #由于是放在虚拟机里,我们只需修改,挂载的位置即可
 ```
 
+#### linux
+
+```
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://etiz1c4o.mirror.aliyuncs.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
 
 
 
@@ -198,9 +211,25 @@ CMD     /usr/sbin/sshd -D
 	- docker build -t runoob/centos:6.7 .
 
 		- 参数说明：
-
-			- -t ：指定要创建的目标镜像名
+		- -t ：指定要创建的目标镜像名
 			- . ：Dockerfile 文件所在目录，可以指定Dockerfile 的绝对路径
+
+### 将容器commit未镜像
+
+```
+docker commit [选项] <容器ID或容器名> [<仓库名>[:<标签>]]
+docker commit \
+    --author "Tao Wang <twang2218@gmail.com>" \
+    --message "修改了默认网页" \
+    webserver \
+    nginx:v2
+```
+
+
+
+
+
+
 
 
 ## 运行一个web应用
@@ -407,3 +436,6 @@ CMD ["sh", "/startup.sh"]
 ### mysql
 
  https://itbilu.com/linux/docker/EyP7QP86M.html 
+
+
+

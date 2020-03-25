@@ -8,39 +8,73 @@
 
 “#!” 是一个约定的标记，它告诉系统这个脚本需要什么解释器来执行，即使用哪一种Shell
 
+
+
+
+
+## 调试
+
+```shell
+bash -x test.sh
+```
+
+ Shell 就会把我们的脚本文件运行时的细节打印出来了，在出现错误时可以帮助我们排查问题所在。 
+
+
+
 ## 变量
 
-- 定义变量
 
-```
-author="严长生"
+
+### 定义变量
+
+```shell
+author="严长生"#等号两边不能有空格
 echo $author
 echo ${author}
 ```
 
 推荐给所有变量加上花括号`{ }`，这是个良好的编程习惯。
 
-- 修改变量的值
+### 修改变量的值
 
 第二次对变量赋值时不能在变量名前加`$`，只有在使用变量时才能加`$`。
 
-- 单引号和双引号的区别
+### 单引号和双引号的区别
 
-  以单引号`' '`包围变量的值时，单引号里面是什么就输出什么，即使内容中有变量和命令（命令需要反引起来）也会把它们原样输出。这种方式比较适合定义显示纯字符串的情况，即不希望解析变量、命令等的场景。
+以单引号`' '`包围变量的值时，单引号里面是什么就输出什么，即使内容中有变量和命令（命令需要反引起来）也会把它们原样输出。这种方式比较适合定义显示纯字符串的情况，即不希望解析变量、命令等的场景。如果要让单引号解析`\n\'`之类的则需要在`'前加一个$`,如
+
+```shell
+#!/bin/bash
+test=$'fuckyou\nhahahha'
+echo $test
+test='fuckyou\nhahahah'
+echo $test
+
+result:
+fuckyou hahahha
+fuckyou\nhahahah
+```
+
+
+
+
+
+
 
 以双引号" "包围变量的值时，输出时会先解析里面的变量和命令，而不是把双引号中的变量名和命令原样输出。这种方式比较适合字符串中附带有变量和命令并且想将其解析后再输出的变量定义。  
 
--  将命令的结果赋值给变量
+### 将命令的结果赋值给变量
 
 Shell 也支持将命令的执行结果赋值给变量，常见的有以下两种方式：
 
 variable=`command`
 variable=$(command)
 
-- 只读变量
+只读变量
   使用 **readonly** 命令可以将变量定义为只读变量，只读变量的值不能被改变。
 
-- 删除变量
+### 删除变量
 
 ```
 unset variable_name
@@ -48,29 +82,44 @@ unset variable_name
 
 变量被删除后不能再次使用；unset 命令不能删除只读变量。
 
-- 特殊变量列表特殊变量列表
-  | 变量 | 含义 |
-  | ---- | ---- |
-  | $0     |当前脚本的文件名 |
-  | $n | 传递给脚本或函数的参数。n 是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是$2。 |
-  | $# | 传递给脚本或函数的参数个数。|
-  |  $\* | 传递给脚本或函数的所有参数。|
-  | $@ |  传递给脚本或函数的所有参数。被双引号(" ")包含时，与 $\* 稍有不同，下面将会讲到。|
-  | $? |上个命令的退出状态，或函数的返回值。 |
-  | $$ | 当前Shell进程ID。对于 Shell 脚本，就是这些脚本所在的进程ID。 |
+### 特殊变量列表特殊变量列表
 
-- 命令行参数
+| 变量 | 含义 |
+| ---- | ---- |
+| $0     |当前脚本的文件名 |
+| $n | 传递给脚本或函数的参数。n 是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是$2。 |
+| $# | 传递给脚本或函数的参数个数。|
+|  $\* | 传递给脚本或函数的所有参数。|
+| $@ |  传递给脚本或函数的所有参数。被双引号(" ")包含时，与 $\* 稍有不同，下面将会讲到。|
+| $? |上个命令的退出状态，或函数的返回值。 |
+| $$ | 当前Shell进程ID。对于 Shell 脚本，就是这些脚本所在的进程ID。 |
 
-运行脚本时传递给脚本的参数称为命令行参数。命令行参数用 $n 表示，例如，$1 表示第一个参数，$2 表示第二个参数，依次类推。
+### 命令行参数
 
-- $* 和 $@ 的区别
+`运行脚本时传递给脚本的参数称为命令行参数。命令行参数用 $n 表示，例如，$1 表示第一个参数，$2 表示第二个参数，依次类推。`
 
-  $* 和 $@ 都表示传递给函数或脚本的所有参数，不被双引号(" ")包含时，都以"$1" "$2" … "$n" 的形式输出所有参数。
+- `$* 和 $@ 的区别`
 
-但是当它们被双引号(" ")包含时，"$*" 会将所有的参数作为一个整体，以"$1 $2 … $n"的形式输出所有参数；"$@" 会将各个参数分开，以"$1" "$2" … "$n" 的形式输出所有参数。
+  `$* 和 $@ 都表示传递给函数或脚本的所有参数，不被双引号(" ")包含时，都以"$1" "$2" … "$n" 的形式输出所有参数。`
+
+`但是当它们被双引号(" ")包含时，"$*" 会将所有的参数作为一个整体，以"$1 $2 … $n"的形式输出所有参数；"$@" 会将各个参数分开，以"$1" "$2" … "$n" 的形式输出所有参数`。
 
 
-- 命令替换
+
+```shell
+#!/bin/bash
+
+echo "The first parameter is $1"
+shift
+echo "The first parameter is now $1"
+#可以看到，在调用 shift 命令后，$1 对应了第二个参数，$2 对应了第三个参数，以此类推。
+```
+
+
+
+
+
+### 命令替换
 
 命令替换的语法：
 
@@ -78,7 +127,7 @@ unset variable_name
 `command`
 ```
 
-- 变量替换
+### 变量替换
 
 可以使用的变量替换形式：
 | 形式 | 说明 |
@@ -89,7 +138,7 @@ unset variable_name
 | ${var:?message} | 如果变量 var 为空或已被删除(unset)，那么将消息 message 送到标准错误输出，可以用来检测变量 var 是否可以被正常赋值。若此替换出现在Shell脚本中，那么脚本将停止运行。 |
 | ${var:+word} | 如果变量 var 被定义，那么返回 word，但不改变 var 的值。 |
 
-- 关系运算符
+### 关系运算符
 
 关系运算符只支持数字，不支持字符串，除非字符串的值是数字。
 
@@ -142,6 +191,80 @@ unset variable_name
 
 sh里没有多行注释，只能每一行加一个#号。
 
+### 读取输入到变量
+
+```shell
+read input
+echo $input
+read firstname lastname
+echo "Hello $firstname $lastname !"
+
+read -p 'Please enter your name : ' name
+echo "Hello $name !"
+```
+
+#### 提示 -p
+
+`read -p 'Please enter your name : ' name`
+
+#### 限制字数 -n
+
+`read -p 'Please enter your name (5 characters max) : ' -n 5 name`
+
+#### 限制输入时间 -t
+
+`read -p 'Please enter the code to defuse the bomb (you have 5 seconds) : ' -t 5 code
+echo -e "\nBoom !"`
+
+
+
+#### 隐藏输入内容 -s
+
+
+
+```
+用 -s 参数，我们可以隐藏输入内容。一般用不到，但是如果你想要用户输入的是一个密码，那 -s 参数还是有用的。
+
+s 是 secret 的首字母，表示“秘密”。
+```
+
+
+
+### 数学运算
+
+```shell
+#!/bin/bash
+
+let "a = 5"
+let "b = 2"
+let "c = a + b"
+
+echo "c = $c"
+```
+
+| 运算                 | 符号 |
+| :------------------- | :--- |
+| 加法                 | +    |
+| 减法                 | -    |
+| 乘法                 | *    |
+| 除法                 | /    |
+| 幂（乘方）           | **   |
+| 余（整数除法的余数） | %    |
+
+
+
+> 我们只学习了整数的运算，如果你要做带小数的运算，那么需要用到 bc 命令，可以自己去查阅 ，可以用`man bc`。 
+
+
+
+### 环境变量
+
+
+
+
+
+
+
 ## Shell字符串
 
 字符串是shell编程中最常用最有用的数据类型（除了数字和字符串，也没啥其它类型好用了），字符串可以用单引号，也可以用双引号，也可以不用引号。单双引号的区别跟PHP类似。
@@ -162,7 +285,7 @@ sh里没有多行注释，只能每一行加一个#号。
 >- 双引号里可以有变量
 >- 双引号里可以出现转义字符
 
-- 拼接字符串
+### 拼接字符串
 
 ```shell
    your_name="cjb"
@@ -171,25 +294,59 @@ sh里没有多行注释，只能每一行加一个#号。
    echo $greeting $greeting_l
 ```
 
-- 获取字符串长度
+### 获取字符串长度
 
 ```bash
 string="abcd"
 echo ${#string} #输出 4
 ```
 
-- 提取子字符串
+### 提取子字符串
 
 ```bash
 string="alibaba is a great company"
 echo ${string:1:4} #输出liba
 ```
 
-- 查找子字符串
+### 查找子字符串
 
 ```bash
 
 ```
+
+
+
+### 字符串替换
+
+```shell
+a=test
+echo ${a//t/T}#TesT
+echo ${a/t/T}#Test
+#前者替换所有匹配到的字符串
+#后者替换第一个匹配到的字符串
+
+```
+
+
+
+### 大小写转化
+
+```shell
+#!/bin/bash
+var="Hello,Word"
+# 把变量中的第一个字符换成大写 
+echo ${var^} 
+# 把变量中的所有小写字母，全部替换为大写
+echo ${var^^}   
+# 把变量中的第一个字符换成小写
+echo ${var,}
+# 把变量中的所有大写字母，全部替换为小写
+echo ${var,,}
+```
+
+
+
+
 
 ## Shell数组：shell数组的定义、数组长度
 
@@ -205,8 +362,29 @@ echo ${string:1:4} #输出liba
   
 
 ```
-# 取得数组元素的个数length=${#array_name[@]}# 或者length=${#array_name[*]}# 取得数组单个元素的长度lengthn=${#array_name[n]}
+# 取得数组元素的个数
+length=${#array_name[@]}# 或者length=${#array_name[*]}
+# 取得数组单个元素的长度
+lengthn=${#array_name[n]}
+但是当它们被双引号(" ")包含时，"${arr[*]}" 会将所有的参数作为一个整体，以"$1 $2 … $n"的形式输出所有参数；"${arr[@]}" 会将各个参数分开，以"$1" "$2" … "$n" 的形式输出所有参数
 ```
+
+
+
+- 获取数组下标数组:
+
+```shell
+
+for i in "${!arr[@]}"; 
+do 
+    printf "%s\t%s\n" "$i" "${arr[$i]}"
+done
+
+```
+
+
+
+
 
 ## shell printf命令：格式化输出语句
 
@@ -232,11 +410,15 @@ printf  format-string  [arguments...]
 
 - if 和方括号之间要有空格
 
-- $a == $b 之间也要有空格
+- `$a == $b` 之间也要有空格
 
 - 要让字符串为空返回假,非空进行比较用
 
-123;a=\`ls\`;b="~";if [ "${a:3:1}"x == "$b"x ]; then sleep 5 ;fi;
+```
+123;a=`ls`;b="~";if [ "${a:3:1}"x == "$b"x ]; then sleep 5 ;fi;
+```
+
+
 
 
 
@@ -254,8 +436,7 @@ fi
 ```
 
 ```bash
-if [ expression ]
-then
+if [ expression ];then
    Statement(s) to be executed if expression is true
 else
    Statement(s) to be executed if expression is not true
@@ -277,6 +458,27 @@ else
 fi
 ```
 
+### `&&,!和||`
+
+```shell
+#!/bin/bash
+
+if [ $# -ge 1 ] && [ $1 = 'love' ]
+then
+    echo "Great !"
+    echo "You know the password"
+else
+    echo "You do not know the password"
+fi
+if [ ! 1 -eq 1 ];then 
+	echo never sucess
+fi
+```
+
+
+
+
+
 ## Shell test命令
 
 Shell中的 test 命令用于检查某个条件是否成立，它可以进行数值、字符和文件三个方面的测试。
@@ -292,25 +494,42 @@ Shell中的 test 命令用于检查某个条件是否成立，它可以进行数
 | -lt  | 小于则为真     |
 | -le  | 小于等于则为真 |
 
+
+
+```shell
+if [ $num -eq 100 ];then                                                                             ➜ 
+	echo your guess is right                                                                     
+else                                                                                                 
+	echo your guess is wrong                                   
+fi  
+```
+
+
+
+
+
 - 文件测试
 
-| 参数      | 说明                                 |
-| --------- | ------------------------------------ |
-| -e 文件名 | 如果文件存在则为真                   |
-| -r 文件名 | 如果文件存在且可读则为真             |
-| -w 文件名 | 如果文件存在且可写则为真             |
-| -x 文件名 | 如果文件存在且可执行则为真           |
-| -s 文件名 | 如果文件存在且至少有一个字符则为真   |
-| -d 文件名 | 如果文件存在且为目录则为真           |
-| -f 文件名 | 如果文件存在且为普通文件则为真       |
-| -c 文件名 | 如果文件存在且为字符型特殊文件则为真 |
-| -b 文件名 | 如果文件存在且为块特殊文件则为真     |
+| 参数                | 说明                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| -e 文件名           | 如果文件存在则为真                                           |
+| -r 文件名           | 如果文件存在且可读则为真                                     |
+| -w 文件名           | 如果文件存在且可写则为真                                     |
+| -x 文件名           | 如果文件存在且可执行则为真                                   |
+| -s 文件名           | 如果文件存在且至少有一个字符则为真                           |
+| -d 文件名           | 如果文件存在且为目录则为真                                   |
+| -f 文件名           | 如果文件存在且为普通文件则为真                               |
+| -c 文件名           | 如果文件存在且为字符型特殊文件则为真                         |
+| -b 文件名           | 如果文件存在且为块特殊文件则为真                             |
+| -L $file            | 文件是否是一个符号链接文件。L 是 link 的首字母，表示“链接”。 |
+| `$file1 -nt $file2` | 文件 file1 是否比 file2 更新。nt 是 newer than 的缩写，表示“更新的”。 |
+| `$file1 -ot $file2` | 文件 file1 是否比 file2 更旧。ot 是 older than 的缩写，表示“更旧的”。 |
 
 - 字符串测试
 
 | 参数      | 说明                 |
 | --------- | -------------------- |
-| =         | 等于则为真           |
+| =/==      | 等于则为真           |
 | !=        | 不相等则为真         |
 | -z 字符串 | 字符串长度伪则为真   |
 | -n 字符串 | 字符串长度不伪则为真 |
@@ -339,6 +558,26 @@ case 值 in
 esac
 ```
 
+
+
+```shell
+#!/bin/bash
+
+case $1 in
+    "dog" | "cat" | "pig")
+        echo "It is a mammal"
+        ;;
+    "pigeon" | "swallow")
+        echo "It is a bird"
+        ;;
+    *)
+        echo "I do not know what it is"
+        ;;
+esac
+```
+
+
+
 ## 循环
 
 for循环一般格式为：
@@ -353,10 +592,49 @@ do
 done
 ```
 
+
+
+```shell
+#!/bin/bash
+
+for animal in 'dog' 'cat' 'pig'
+do
+    echo "Animal being analyzed : $animal" 
+done
+listfile=`ls`
+
+for file in $listfile
+do
+    echo "File found : $file" 
+done
+
+for var in ${arr[@]};
+do
+    echo $var
+done
+ 
+遍历（带数组下标）：
+for i in "${!arr[@]}"; 
+do 
+    printf "%s\t%s\n" "$i" "${arr[$i]}"
+done
+ 
+遍历（While循环法）：
+i=0
+while [ $i -lt ${#array[@]} ]
+do
+    echo ${ array[$i] }
+    let i++
+done
+
+```
+
+
+
 while循环用于不断执行一系列命令，也用于从输入文件中读取数据；命令通常为测试条件。其格式为：
 
 ```
-while command
+while [ 条件测试 ]
 do
    Statement(s) to be executed if command is true
 done
@@ -367,13 +645,35 @@ until 循环格式为：
 until 循环执行一系列命令直至条件为 true 时停止。until 循环与 while 循环在处理方式上刚好相反。一般while循环优于until循环，但在某些时候，也只是极少数情况下，until 循环更加有用。
 
 ```
-until command
+until [ 条件测试 ]
 do
    Statement(s) to be executed until command is true
 done
 ```
 
 - break,continue
+
+
+
+### seq
+
+```shell
+seq 1 4
+1
+2
+3
+4
+seq 1 2 4
+1
+3
+for i in `seq 1 4`;do
+	echo test
+done
+```
+
+
+
+
 
 ## 函数
 
@@ -389,7 +689,7 @@ function_name () {
 如果你愿意，也可以在函数名前加上关键字 function：
 
 ```
-function function_name () {
+function function_name {
     list of commands
     [ return value ]
 }
@@ -400,10 +700,10 @@ function function_name () {
 像删除变量一样，删除函数也可以使用 unset 命令，不过要加上 .f 选项，如下所示：
 
 ```
-$unset .f function_name
+unset .f function_name
 ```
 
-在Shell中，调用函数时可以向其传递参数。在函数体内部，通过 $n 的形式来获取参数的值，例如，$1表示第一个参数，$2表示第二个参数...
+在Shell中，调用函数时可以向其传递参数。在函数体内部，通过 `$n `的形式来获取参数的值，例如，`$1`表示第一个参数，`$2`表示第二个参数...
 带参数的函数示例：运行脚本：
 
 
@@ -424,6 +724,49 @@ funWithParam(){
 | $@       | 与$*相同，但是略有区别，请查看[Shell特殊变量](http://c.biancheng.net/cpp/view/2739.html)。 |
 | $?       | 函数的返回值。                                               |
 
+
+
+### 局部变量和全局变量
+
+```shell
+var=123
+fun_local_var(){
+	local var=456
+	echo "var in function:$var"
+}
+fun_local_var
+echo "var in outside:$var"
+fun_var(){
+	var=456
+	echo "var in function:$var"
+}
+echo "var in outside:$var"
+#var in function:456
+#var in outside:123
+#var in function:456
+#var in outside:456 
+```
+
+
+
+### 当函数与命令同名时,利用command来调用命令
+
+```shell
+#!/bin/bash
+
+ls () {
+    command ls -lh
+}
+
+ls
+```
+
+
+
+
+
+
+
 ## 重定向
 
 | 命令            | 说明                                               |
@@ -442,7 +785,9 @@ funWithParam(){
 Here Document 目前没有统一的翻译，这里暂译为”嵌入文档“。Here Document 是 Shell 中的一种特殊的重定向方式，它的基本的形式如下：
 
 ```
-command << delimiter    documentdelimiter
+command << delimiter
+document
+delimiter
 ```
 
 它的作用是将两个 delimiter 之间的内容(document) 作为输入传递给 command。
@@ -506,3 +851,8 @@ source filename
 ## <<< : Here string
 
 您可以为程序提供预先制作的文本字符串，而不是键入文本。例如，使用bc这样的程序我们可以做bc <<< 5 * 4来获得该特定情况的输出，不需要以交互方式运行bc。
+
+
+
+
+
