@@ -22,6 +22,16 @@
 
 
 
+### 利用filter_var来命令执行
+
+```php
+filter_var('dir', 1024, array("options"=>"system"));
+```
+
+
+
+
+
 ### preg_replace 利用 backtrack_limit绕过
 
 > But we know that PHP has `pcre.backtrack_limit`, and the value of it is `1000000` by default. 

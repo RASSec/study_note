@@ -108,6 +108,14 @@ JWT支持使用空加密算法，可以在header中指定alg为`None`
 
 
 
+```python
+import jwt
+
+encoded_jwt = jwt.encode({'user_name': 'admin'}, 'key', algorithm='HS256')
+print(encoded_jwt)
+print(jwt.decode(encoded_jwt, 'key', algorithms=['HS256']))
+```
+
 
 
 #### 修改RSA加密算法为HMAC

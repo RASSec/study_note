@@ -1,5 +1,9 @@
 # xss
 
+## 新
+
+ https://portswigger.net/research/detecting-and-exploiting-path-relative-stylesheet-import-prssi-vulnerabilities 
+
 ## 推荐网站
 
 https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet 

