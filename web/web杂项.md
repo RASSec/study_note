@@ -20,6 +20,8 @@
 
  Referer: www.google.com
 
+x-real-ip: 127.0.0.1
+
 ## 杂
 
 ### 使用别的端口访问

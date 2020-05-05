@@ -139,7 +139,7 @@ HSET user:1000 password "s3cret"
  ### 8. info
 
     查看服务器信息
- ### 9. select index
+### 9. select index
 
     切换数据库
  ### 10. flushdb
