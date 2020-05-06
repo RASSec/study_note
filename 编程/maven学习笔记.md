@@ -156,7 +156,7 @@ Maven 提倡使用一个共同的标准目录结构，Maven 使用约定优于�
   <plugin>
    <groupId>org.codehaus.mojo</groupId>
    <artifactId>exec-maven-plugin</artifactId>
-   <version>1.1.1</version>
+   <version>1.6.0</version>
    <executions>
     <execution>
      <phase>test</phase>

