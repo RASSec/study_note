@@ -96,6 +96,23 @@ console.log(zoo.bar)
 
 
 
+## 记录
+
+```javascript
+> ({}).__proto__.fucker="a"
+'a'
+> b={1:2}
+{ '1': 2 }
+> for (let index in b){console.log(index);}
+1
+fucker
+undefined
+```
+
+
+
+
+
 ## 例题
 
 题目代码

@@ -20,6 +20,13 @@
 
 
 
+## 添加模块
+
+将ruby文件放到`~/.msf4/modules/exploits/cgi/webapps`下
+在msfconsole中输入:`reload_all` 
+
+
+
 ## 配置
 
 ###  **PostgreSQL** 

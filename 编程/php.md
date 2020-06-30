@@ -99,3 +99,41 @@ foreach ($classes as $class) {
 } 
 ```
 
+
+
+## xdebug配置
+
+```
+[xdebug]
+zend_extension = D:\phpStudy\PHPTutorial\php\php-7.2.1-nts\ext\php_xdebug-2.8.0-7.2-vc15-nts.dll
+xdebug.profiler_output_dir="D:\phpStudy\PHPTutorial\tmp\xdebug"
+xdebug.trace_output_dir="D:\phpStudy\PHPTutorial\tmp\xdebug"
+xdebug.profiler_append = 0
+xdebug.profiler_enable = 1
+xdebug.profiler_enable_trigger = 0  
+xdebug.profiler_output_name = "cache.out.%t-%s"  
+xdebug.remote_handler = "dbgp"  
+xdebug.remote_host = "127.0.0.1"
+xdebug.remote_enable = 1
+xdebug.remote_autostart = 1
+
+xdebug.auto_trace=1
+;是否允许 ;xdebug跟踪函数参数，默认值为0
+xdebug.collect_params=1
+;是否允许 ;xdebug跟踪函数返回值，默认值为0
+xdebug.collect_return=1
+
+;用于zend studio远程调试的应用层通信协议
+xdebug.idekey = PHPSTORM
+xdebug.remote_port = 9000
+```
+
+
+
+##  开启报错
+```
+ini_set('display_errors','1');
+error_reporting(E_ALL);
+
+```
+

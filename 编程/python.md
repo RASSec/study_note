@@ -2,6 +2,22 @@
 
 
 
+## pycrypto
+
+```
+getPrime(N):获得N bits 的质数
+inverse(a,b):获得a相对于b的模反元素
+bytes_to_long:bytes和数字互相转化
+bytes_to_long(b'felinae')
+long_to_bytes:bytes和数字互相转化
+long_to_bytes(28821963924201829)
+getStrongPrime(1024,fN):获得一个长1024于fN互质的随机数
+```
+
+
+
+
+
 ## 自定义输出内容颜色
 
 ```
@@ -464,3 +480,17 @@ print('Exit code:', p.returncode)
 >`__init__.py` 文件:
 >
 >`__init__.py` 控制着包的导入行为。假如 `__init__.py` 为空，那么仅仅导入包是什么都做不了的。
+
+
+
+
+
+### windows open("xx","w")会自动将'\n'替换成'\r\n'
+
+ "w"方式写时的'\n'会在被系统自动替换为'\r\n' 
+
+  "wb"方式写时的'\n'不会在被系统自动替换为'\r\n' 
+
+ "r"方式读时，文件中的'\r\n'会被系统替换为'\n' 
+
+ "rb"方式读时，文件中的'\r\n'不会被系统替换为'\n' 

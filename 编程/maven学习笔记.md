@@ -394,11 +394,12 @@ mvn test 测试
 mvn package 打包项目生成jar文件
 mvn clearn 删除target 目录
 mvn install 安装jar包到本地仓库
-创建目录的两种方式
+创建项目的两种方式
 1. 交互式
 mvn archetype:generate 
 2. 非交互式
 mvn archetype:generate -DgroupId=com.companyname.bank -DartifactId=consumerBanking -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+mvn eclipse:eclipse
 ```
 
 

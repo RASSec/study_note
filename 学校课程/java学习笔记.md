@@ -270,7 +270,7 @@ for(type var1 : arr)
 
 
 
-
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524162916.png)
 
 
 
@@ -1286,6 +1286,10 @@ JSlider.getValue();
 
 #### 菜单
 
+##### 普通菜单
+
+
+
 ![](https://raw.githubusercontent.com/Explorersss/photo/master/20200427235559.png)
 
 ![](https://raw.githubusercontent.com/Explorersss/photo/master/20200427235651.png)
@@ -1297,6 +1301,46 @@ JSlider.getValue();
  ![](https://raw.githubusercontent.com/Explorersss/photo/master/20200427235847.png)
 
 菜单栏是所有菜单和菜单项的根
+
+
+
+```java
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+
+public class ChatRoomGUI extends JFrame{
+
+	public ChatRoomGUI() {
+		super("局域网聊天工具");
+		getContentPane().setLayout(
+			    new BoxLayout(getContentPane(), BoxLayout.X_AXIS)
+			);
+		setSize(1000,700);
+		JMenuBar menubar = new JMenuBar();
+		//add menu
+		JMenu tool = new JMenu("工具");
+		JMenu setting = new JMenu("设置");
+		menubar.add(tool);
+		menubar.add(setting);
+		
+		
+		
+		
+		//add 
+		setJMenuBar(menubar);
+	}
+	public static void main(String args[]) {
+		JFrame gui = new ChatRoomGUI();
+		gui.setVisible(true);
+	}
+
+}
+
+```
+
+
 
 
 
@@ -2019,6 +2063,40 @@ public class GridBagFrame extends JFrame
 
 
 
+### 为组件添加边框: Border
+
+
+
+### 多线程
+
+
+
+![image-20200524135234483](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200524135234483.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524135259.png)
+
+因此为了保证GUI不卡顿，我们需要将耗时的操作放到一个个单独的线程中
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524145226.png)
+
+#### SwingUtilites
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524145653.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524145738.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524145937.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524150112.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524150202.png)
+
+#### SwingWorker
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524150244.png)
+
+
+
 
 
 ### 杂
@@ -2026,4 +2104,711 @@ public class GridBagFrame extends JFrame
 #### 添加背景
 
 ![](https://raw.githubusercontent.com/Explorersss/photo/master/20200427222059.png)
+
+## 多线程编程
+
+### 线程的概念
+
+#### 概念
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522163310.png)
+
+![image-20200522163409565](C:\Users\蔡建斌\AppData\Roaming\Typora\typora-user-images\image-20200522163409565.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522163425.png)
+
+
+
+
+
+
+
+#### java线程的优先级
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522164138.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522164233.png)
+
+
+
+
+
+
+
+### 多线程的实现
+
+
+
+
+
+
+
+### 线程的生命周期
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522163841.png)
+
+
+
+### 线程的创建，调度
+
+
+
+#### 创建并执行线程
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522164534.png)
+
+ ![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522190424.png)
+
+
+
+##### 通过Thread来实现多线程
+
+```java
+import java.util.Random;
+
+class ThreadTest extends Thread {
+	private static Random generator = new Random();
+	private int sleeptime;
+	public ThreadTest(String n) {// n：线程名字
+		// TODO Auto-generated constructor stub
+		super(n);
+	}
+	public void run() {
+		for(int i=0;i<5;i++) {
+			try {
+				sleeptime=generator.nextInt(20);
+				Thread.sleep(sleeptime);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.print(getName()+"\t");
+		}
+	}
+
+}
+public class ThreadRun {
+
+	public ThreadRun() {
+		// TODO Auto-generated constructor stub
+	}
+	public static void main(String args[]) {
+		new ThreadTest("A").start();
+		new ThreadTest("B").start();
+	}
+
+}
+
+
+```
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522191526.png)
+
+
+
+##### 通过Runnable接口创建线程
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522191726.png)
+
+```java
+import java.util.Random;
+
+public class ThreadTest implements Runnable{
+	private static Random generator = new Random();
+	private int sleeptime;
+	private String name;
+	public ThreadTest(String n) {// n：线程名字
+		// TODO Auto-generated constructor stub
+		name=n;
+	}
+	public void run() {
+		for(int i=0;i<5;i++) {
+			try {
+				sleeptime=generator.nextInt(20);
+				Thread.sleep(sleeptime);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.print(name+"\t");
+		}
+	}
+
+}
+
+
+public class ThreadRun {
+
+	public ThreadRun() {
+		// TODO Auto-generated constructor stub
+	}
+	public static void main(String args[]) {
+		new Thread(new ThreadTest("A")).start();
+		new Thread(new ThreadTest("B")).start();
+	}
+
+}
+
+```
+
+
+
+#### 后台线程
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522192440.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522192559.png)
+
+
+
+#### 线程组
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522192755.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522192818.png)
+
+- Thread(ThreadGroup group,Runnable target)：group属于的线程组，target为新线程
+- Thread(ThreadGroup group,Runnable target,String name)：group属于的线程组，target为新线程，name：线程名
+- Thread(ThreadGroup group,String name)：新线程名为name，属于group线程组
+
+ThreadGroup类
+（1）构造方法
+
+- ThreadGroup(String name)：以指定线程组名字来创建新线程组
+- ThreadGroup(ThreadGroup parent,String name)：以指定的名字、指定的父线程组来创建一个新线程组。
+（2）常用操作方法
+
+- int activeCount()：获取线程组中活动线程的数量
+- interrupt()：中断线程组中所有线程
+- isDaemon()：是否为后台线程组
+- setDaemon(boolean daemon)：设置为后台线程组
+- setMaxPriority(int pri)：设置线程组的最高优先级
+
+
+
+#### 线程池
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522193532.png)
+
+##### 创建固定大小的线程池
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522193628.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522194458.png)
+
+
+
+
+
+```java
+import java.util.Random;
+
+public class ThreadTest implements Runnable{
+	private static Random generator = new Random();
+	private int sleeptime;
+	private String name;
+	public ThreadTest(String n) {// n：线程名字
+		// TODO Auto-generated constructor stub
+		name=n;
+	}
+	public void run() {
+		for(int i=0;i<5;i++) {
+			try {
+				sleeptime=generator.nextInt(20);
+				Thread.sleep(sleeptime);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.print(name+"\t");
+		}
+	}
+
+}
+import java.awt.datatransfer.FlavorTable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ThreadRun {
+
+	public ThreadRun() {
+		// TODO Auto-generated constructor stub
+	}
+	public static void main(String args[]) {
+		ExecutorService pool = Executors.newFixedThreadPool(10);
+		for(int i=0;i<15;i++) {
+			Runnable runnable = new ThreadTest(String.valueOf(i));
+			pool.execute(runnable);
+		}
+		pool.shutdown();//禁止向进程池中继续添加进程
+		while(!pool.isTerminated()) {};//进程是否都结束了
+		System.out.println("program ends");
+	}
+		
+
+}
+
+```
+
+
+
+##### 单任务线程池
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522194607.png)
+
+##### 可变大小线程池
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522195426.png)
+
+只要往里面丢线程就可以了
+
+```java
+public class ThreadRun {
+
+	public ThreadRun() {
+		// TODO Auto-generated constructor stub
+	}
+	public static void main(String args[]) {
+		ExecutorService pool = Executors.newCachedThreadPool();
+		for(int i=0;i<15;i++) {
+			Runnable runnable = new ThreadTest(String.valueOf(i));
+			pool.execute(runnable);
+		}
+		pool.shutdown();//禁止向进程池中继续添加进程
+		while(!pool.isTerminated()) {};//进程是否都结束了
+		System.out.println("program ends");
+	}
+		
+
+}
+```
+
+
+
+##### 延迟线程池
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522195840.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522195904.png)
+
+##### 自定义线程池
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200112.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200158.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200239.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200255.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200322.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200513.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200608.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200656.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522200725.png)
+
+
+
+#### 线程的返回值
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522201004.png)
+
+
+
+```java
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+class MyCallable implements Callable<String> {
+
+	
+	public String name;
+	
+	public MyCallable(String n) {
+		name = n;
+		// TODO Auto-generated constructor stub
+	}
+	@Override
+	public String call() throws Exception {
+		// TODO Auto-generated method stub
+		return name+"任务返回的内容";
+	}
+	
+}
+public class CallableTest {
+
+	public CallableTest() {
+		// TODO Auto-generated constructor stub
+		ExecutorService pool = Executors.newFixedThreadPool(5);
+		MyCallable task1= new MyCallable("A");
+		MyCallable task2= new MyCallable("B");
+		Future<String> f1=pool.submit(task1);
+		Future<String> f2=pool.submit(task2);
+		pool.shutdown();
+		while(!f1.isDone()) {};
+		while(!f2.isDone()) {};
+		try {
+			System.out.println(f1.get());
+			System.out.println(f2.get());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	public static void main(String args[]) {
+		new CallableTest();
+		
+	}
+
+}
+
+```
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522202505.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522202520.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522202548.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200522202605.png)
+
+
+
+
+
+### 同步线程
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524095537.png)
+
+ 
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100030.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100050.png)
+
+
+
+#### synchronized关键字
+
+##### 同步方法
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100121.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100210.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100238.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100256.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100329.png)
+
+
+
+##### 同步块
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100415.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524100636.png)
+
+
+
+#### wait/notify/notifyAll
+
+
+
+ 
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524101519.png)
+
+
+
+可以设置等待秒数
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524101550.png)
+
+#### 直接使用封装好的类
+
+ArrayBlockingQueue
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524102648.png)
+
+#### Lock,Condition接口
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524133246.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524133402.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524133430.png)
+
+#### Lock,Conditoin,Synchronized
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524134104.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524134157.png)
+
+
+
+## 网络编程
+
+
+
+### GUI
+
+#### JEditorPane
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524151557.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524151617.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524151700.png)
+
+### IP地址相关
+
+#### 表示---InetAddress
+
+ ![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524151805.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524151817.png)
+
+
+
+### Socket
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524151935.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524152010.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524152112.png)
+
+
+
+#### 流套接字(TCP):Socket和ServerSocket
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524152318.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524152541.png)
+
+
+
+
+
+#### 数据报套接字：DategramSocket
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524152407.png)
+
+
+
+
+
+### 建立服务器
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524155640.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524155654.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524155808.png)
+
+可以和其他数据处理流套接
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524155913.png)
+
+
+
+```java
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+	public Server() {
+		// TODO Auto-generated constructor stub
+	}
+	public static void main(String args[]) {
+		ServerSocket serverSocket = null;
+		try {
+			serverSocket = new ServerSocket(12345);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(0);
+		}
+		System.out.println("Server start!");
+		while(true) {
+			try {
+				Socket connection=serverSocket.accept();
+				System.out.println("Received request from "+ 
+						connection.getInetAddress()+":"+connection.getPort());
+				OutputStream outputStream = connection.getOutputStream();
+				PrintStream pout = new PrintStream(outputStream);
+				pout.print("你好！连接服务器成功\n");
+				//outputStream.flush();
+				outputStream.close();
+				connection.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				break;
+				
+			}
+			
+		}
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+}
+
+```
+
+
+
+
+
+
+
+### 建立客户端
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524160010.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524160033.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524160052.png)
+
+
+
+
+
+```java
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
+
+public class Cilent {
+
+	public Cilent() {
+		// TODO Auto-generated constructor stub
+	}
+	public static void main(String args[]) {
+		try {
+			Socket con = new Socket("127.0.0.1", 12345);
+			InputStream in= con.getInputStream();
+			Scanner scanner = new Scanner(in);
+			while(scanner.hasNextLine()) {
+				System.out.print(scanner.nextLine());;
+				
+			}
+			scanner.close();
+			in.close();
+			con.close();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+}
+
+```
+
+### 无连接的客户/服务端编程
+
+#### 服务端
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524163628.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524163739.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524163802.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524163903.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524163922.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524163952.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524164019.png)
+
+#### 客户端
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524170315.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524170408.png)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524170432.png)
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200524171227.png)
+
+
 

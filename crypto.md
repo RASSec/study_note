@@ -102,6 +102,41 @@ https://ctf-wiki.github.io/ctf-wiki/crypto/asymmetric/rsa/rsa_theory-zh/#_4
 
 
 
+#### 例子
+
+```python
+from Crypto.Util.number import getPrime,inverse,getStrongPrime,GCD,bytes_to_long
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5
+p=getPrime(1024)
+q=getPrime(1024)
+N=p*q
+fN=(p-1)*(q-1)
+#coprime
+while True:
+    e=getStrongPrime(1024,fN)
+    if e<fN:
+        break
+d=inverse(e,fN)
+
+print("public key(N,d):"+str((N,d)))
+print("private key(N,e):"+str((N,e)))
+message=b"test"
+pubkey = RSA.construct((N, e))
+privatekey = RSA.construct((N, e,d, p, q))
+key = PKCS1_v1_5.new(pubkey)
+enc = key.encrypt(message)
+print("encrypto message:")
+print(enc)
+key = PKCS1_v1_5.new(privatekey)
+msg = key.decrypt(enc, e)
+print("decrypto enc:",str(msg,encoding="ascii"))
+```
+
+
+
+
+
 #### N,e,d,p,q,φ(N)
 
 
@@ -118,6 +153,8 @@ https://ctf-wiki.github.io/ctf-wiki/crypto/asymmetric/rsa/rsa_theory-zh/#_4
 
 
 ### 常用函数
+
+
 
 #### gmpy2
 
@@ -140,6 +177,16 @@ from Crypto.Util.number import long_to_bytes,bytes_to_long,getPrime,isPrime
 ```
 
 
+
+```
+getPrime(N):获得N bits 的质数
+inverse(a,b):获得a相对于b的模反元素
+bytes_to_long:bytes和数字互相转化
+bytes_to_long(b'felinae')
+long_to_bytes:bytes和数字互相转化
+long_to_bytes(28821963924201829)
+getStrongPrime(1024,fN):获得一个长1024于fN互质的随机数
+```
 
 
 

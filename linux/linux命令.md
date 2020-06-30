@@ -2,6 +2,74 @@
 
 
 
+## umount
+
+
+
+umount: /mnt/flag: target is busy
+
+解决方法:
+
+1. 杀掉占用/mnt/flag的进程
+
+   ```
+   fuser -mv /mnt/flag 或者 lsof /mnt/flag
+   kill .....
+   ```
+
+2. 强制umount
+
+   ```
+   umount -l /PATH/OF/BUSY-DEVICE
+   umount -f /PATH/OF/BUSY-NFS(NETWORK-FILE-SYSTEM)
+   ```
+
+   
+
+
+
+## fsck
+
+fsck: filesystem check
+
+[相关链接](https://unix.stackexchange.com/questions/18154/what-is-the-purpose-of-the-lostfound-folder-in-linux-and-unix)
+
+[鸟叔的私房菜](http://cn.linux.vbird.org/linux_basic/0230filesystem.php#fsck)
+
+不同的机子上fsck有可能某些细节方面(option之类的)不同，建议使用前用man看一下
+
+该指令作为：检测文件系统，恢复引用次数为0的文件...
+
+> 由于 fsck 在扫瞄硬盘的时候，可能会造成部分 filesystem 的损坏，所以『运行 fsck 时， 被检查的 partition 务必不可挂载到系统上！亦即是需要在卸除的状态喔！』 
+
+## mount
+
+
+
+```bash
+mount [-l|-h|-V] # 列出所有连接的文件系统
+mount -a [-fFnrsvw] [-t fstype] [-O optlist]
+mount [-fnrsvw] [-o options] device|dir
+mount [-fnrsvw] [-t fstype] [-o options] device dir
+
+```
+
+-o options 主要用来描述设备或档案的挂接方式。常用的参数有：
+
+　　loop：用来把一个文件当成硬盘分区挂接上系统
+
+　　ro：采用只读方式挂接设备
+
+　　rw：采用读写方式挂接设备
+
+　　iocharset：指定访问文件系统所用字符集
+
+device 要挂接(mount)的设备。
+
+dir设备在系统上的挂接点(mount point)。
+
+
+
 ## less
 
 首先来看 less 命令中最基本最常用的快捷键：
@@ -67,6 +135,18 @@ cat /tmp/fifo | /bin/bash -i 2>&1 | nc -l 10000 > /tmp/fifo
 
 
 ## find
+
+
+
+### 实例
+
+```
+find . -user www-data  #查找属于www-data的文件
+```
+
+
+
+
 
 ### 语法
 

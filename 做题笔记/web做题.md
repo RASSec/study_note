@@ -1837,11 +1837,32 @@ while True:
 
 
 
+### EZ三剑客-EzTypecho
+
+阅读代码发现一个反序列化点
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200617003150.png)
 
 
 
+但是需要`$_SESSION!=null`
 
+利用 PHP_SESSION_UPLOAD_PROGRESS 来生成session
 
+接下来就是找反序列化利用点了，有以下几个可以期待的魔术方法：
+
+`__destruct,__toString,__get,__wakeup`
+
+翻了一遍之后发现
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200617003450.png)
+
+ok,接下来就是构造payload了
+
+```
+extends Typecho_Widget
+Widget_Notice
+```
 
 
 ## xman 个人排位赛

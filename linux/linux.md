@@ -143,6 +143,12 @@ screen -ls
 screen -r xxxx
 ```
 
+### 常用命令
+
+```bash
+screen -d <作业名称> 　#将指定的screen作业离线。
+```
+
 
 
 
@@ -213,5 +219,13 @@ rsync -arv --delete Images/ backups/
 
 ```
 rsync -arv --delete Images/ oscar@89.231.45.67:backups/
+```
+
+
+
+## 关闭登录某个到linux的终端
+
+```
+fuser -k /dev/pts/id
 ```
 

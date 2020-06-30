@@ -89,6 +89,7 @@ sudo systemctl restart docker
 ### 运行交互式的容器
 
 #### docker run -i -t ubuntu:15.10 /bin/bash
+
 root@dc0050c79503:/#
 
 #### 参数解析
@@ -438,4 +439,31 @@ CMD ["sh", "/startup.sh"]
  https://itbilu.com/linux/docker/EyP7QP86M.html 
 
 
+
+### php
+
+```
+php:<version>-cli
+php:<version>-apache
+php:<version>-fpm
+php:<version>-alpine
+
+```
+
+安装ffi
+
+```
+sed -i 's#http://deb.debian.org#https://mirrors.163.com#g' /etc/apt/sources.list && apt update && apt install -y --no-install-recommends libffi-dev && docker-php-ext-install ffi
+```
+
+
+
+安装imap
+
+```
+apt update && apt install -y libc-client-dev libkrb5-dev && rm -r /var/lib/apt/lists/*
+apt-get install libc-client2007e
+docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap
+
+```
 

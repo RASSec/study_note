@@ -78,3 +78,11 @@ https://xz.aliyun.com/t/2746
 
 ` python27 sqlmap.py -u "http://www.yoger.com.cn/brand-info.php?brand=Victor&sortID=1"  -p sortID `
 
+
+
+## sqlmap文档
+
+
+
+ https://www.tr0y.wang/2018/03/21/sqlmap-guide/ 
+
