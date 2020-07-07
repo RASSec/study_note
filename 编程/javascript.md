@@ -73,3 +73,20 @@ context.fillRect(10, 10, 150, 80);
 
 但如果对象是数组和对象时,这会将引用赋值给目标,此时修改新变量也会影响到旧变量
 
+
+
+## 向 无参callback function 传参
+
+```javascript
+function createCallback(x, m) {
+    return function() {
+        /* Do whatever */
+    };
+}
+xhttp.onreadystatechange = (function(x, m) {
+    return function() {
+        /* Do stuff */
+    }
+})(xhttp, msg);
+```
+
