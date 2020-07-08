@@ -634,3 +634,6 @@ if(!isset($_GET['num'])){
 
 
 
+### file_get_contents("xx/.")
+
+ file_put_contents有个trick，如果写入的文件名是xxxxx/. 那么/.会被忽略，会直接写入xxxxx文件 

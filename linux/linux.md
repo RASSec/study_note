@@ -229,3 +229,16 @@ rsync -arv --delete Images/ oscar@89.231.45.67:backups/
 fuser -k /dev/pts/id
 ```
 
+
+
+## sudo
+
+### 添加用户
+
+```bash
+usermod -aG sudo username#将用户添加到sudo组中
+#or
+visudo #修改/etc/sudoers文件
+
+```
+
