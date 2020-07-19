@@ -52,3 +52,20 @@ nmap 10.0.1.161 -sA （发送tcp的ack包进行探测，可以探测主机是否
  nmap -sT 192.168.177.144 -D 192.168.177.34,192.168.177.56 
 
  这个例子中`-D`后面的`IP`地址是虚假的`IP`地址，它会和原始`IP`地址一同出现在目标机器的网络日志文件中，这会迷惑对方的网络管理员，让他们以为这三个`IP`都是伪造的。但不能添加太多虚假IP地址，不然会影响扫描结果。因此，只要使用一定数量的地址就行。 
+
+### script list
+
+ https://nmap.org/book/nse-scripts-list.html 
+
+### script help
+
+`nmap --script-help filename`
+
+## 爆破神器：hydra
+
+
+
+```
+hydra -L user.txt  -P /usr/share/wordlists/fuzzDicts-master/passwordDict/top6000.txt 10.10.10.175 smb
+```
+

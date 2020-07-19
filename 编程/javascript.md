@@ -2,6 +2,8 @@
 
 ## 访问网页
 
+### XMLHttpRequest
+
 ```javascript
 xmlhttp=new XMLHttpRequest();
 xmlhttp.onreadystatechange=function()
@@ -15,6 +17,20 @@ xmlhttp.open("POST","request.php",true);
 xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 xmlhttp.send("url=file:///var/www/html/config.php");
 ```
+
+
+
+#### 带着cookie访问
+
+`XMLHttpRequest.withCredentials=true;`
+
+
+
+### fetch
+
+
+
+
 
 ## 重定向
 
@@ -89,4 +105,6 @@ xhttp.onreadystatechange = (function(x, m) {
     }
 })(xhttp, msg);
 ```
+
+
 
