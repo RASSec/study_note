@@ -231,6 +231,20 @@ SELECT
 
 ## 绕过
 
+
+
+### MYSQL编码绕过
+
+
+
+```
+MYSQL 中 utf8_unicode_ci和utf8_general_ci两种编码格式,utf8_general_ci不区分大小写,Ä = A, Ö = O, Ü = U这三种条件都成立,对于utf8_general_ci下面的等式成立：ß=s,但是，对于utf8_unicode_ci下面等式才成立：ß = ss
+```
+
+
+
+
+
 ### 禁用 information
 
 ```
@@ -466,6 +480,10 @@ select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g
 
 
 ## 注入语句备忘
+
+### limit 处注入
+
+条件：mysql 版本 > 5.0.0  ，<5.6.6
 
 
 

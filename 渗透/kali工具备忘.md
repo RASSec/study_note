@@ -65,6 +65,8 @@ nmap 10.0.1.161 -sA （发送tcp的ack包进行探测，可以探测主机是否
 
 
 
+
+
 ```
 hydra -L user.txt  -P /usr/share/wordlists/fuzzDicts-master/passwordDict/top6000.txt 10.10.10.175 smb
 ```

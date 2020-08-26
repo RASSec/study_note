@@ -1,5 +1,19 @@
 # php反序列化
 
+## 入口点查找技巧
+
+php_manual中找到的魔术方法：
+
+```
+__construct()， __destruct()， __call()， __callStatic()， __get()， __set()， __isset()， __unset()， __sleep()， __wakeup()， __toString()， __invoke()， __set_state()， __clone() 和 __debugInfo() 
+```
+
+
+
+正则：`__destruct|__wakeup()`
+
+
+
 ## pop链的构造
 
 ### 基础

@@ -34,6 +34,16 @@ Word 文档可能会隐藏某些信息，遇到 `doc` 文档可以尝试在 `Wor
 
 ### 伪加密
 
+```
+java -jar ZipCenOp.jar r flag.zip
+```
+
+
+
+### crc
+
+https://github.com/kmyk/zip-crc-cracker
+
 
 
 ## 音频文件
@@ -107,3 +117,24 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 
 #### 利用binwalk
 
+
+
+## 图片隐写
+
+### 工具
+
+binwalk,foremost
+
+png隐写检测：zsteg
+
+stegdetect
+
+自己编译出来的stegbreak老是segment fault
+
+建议用[编译好的windows文件](https://web.archive.org/web/20120118060657if_/http://www.outguess.org/stegdetect-0.4.zip)
+
+
+
+## 常用工具
+
+captfencoder

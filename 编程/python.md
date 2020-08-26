@@ -467,6 +467,26 @@ print('Exit code:', p.returncode)
 
 
 
+## 匿名函数
+
+`lambda x:x*x`
+
+关键字`lambda`表示匿名函数，冒号前面的`x`表示函数参数。
+
+匿名函数有个限制，就是只能有一个表达式，不用写`return`，返回值就是该表达式的结果。
+
+### 使用技巧
+
+搭配map使用
+
+```python
+list(map(lambda x: x * x, [1, 2, 3, 4, 5, 6, 7, 8, 9]))
+```
+
+
+
+
+
 ## 遇到的问题
 
 ### 在Linux下导文件夹包出现No module named XXX的问题
@@ -494,3 +514,51 @@ print('Exit code:', p.returncode)
  "r"方式读时，文件中的'\r\n'会被系统替换为'\n' 
 
  "rb"方式读时，文件中的'\r\n'不会被系统替换为'\n' 
+
+
+
+## selenium
+
+```
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+driver = webdriver.Firefox()
+driver.get("http://www.python.org")
+assert "Python" in driver.title
+elem = driver.find_element_by_name("q")
+elem.clear()
+elem.send_keys("pycon")
+elem.send_keys(Keys.RETURN)
+assert "No results found." not in driver.page_source
+driver.close()
+```
+
+
+
+### 设置浏览器路径
+
+```python
+webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
+#或
+webdriver.Chrome('/usr/local/bin/chromedriver')
+#或
+#add path  /usr/local/bin/chromedriver
+```
+
+
+
+
+
+### 设置代理
+
+```python
+from selenium import webdriver
+PROXY = "88.157.149.250:8080" # IP:PORT or HOST:PORT
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--proxy-server=%s' % PROXY)
+chrome = webdriver.Chrome(options=chrome_options)
+
+```
+

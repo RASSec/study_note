@@ -242,3 +242,17 @@ visudo #修改/etc/sudoers文件
 
 ```
 
+
+
+## tail
+
+
+
+### tail 动态查看新增内容
+
+```shell
+tail -f log.txt
+```
+
+
+

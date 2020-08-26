@@ -2,6 +2,12 @@
 
 
 
+## explain shell
+
+ [https://explainshell.com/explain?cmd=ls%20-al](https://explainshell.com/explain?cmd=ls -al) 
+
+
+
 ## umount
 
 

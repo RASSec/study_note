@@ -467,3 +467,16 @@ docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-
 
 ```
 
+
+
+安装xdebug
+
+```
+pecl install xdebug
+docker-php-ext-enable xdebug
+或
+echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
+```
+
