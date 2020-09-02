@@ -18,7 +18,7 @@ https://yeasy.gitbooks.io/docker_practice/
 docker-machine ssh [machine-name]
 #(machine-name一般都是default)
 sudo vi /var/lib/boot2docker/profile
-#在--label provider=virtualbox的下一行添加--registry-mirror https://xxxxxxxx.mirror.aliyuncs.com
+#在--label provider=virtualbox的下一行添加--registry-mirror https://etiz1c4o.mirror.aliyuncs.com
 sudo /etc/init.d/docker restart
 
 #输入以下命令来查看是否修改成功

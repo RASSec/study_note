@@ -52,6 +52,19 @@ INF:1/0
 
 ## php弱类型
 
+```
+''==0==false==NULL
+'123'==123
+'abc'==0
+'123a'==123
+'0x01'==1
+'0e123'='0e456'
+[false]==[a]==[NULL]==['']
+true==1
+```
+
+
+
 
 
 ### 字符串==true为真
@@ -63,6 +76,20 @@ INF:1/0
 ## 函数利用
 
 
+
+### 利用iconv 引起截断
+
+
+
+```php
+<?php
+	$file = $_GET['f'].'tpl.html';
+	include(iconv('UTF-8','gb2313',$file));
+```
+
+在包含非法utf-8字符时，iconv会截断字符串
+
+`?f=shell.jpg%ff`,只在windows下生效，在最新版中已经得到修复
 
 ### 利用filter_var来命令执行
 
