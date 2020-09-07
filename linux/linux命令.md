@@ -267,6 +267,12 @@ f1 f2 f3 f4 f5 program
 | 0 */2 * * * command    | 每 2 个小时的整点（0，2，4，6，等等）都执行 command 命令     |
 | */10 * * * 1-5 command | 每个礼拜一到礼拜五的每个 10 的倍数的分钟（0，10，20，30，等等）都执行 command 命令 |
 
+### debug
+
+利用mail和service cron status来进行debug
+
+在crontab第一行设置MAILTO=""来用邮箱通知
+
 ## mkdir
 
 ### 选项 

@@ -55,3 +55,7 @@ rc=run command
 ## /etc/apt/sources.list
 
  软件仓库 源
+
+## /etc/rc.local
+
+开机自启动文件(debain)

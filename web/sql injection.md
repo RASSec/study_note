@@ -209,7 +209,7 @@ SELECT
 
 ### @@hostname
 
-### @@port 
+### @@port
 
 ### @@version
 

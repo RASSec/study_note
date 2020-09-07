@@ -256,3 +256,20 @@ tail -f log.txt
 
 
 
+
+
+## 开机自启动
+
+### /etc/rc.local
+
+
+
+### systemctl
+
+https://www.cnblogs.com/downey-blog/p/10473939.html
+
+
+
+## 设置默认shell
+
+`chsh -s $(which zsh)`

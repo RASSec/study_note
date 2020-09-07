@@ -72,3 +72,51 @@ $ sudo less /var/log/dnf.log
 
 `ctrl-r`来搜索历史命令
 
+## 主题
+
+### 个人喜爱
+
+obraun:
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20200906210454.png)
+
+
+
+Powerlevel10k
+
+### 修改zsh主题
+
+zsh显示格式化说明http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html
+
+
+
+#### 教程
+
+https://printempw.github.io/zsh-prompt-theme-customization/
+
+#### 常用命令
+
+
+
+
+
+显示后景色
+
+```bash
+spectrum_bls
+```
+
+**显示前景色：**
+
+```bash
+spectrum_ls
+```
+
+## 主题
+
+### windows terminal 无法正常显示powerline
+
+原因：字体不支持，安装支持PL的字体
+
+https://github.com/microsoft/cascadia-code/releases
+

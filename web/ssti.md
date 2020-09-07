@@ -107,6 +107,33 @@ http://docs.jinkan.org/docs/jinja2/templates.html
 
   来绕过
 
+- 禁用(),用魔术方法绕过
+
+- 禁用+号可以用`~`来代替
+
+
+
+
+
+### 一些特性
+
+1. 未定义的变量会被jiaja视为Undefined对象：
+
+```
+{{bbbb.__class__}}
+<class 'jinja2.runtime.Undefined'>
+```
+
+2. jiaja模板中也可以用[]来访问属性
+
+   ```python
+   {{request['__class__']}}
+   ```
+
+3. 
+
+
+
 
 
 ### 默认存在的变量
