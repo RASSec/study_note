@@ -99,7 +99,7 @@ ALT+点击setting打开default.json
 
 
 
-```
+```powershell
 $basePath = "Registry::HKEY_CLASSES_ROOT\Directory\Background\shell"
 New-Item -Path "$basePath\wt" -Force -Value "Windows Terminal here"
 New-ItemProperty -Path "$basePath\wt" -Force -Name "Icon" -PropertyType ExpandString -Value "C:\Program Files\WindowsApps\Microsoft.WindowsTerminal_1.2.2381.0_x64__8wekyb3d8bbwe\Images\Square44x44Logo.targetsize-16.png"
