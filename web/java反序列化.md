@@ -441,6 +441,98 @@ https://y4er.com/post/java-rmi/
 
 
 
+## 动态代理
+
+利用java.lang.reflect.Proxy进行动态代理
+
+Java动态代理类位于java.lang.reflect包下，一般主要涉及到以下两个类：
+
+(1)Interface InvocationHandler：该接口中仅定义了一个方法
+
+```
+public Object invoke(Object obj,Method method, Object[] args)1
+```
+
+public object invoke(Object obj,Method method, Object[] args)
+在实际使用时，第一个参数obj一般是指代理类，method是被代理的方法，如上例中的request()，args为该方法的参数数组。这个抽象方法在代理类中动态实现。
+
+(2)Proxy：该类即为动态代理类，其中主要包含以下内容：
+
+protected Proxy(InvocationHandler h)：构造函数，用于给内部的h赋值。
+
+static Class getProxyClass (ClassLoaderloader, Class[] interfaces)：获得一个代理类，其中loader是类装载器，interfaces是真实类所拥有的全部接口的数组。
+
+static Object newProxyInstance(ClassLoaderloader, Class[] interfaces, InvocationHandler h)：返回代理类的一个实例，返回后的代理类可以当作被代理类使用(可使用被代理类的在Subject接口中声明过的方法)
+
+`Proxy.newProxyInstance(handler.getClass().getClassLoader(), db.getClass().getInterfaces(), handler)`
+
+
+
+实现动态代理实现Persion接口的Student类的步骤：
+
+1. 实现InvocationHandler接口：ProxyInvocationHandler
+2. `Student stu = new Student();InvocationHandler handler = new ProxyInvocationHandler()`
+3. Proxy.newProxyInstance(handler.getClass().getClassLoader(), stu.getClass().getInterfaces(),handler  )
+
+### 注意
+
+1. Proxy只能转化为初始时传递接口
+
+
+
+### 例子
+
+```java
+public interface Person {
+    public void SayHello();
+}
+
+public class Student implements Person {
+    public String name;
+    public Student(String name){
+        this.name = name;
+    }
+    @Override
+    public void SayHello() {
+        System.out.println("Hello I'm a student: "+this.name);
+    }
+}
+
+
+public class StudentInvocationHandler implements InvocationHandler {
+    private Person stu;
+    StudentInvocationHandler(Person stu){
+        this.stu = stu;
+
+    }
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println(proxy.getClass().getName()+"'s"+method.getName()+" has been called");
+        method.invoke(stu);
+        return stu;
+    }
+}
+
+public class ProxyTest {
+    public static void main(String args[]){
+        Person stu = new Student("Ccreater");
+        InvocationHandler handler = new StudentInvocationHandler(stu);
+        Person proxy = (Person)Proxy.newProxyInstance(stu.getClass().getClassLoader(), stu.getClass().getInterfaces(),handler );
+        proxy.SayHello();
+    }
+}
+```
+
+
+
+
+
+## JDBC反序列化
+
+https://www.anquanke.com/post/id/203086
+
+jdbc也可以直接读文件，但是要设置：`allowLoadLocalInfile=true`
+
 ## 工具
 
  https://github.com/frohoff/ysoserial/ 

