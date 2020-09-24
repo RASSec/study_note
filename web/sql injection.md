@@ -325,6 +325,7 @@ SELECT * FROM Users WHERE username = 0x61646D696E
 - SELECT GROUP_CONCAT('a', 'd', 'm', 'i', 'n');
 - SELECT extractvalue(0x3C613E61646D696E3C2F613E,0x2f61)
 - SELECT (char(97)+char(100)+char(109)+char(105)+char(110))
+- `SELECT X'5061756c'; => paul`
 
 ### 禁用select,where等等关键字用prepare执行预定义语句
 

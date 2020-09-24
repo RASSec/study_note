@@ -688,6 +688,16 @@ PHP需要将所有参数转换为一个有效的变量名，所以当解析查�
 
 
 
+## file_get_contents和include对data协议的解析不一致
+
+file_get_contents会解析data协议
+
+而include不会
+
+
+
+
+
 ### url编码绕过针对php filter的黑名单
 
 `static void php_stream_apply_filter_list(php_stream *stream, char *filterlist, int read_chain, int write_chain):158`
