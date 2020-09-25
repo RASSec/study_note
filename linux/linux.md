@@ -273,3 +273,36 @@ https://www.cnblogs.com/downey-blog/p/10473939.html
 ## 设置默认shell
 
 `chsh -s $(which zsh)`
+
+
+
+## 抓包
+
+### tcpdump
+
+https://www.cnblogs.com/chyingp/p/linux-command-tcpdump.html
+
+
+
+```shell
+tcpdump #监听第一块网卡上经过的数据包
+tcpdump -i eth0#监听特定网卡
+tcpdump host 182.254.38.55#监听本机跟主机182.254.38.55之间往来的通信包。
+-w save.cap
+```
+
+
+
+语法：
+
+```shell
+host #指定host的通信
+src host #源host的通信
+dst host#目标host的通信
+port#某端口的通信
+tcp#tcp协议的通信
+ip host 210.27.48.1 and 210.27.48.2# 210.27.48.1 与 210.27.48.2 之间的通信
+```
+
+and连接不同条件,`!`对不同条件取反
+

@@ -6,6 +6,18 @@ https://yeasy.gitbooks.io/docker_practice/
 
 
 
+## docker空间清理
+
+**docker system df**命令，类似于Linux上的**df**命令，用于查看Docker的磁盘使用情况:
+
+
+
+`docker system prune`
+
+`docker system prune -a`删除所有镜像
+
+
+
 ## docker配置
 
 ### 配置镜像
