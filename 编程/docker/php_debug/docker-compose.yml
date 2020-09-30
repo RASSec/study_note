@@ -1,0 +1,11 @@
+version: "3"
+services:
+    php:
+        build: .
+        ports: 
+            - "60080:80"
+        volumes: 
+            - "./www:/var/www/html"
+            - "./conf/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini"
+            - "./busybox:/usr/local/bin/busybox"
+        

