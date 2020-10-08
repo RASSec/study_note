@@ -264,12 +264,40 @@ array(
 
 这个原理的漏洞原因是PHP-FPM未授权访问漏洞,php-fpm没有对发送数据的来源进行验证,导致只要我们向php-fpm发送符合格式的数据就可以被解析.再结合fastcgi设置环境变量的部分来达到getshell
 
-### fpm利用脚本
+### fpm客户端脚本
 
 分享个p牛脚本里面的一个client客户端: [Python FastCGI Client](https://github.com/wuyunfeng/Python-FastCGI-Client)
 还有Lz1y师傅给的一个php客户端 [PHP FastCGI Client](https://github.com/adoy/PHP-FastCGI-Client.git)
 
 还要php语言客户端: [fastcgi客户端PHP语言实现](http://nullget.sourceforge.net/?q=node/795&lang=zh-hans)
+
+
+
+### 配置
+
+php-fpm有security.limit_extensions限制了php脚本的后缀名，它的默认值是:` .php .phar`
+
+
+
+
+
+### 注意
+
+>PHP settings passed with `php_value` or `php_flag` will overwrite their previous value. Please note that defining [disable_functions](https://www.php.net/manual/en/ini.core.php#ini.disable-functions) or [disable_classes](https://www.php.net/manual/en/ini.core.php#ini.disable-classes) will not overwrite previously defined php.ini values, but will append the new value instead.
+>
+>Settings defined with `php_admin_value` and `php_admin_flag` cannot be overridden with [ini_set()](https://www.php.net/manual/en/function.ini-set.php).
+
+disable_classes和disable_functions是无法用php_admin_value直接覆盖的
+
+### 利用脚本
+
+```php
+https://gist.githubusercontent.com/Explorersss/452ba2ed228dee841ac474b5d96f1581/raw/dc35576e0a4448b33da381fd2980d586aedc4e01/bypass_disable_function_by_fpm.php
+```
+
+
+
+
 
 
 
