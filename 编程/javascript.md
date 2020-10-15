@@ -112,3 +112,14 @@ xhttp.onreadystatechange = (function(x, m) {
 
 ## 在浏览器导入npm的包
 
+
+
+## Promise
+
+```javascript
+(new Promise(function(resolve,reject)){if(success){resolve()}reject()})
+ 	.then(data=>{})
+ 	.catch(error=>{})
+```
+
+我们使用 Promise( ) 构造函数返回了一个新的promise对象，构造函数接收一个回调函数作为参数。这个回调函数包含两个参数，第一个为成功执行(resolve)的回调函数，第二个为执行失败(reject)的回调函数。我们将这两个回调函数在对应的时机执行

