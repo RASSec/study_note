@@ -221,3 +221,5 @@ self.addEventListener('fetch', function(event) {
 教程：https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers
 
 API：https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API
+
+https://lightless.me/archives/XSS-With-Service-Worker.html

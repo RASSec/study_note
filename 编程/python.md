@@ -539,11 +539,10 @@ driver.close()
 ### 设置浏览器路径
 
 ```python
-webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
-#或
-webdriver.Chrome('/usr/local/bin/chromedriver')
-#或
-#add path  /usr/local/bin/chromedriver
+options = webdriver.ChromeOptions()
+options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+chrome_driver_binary = "/usr/local/bin/chromedriver"
+driver = webdriver.Chrome(chrome_driver_binary, chrome_options=options)
 ```
 
 
@@ -562,3 +561,229 @@ chrome = webdriver.Chrome(options=chrome_options)
 
 ```
 
+
+
+### 元素事件
+
+```
+click:只有可见元素才能打印
+检测方式：print("Element is visible? " + str(element_name.is_displayed()))
+
+```
+
+
+
+## configparser
+
+### 写入配置
+
+```
+>>> import configparser
+>>> config = configparser.ConfigParser()
+>>> config['DEFAULT'] = {'ServerAliveInterval': '45',
+...                      'Compression': 'yes',
+...                      'CompressionLevel': '9'}
+>>> config['bitbucket.org'] = {}
+>>> config['bitbucket.org']['User'] = 'hg'
+>>> config['topsecret.server.com'] = {}
+>>> topsecret = config['topsecret.server.com']
+>>> topsecret['Port'] = '50022'     # mutates the parser
+>>> topsecret['ForwardX11'] = 'no'  # same here
+>>> config['DEFAULT']['ForwardX11'] = 'yes'
+>>> with open('example.ini', 'w') as configfile:
+...   config.write(configfile)
+```
+
+产生的配置文件：
+
+```
+[DEFAULT]
+ServerAliveInterval = 45
+Compression = yes
+CompressionLevel = 9
+ForwardX11 = yes
+
+[bitbucket.org]
+User = hg
+
+[topsecret.server.com]
+Port = 50022
+ForwardX11 = no
+```
+
+### 读取配置文件
+
+
+
+```python
+>>> config = configparser.ConfigParser()
+>>> config.sections()
+[]
+>>> config.read('example.ini')
+['example.ini']
+>>> config.sections()
+['bitbucket.org', 'topsecret.server.com']
+>>> 'bitbucket.org' in config
+True
+>>> 'bytebong.com' in config
+False
+>>> config['bitbucket.org']['User']
+'hg'
+>>> config['DEFAULT']['Compression']
+'yes'
+>>> topsecret = config['topsecret.server.com']
+>>> topsecret['ForwardX11']
+'no'
+>>> topsecret['Port']
+'50022'
+>>> for key in config['bitbucket.org']:  
+...     print(key)
+user
+compressionlevel
+serveraliveinterval
+compression
+forwardx11
+>>> config['bitbucket.org']['ForwardX11']
+'yes'
+```
+
+
+
+## logging
+
+https://docs.python.org/3/howto/logging.html#logging-basic-tutorial
+
+https://www.cnblogs.com/yyds/p/6901864.html
+
+在不同的环境下使用不同的日志等级方便开发
+
+不同情况的日志包含不同的信息，但是通常都需要包含：时间，发生位置，错误信息
+
+### 日志等级
+
+日志严重程度从低到高
+
+- DEBUG
+- INFO
+- NOTICE
+- WARNING
+- ERROR
+- CRITICAL
+- ALERT
+- EMERGENCY
+
+而logging支持以下日志等级
+
+| 日志等级（level） | 描述                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| DEBUG             | 最详细的日志信息，典型应用场景是 问题诊断                    |
+| INFO              | 信息详细程度仅次于DEBUG，通常只记录关键节点信息，用于确认一切都是按照我们预期的那样进行工作 |
+| WARNING           | 当某些不期望的事情发生时记录的信息（如，磁盘可用空间较低），但是此时应用程序还是正常运行的 |
+| ERROR             | 由于一个更严重的问题导致某些功能不能正常运行时记录的信息     |
+| CRITICAL          | 当发生严重错误，导致应用程序不能继续运行时记录的信息         |
+
+上面列表中的日志等级是从上到下依次升高的，即：DEBUG < INFO < WARNING < ERROR < CRITICAL，而日志的信息量是依次减少的；
+
+
+
+### 使用logging自带的模块
+
+1. 调用logging.basicConfig()配置参数
+2. 使用logging
+
+#### basicConfig
+
+该方法用于为logging日志系统做一些基本配置，方法定义如下：
+
+```
+logging.basicConfig(**kwargs)
+```
+
+该函数可接收的关键字参数如下：
+
+| 参数名称 | 描述                                                         |
+| -------- | ------------------------------------------------------------ |
+| filename | 指定日志输出目标文件的文件名，指定该设置项后日志信心就不会被输出到控制台了 |
+| filemode | 指定日志文件的打开模式，默认为'a'。需要注意的是，该选项要在filename指定时才有效 |
+| format   | 指定日志格式字符串，即指定日志输出时所包含的字段信息以及它们的顺序。logging模块定义的格式字段下面会列出。 |
+| datefmt  | 指定日期/时间格式。需要注意的是，该选项要在format中包含时间字段%(asctime)s时才有效 |
+| level    | 指定日志器的日志级别                                         |
+| stream   | 指定日志输出目标stream，如sys.stdout、sys.stderr以及网络stream。需要说明的是，stream和filename不能同时提供，否则会引发 `ValueError`异常 |
+| style    | Python 3.2中新添加的配置项。指定format格式字符串的风格，可取值为'%'、'{'和'$'，默认为'%' |
+| handlers | Python 3.3中新添加的配置项。该选项如果被指定，它应该是一个创建了多个Handler的可迭代对象，这些handler将会被添加到root logger。需要说明的是：filename、stream和handlers这三个配置项只能有一个存在，不能同时出现2个或3个，否则会引发ValueError异常。 |
+
+`logging.basicConfig()`函数是一个一次性的简单配置工具使，也就是说只有在第一次调用该函数时会起作用，后续再次调用该函数时完全不会产生任何操作的，多次调用的设置并不是累加操作。
+
+
+
+
+
+#### logging模块定义的格式字符串字段
+
+我们来列举一下logging模块中定义好的可以用于format格式字符串中字段有哪些：
+
+| 字段/属性名称   | 使用格式            | 描述                                                         |
+| --------------- | ------------------- | ------------------------------------------------------------ |
+| asctime         | %(asctime)s         | 日志事件发生的时间--人类可读时间，如：2003-07-08 16:49:45,896 |
+| created         | %(created)f         | 日志事件发生的时间--时间戳，就是当时调用time.time()函数返回的值 |
+| relativeCreated | %(relativeCreated)d | 日志事件发生的时间相对于logging模块加载时间的相对毫秒数（目前还不知道干嘛用的） |
+| msecs           | %(msecs)d           | 日志事件发生事件的毫秒部分                                   |
+| levelname       | %(levelname)s       | 该日志记录的文字形式的日志级别（'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'） |
+| levelno         | %(levelno)s         | 该日志记录的数字形式的日志级别（10, 20, 30, 40, 50）         |
+| name            | %(name)s            | 所使用的日志器名称，默认是'root'，因为默认使用的是 rootLogger |
+| message         | %(message)s         | 日志记录的文本内容，通过 `msg % args`计算得到的              |
+| pathname        | %(pathname)s        | 调用日志记录函数的源码文件的全路径                           |
+| filename        | %(filename)s        | pathname的文件名部分，包含文件后缀                           |
+| module          | %(module)s          | filename的名称部分，不包含后缀                               |
+| lineno          | %(lineno)d          | 调用日志记录函数的源代码所在的行号                           |
+| funcName        | %(funcName)s        | 调用日志记录函数的函数名                                     |
+| process         | %(process)d         | 进程ID                                                       |
+| processName     | %(processName)s     | 进程名称，Python 3.1新增                                     |
+| thread          | %(thread)d          | 线程ID                                                       |
+| threadName      | %(thread)s          | 线程名称                                                     |
+
+
+
+#### 开始使用
+
+配置好参数后调用
+
+```
+logging.debug("This is a debug log.")
+logging.info("This is a info log.")
+logging.warning("This is a warning log.")
+logging.error("This is a error log.")
+logging.critical("This is a critical log.")
+```
+
+
+
+#### logging.debug/info/...
+
+logging.debug(), logging.info()等方法的定义中，除了msg和args参数外，还有一个**kwargs参数。它们支持3个关键字参数: `exc_info, stack_info, extra`，下面对这几个关键字参数作个说明。
+
+- ***exc_info：*** 其值为布尔值，如果该参数的值设置为True，则会将异常异常信息添加到日志消息中。如果没有异常信息则添加None到日志信息中。
+- ***stack_info：*** 其值也为布尔值，默认值为False。如果该参数的值设置为True，栈信息将会被添加到日志信息中。
+- ***extra：*** 这是一个字典（dict）参数，它可以用来自定义消息格式中所包含的字段，但是它的key不能与logging模块定义的字段冲突。
+
+
+
+在日志消息中添加exc_info和stack_info信息，并添加两个自定义的字端 ip和user
+
+```
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(user)s[%(ip)s] - %(message)s"
+DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
+
+logging.basicConfig(format=LOG_FORMAT, datefmt=DATE_FORMAT)
+logging.warning("Some one delete the log file.", exc_info=True, stack_info=True, extra={'user': 'Tom', 'ip':'47.98.53.222'})
+```
+
+输出结果：
+
+```
+05/08/2017 16:35:00 PM - WARNING - Tom[47.98.53.222] - Some one delete the log file.
+NoneType
+Stack (most recent call last):
+  File "C:/Users/wader/PycharmProjects/LearnPython/day06/log.py", line 45, in <module>
+    logging.warning("Some one delete the log file.", exc_info=True, stack_info=True, extra={'user': 'Tom', 'ip':'47.98.53.222'})
+```

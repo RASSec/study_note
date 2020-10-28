@@ -1,5 +1,17 @@
 # ssrf
 
+
+
+## sni
+
+
+
+## TLS Poison
+
+https://github.com/jmdx/TLS-poison
+
+
+
 ## 绕过小技巧
 
 1.http://baidu.com@www.baidu.com/与http://www.baidu.com/请求时是相同的
@@ -10,7 +22,7 @@
 
 4.短网址绕过 http://t.cn/RwbLKDx
 
-5.xip.io来绕过：http://xxx.192.168.0.1.xip.io/ == 192.168.0.1 (xxx 任意）
+5.xip.io来绕过：http://xxx.192.168.0.1.xip.io/ == 192.168.0.1 (xxx 任意）像这种网址还有`nip.io`，`sslip.io`。
 
 指向任意ip的域名：xip.io(37signals开发实现的定制DNS服务)
 
@@ -19,6 +31,21 @@
 7.探测内网域名，或者将自己的域名解析到内网ip
 
 8.例如 http://10.153.138.81/ts.php , 修复时容易出现的获取host时以/分割来确定host，
+
+9.利用DNS解析
+
+- 其他他各种指向127.0.0.1的地址
+
+```
+1. http://localhost/
+2. http://0/
+3. http://[0:0:0:0:0:ffff:127.0.0.1]/
+4. http://[::]:80/
+5. http://127。0。0。1/
+6. http://①②⑦.⓪.⓪.①
+7. http://127.1/
+8. http://127.00000.00000.001/
+```
 
 但这样可以用 http://abc@10.153.138.81/ 绕过
 
