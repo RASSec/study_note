@@ -163,6 +163,8 @@ system('unzip -j '.escapeshellarg($zip_name).' *.tmp -d /tmp');
 
 ##### 空格
 
+{cat,flag.txt} 
+
 \t和\r和\n代替空格
 
 `$IFS$9` 符号 `${IFS}` 符号代替空格

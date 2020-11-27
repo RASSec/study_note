@@ -2,9 +2,9 @@
 
 ## 教程
 
-[i春秋公众号cs教程]( https://mp.weixin.qq.com/s?__biz=MzUzNTkyODI0OA==&mid=2247494718&idx=1&sn=4f523ce9d5ef8ef3be6677f36f5cabcd&chksm=fafca0e9cd8b29ffd4e7bab0f23682e8bec6e15ecf6a3b42f15fad22156ea664969b6a0080b6&mpshare=1&scene=23&srcid=&sharer_sharetime=1578371303504&sharer_shareid=eee8b250e780dfa6f3a463559ee39c8f#rd )
+[i春秋公众号cs教程](https://mp.weixin.qq.com/s?__biz=MzUzNTkyODI0OA==&mid=2247494718&idx=1&sn=4f523ce9d5ef8ef3be6677f36f5cabcd&chksm=fafca0e9cd8b29ffd4e7bab0f23682e8bec6e15ecf6a3b42f15fad22156ea664969b6a0080b6&mpshare=1&scene=23&srcid=&sharer_sharetime=1578371303504&sharer_shareid=eee8b250e780dfa6f3a463559ee39c8f#rd )
 
-
+https://wbglil.gitbook.io/cobalt-strike/
 
 ## 启动
 

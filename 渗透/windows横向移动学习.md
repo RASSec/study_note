@@ -210,3 +210,9 @@ crackmapexec 1.1.1.0/24 -u administrator -H 11ec7935618f326490509a0703fbzdb8
 #### KB2871997
 
 微软再2014年5月13日发布了针对Hash传递的补丁KB2871997，更新用于禁止本地管理员用于远程连接，这样本地管理员无法以本地管理员权限在远程主机上之洗礼wmi,psexec等。然而在实际的测试中发现常规的Hash传递虽已无法成功，但默认administrator(sid500) 账号除外，即使改名，这个账号仍然可以进行Hash传递攻击。
+
+
+
+## 链接
+
+https://lengjibo.github.io/LateralMovement/

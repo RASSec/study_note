@@ -6,6 +6,29 @@ https://yeasy.gitbooks.io/docker_practice/
 
 
 
+
+
+## docker-compose
+
+### services
+
+#### 设置网络连接模式
+
+```
+version: "3"
+services:
+        frpc:
+                network_mode: "host"
+                build:
+                        context: .
+                volumes:
+                        - "./frp/frpc.ini:/etc/frpc.ini"
+```
+
+
+
+
+
 ## docker知识
 
 ### docker网络连接模式
