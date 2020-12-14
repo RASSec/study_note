@@ -1108,3 +1108,279 @@ Group 指示器用于定义相关的数批元素。
 
 ```
 
+
+
+## xslt
+
+XSLT 是一种用于将 XML 文档转换为 XHTML 文档或其他 XML 文档的语言。
+
+
+
+
+
+### demo
+
+```xml
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:template match="/">
+ <html>
+ <body>
+   <h2>My CD Collection</h2>
+   <table border="1">
+     <tr bgcolor="#9acd32">
+       <th>Title</th>
+       <th>Artist</th>
+     </tr>
+     <tr>
+       <td>.</td>
+       <td>.</td>
+     </tr>
+   </table>
+ </body>
+ </html>
+</xsl:template>
+
+</xsl:stylesheet>
+```
+
+
+
+```xml
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="cdcatalog.xsl"?>
+<catalog>
+  <cd>
+    <title>Empire Burlesque</title>
+    <artist>Bob Dylan</artist>
+    <country>USA</country>
+    <company>Columbia</company>
+    <price>10.90</price>
+    <year>1985</year>
+  </cd>
+</catalog>
+```
+
+
+
+
+
+### XSLT `<xsl:template>` 元素
+
+XSL 样式表由一个或多套被称为模板（template）的规则组成。
+
+每个模板含有当某个指定的节点被匹配时所应用的规则。
+
+`<xsl:template>` 元素用于构建模板。
+
+*match* 属性用于关联 XML 元素和模板。match 属性也可用来为整个文档定义模板。match 属性的值是 XPath 表达式（举例，match="/" 定义整个文档）。
+
+首先是`<?xml version="1.0" encoding="ISO-8859-1"?>`一个xml声明
+
+`<xsl:stylesheet>`，定义此文档是一个 XSLT 样式表文档
+
+
+
+`<xsl:template>` 元素内部的内容定义了写到输出结果的 HTML 代码。
+
+
+
+### XSLT `<xsl:value-of>` 元素
+
+`<xsl:value-of> `元素用于提取某个选定节点的值，并把值添加到转换的输出流中
+
+
+
+```xml
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:template match="/">
+ <html>
+ <body>
+   <h2>My CD Collection</h2>
+   <table border="1">
+     <tr bgcolor="#9acd32">
+       <th>Title</th>
+       <th>Artist</th>
+     </tr>
+     <tr>
+      <td><xsl:value-of select="catalog/cd/title"/></td>
+      <td><xsl:value-of select="catalog/cd/artist"/></td>
+     </tr>
+   </table>
+ </body>
+ </html>
+</xsl:template>
+
+</xsl:stylesheet>
+```
+
+*select* 属性的值是一个 XPath 表达式。
+
+
+
+### XSLT `<xsl:for-each>` 元素
+
+
+
+`<xsl:for-each>` 元素可用于选取指定的节点集中的每个 XML 元素。
+
+```xml
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:template match="/">
+  <html>
+  <body>
+    <h2>My CD Collection</h2>
+    <table border="1">
+      <tr bgcolor="#9acd32">
+        <th>Title</th>
+        <th>Artist</th>
+      </tr>
+      <xsl:for-each select="catalog/cd">
+      <tr>
+        <td><xsl:value-of select="title"/></td>
+        <td><xsl:value-of select="artist"/></td>
+      </tr>
+      </xsl:for-each>
+    </table>
+  </body>
+  </html>
+</xsl:template>
+
+</xsl:stylesheet>
+```
+
+通过在 <xsl:for-each> 元素中添加一个选择属性的判别式，我们也可以过滤从 XML 文件输出的结果。
+
+```
+<xsl:for-each select="catalog/cd[artist='Bob Dylan']">
+```
+
+### 合法的过滤运算符
+
+- = (等于)
+- != (不等于)
+- `&lt; `(小于)
+- `&gt;` (大于)
+
+
+
+### XSLT `<xsl:sort>` 元素
+
+如需对结果进行排序，只要简单地在 XSL 文件中的 `<xsl:for-each>` 元素内部添加一个` <xsl:sort> `元素：
+
+```
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:template match="/">
+  <html>
+  <body>
+    <h2>My CD Collection</h2>
+    <table border="1">
+      <tr bgcolor="#9acd32">
+        <th>Title</th>
+        <th>Artist</th>
+      </tr>
+      <xsl:for-each select="catalog/cd">
+      <xsl:sort select="artist"/>
+      <tr>
+        <td><xsl:value-of select="title"/></td>
+        <td><xsl:value-of select="artist"/></td>
+      </tr>
+      </xsl:for-each>
+    </table>
+  </body>
+  </html>
+</xsl:template>
+
+</xsl:stylesheet>
+```
+
+
+
+### XSLT `<xsl:if>` 元素
+
+```xml
+<xsl:if test="expression">
+  ...
+  ...如果条件成立则输出...
+  ...
+</xsl:if>
+```
+
+
+
+### `xsl:choose`元素
+
+```xml
+<xsl:choose>
+  <xsl:when test="expression">
+    ... 输出 ...
+  </xsl:when>
+  <xsl:when test="expression">
+    ... 输出 ...
+  </xsl:when>
+    ...
+  <xsl:otherwise>
+    ... 输出 ....
+  </xsl:otherwise>
+</xsl:choose>
+```
+
+可以包含多个when
+
+
+
+### `<xsl:apply-templates>`
+
+`<xsl:apply-templates>` 元素可把一个模板应用于当前的元素或者当前元素的子节点。
+
+假如我们向 `<xsl:apply-templates> `元素添加一个 select 属性，此元素就会仅仅处理与属性值匹配的子元素。我们可以使用 select 属性来规定子节点被处理的顺序。
+
+
+
+```xml
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:template match="/">
+<html>
+<body>
+<h2>My CD Collection</h2> 
+<xsl:apply-templates/> 
+</body>
+</html>
+</xsl:template>
+
+<xsl:template match="cd">
+<p>
+<xsl:apply-templates select="title"/> 
+<xsl:apply-templates select="artist"/>
+</p>
+</xsl:template>
+
+<xsl:template match="title">
+Title: <span style="color:#ff0000">
+<xsl:value-of select="."/></span>
+<br />
+</xsl:template>
+
+<xsl:template match="artist">
+Artist: <span style="color:#00ff00">
+<xsl:value-of select="."/></span>
+<br />
+</xsl:template>
+
+</xsl:stylesheet>
+```
+

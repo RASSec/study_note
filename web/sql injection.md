@@ -480,6 +480,16 @@ select * from flags where id='abcdd' union select 1,(select group_concat(b,e,f,g
 
 
 
+### mysql  8.0.19 之后 用table 代替select
+
+```sql
+TABLE table_name [ORDER BY column_name] [LIMIT number [OFFSET number]]
+```
+
+
+
+
+
 ## 注入语句备忘
 
 ### limit 处注入
